@@ -9,9 +9,19 @@ let state = {
   emergency: { current: 0, answered: false, correct: 0, total: 0 }
 };
 
+const _NAV_KEY = 'chairfly-nav';
+function _saveNavKey(key, val) {
+  try {
+    const obj = JSON.parse(localStorage.getItem(_NAV_KEY) || '{}');
+    obj[key] = val;
+    localStorage.setItem(_NAV_KEY, JSON.stringify(obj));
+  } catch(e) {}
+}
+
 function switchAircraft(key, btn) {
   if (key === currentAircraft) return;
   currentAircraft = key;
+  _saveNavKey('aircraft', key);
   const ac = ALL_AIRCRAFT[key];
   CHECKLISTS = ac.checklists;
   EMERGENCIES = ac.emergencies;
@@ -45,6 +55,7 @@ function switchView(name, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   btn.classList.add('active');
+  _saveNavKey('view', name);
 }
 
 // ── CHECKLIST ──
@@ -58,6 +69,7 @@ function initChecklist() {
 
 function selectPhase(phase) {
   state.checklist.phase = phase;
+  _saveNavKey('clPhase', phase);
   document.querySelectorAll('.phase-btn').forEach((b, i) => {
     b.classList.toggle('active', Object.keys(CHECKLISTS)[i] === phase);
   });
@@ -1516,6 +1528,7 @@ function setClMode(mode, btn) {
   document.getElementById('cl-reference-mode').style.display = mode === 'reference' ? '' : 'none';
   document.getElementById('cl-recall-mode').style.display = mode === 'recall' ? '' : 'none';
   if (mode === 'recall') initSeqRecall();
+  _saveNavKey('clMode', mode);
 }
 
 function initSeqRecall() {
@@ -1878,10 +1891,12 @@ function setRadioMode(mode, btn) {
   document.getElementById('radio-calls-mode').style.display = mode === 'chips' ? '' : 'none';
   document.getElementById('radio-atis-mode').style.display = mode === 'atis' ? '' : 'none';
   if (mode === 'atis' && !atisState.generated) newATIS();
+  _saveNavKey('radioMode', mode);
 }
 
 function setRadioInputMode(mode) {
   radioInputMode = mode;
+  _saveNavKey('radioInputMode', mode);
   document.getElementById('rbtn-chips').classList.toggle('active', mode === 'chips');
   document.getElementById('rbtn-speak').classList.toggle('active', mode === 'speak');
   document.getElementById('radio-chip-area').style.display = mode === 'chips' ? '' : 'none';
@@ -2342,9 +2357,46 @@ function playATISAgain() {
   playATIS();
 }
 
+function restoreNav() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(_NAV_KEY) || '{}'); } catch(e) { return; }
+
+  // Aircraft must be first — it rebuilds CHECKLISTS
+  if (saved.aircraft && saved.aircraft !== currentAircraft) {
+    const btn = [...document.querySelectorAll('.aircraft-btn')]
+      .find(b => b.getAttribute('onclick').includes(`'${saved.aircraft}'`));
+    if (btn) switchAircraft(saved.aircraft, btn);
+  }
+
+  // Phase before cl-mode (initSeqRecall reads state.checklist.phase)
+  if (saved.clPhase && saved.clPhase !== state.checklist.phase) selectPhase(saved.clPhase);
+
+  if (saved.clMode && saved.clMode !== 'reference') {
+    const btn = [...document.querySelectorAll('#view-checklist .cl-mode-btn')]
+      .find(b => b.getAttribute('onclick').includes(`'${saved.clMode}'`));
+    if (btn) setClMode(saved.clMode, btn);
+  }
+
+  if (saved.radioMode && saved.radioMode !== 'chips') {
+    const btn = [...document.querySelectorAll('#view-radio .cl-mode-btn')]
+      .find(b => b.getAttribute('onclick').includes(`'${saved.radioMode}'`));
+    if (btn) setRadioMode(saved.radioMode, btn);
+  }
+
+  if (saved.radioInputMode && saved.radioInputMode !== 'chips') setRadioInputMode(saved.radioInputMode);
+
+  // View last — ensures correct tab is visible
+  if (saved.view && saved.view !== 'checklist') {
+    const btn = [...document.querySelectorAll('.nav-btn')]
+      .find(b => b.getAttribute('onclick').includes(`'${saved.view}'`));
+    if (btn) switchView(saved.view, btn);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initChecklist();
   initRadio();
   initEmergency();
   lookupAirport();
+  restoreNav();
 });
