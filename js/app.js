@@ -12,6 +12,7 @@ let state = {
 let currentView = 'checklist';
 let currentClMode = 'reference';
 let currentRadioMode = 'chips';
+let currentProcScreen = 'proc-screen-setup';
 let _restoringNav = false;
 
 function updateHash() {
@@ -27,6 +28,11 @@ function updateHash() {
   } else if (currentView === 'radio') {
     if (currentRadioMode === 'atis') parts.push('atis');
     else if (radioInputMode === 'speak') parts.push('speak');
+  } else if (currentView === 'procedures') {
+    if (currentProcScreen === 'proc-screen-steps' && procState._lastProcId && procState.airport.icao) {
+      parts.push(procState.airport.icao);
+      parts.push(procState._lastProcId);
+    }
   }
   const hash = '#' + parts.join('/');
   if (location.hash !== hash) history.replaceState(null, '', hash);
@@ -1526,6 +1532,8 @@ function procBack() { showProcScreen('proc-screen-setup'); }
 function showProcScreen(id) {
   document.querySelectorAll('.proc-screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  currentProcScreen = id;
+  updateHash();
 }
 
 // ── SEQUENCE RECALL ──
@@ -2413,6 +2421,19 @@ function restoreNav() {
       if (btn) setRadioMode('atis', btn);
     } else if (sub === 'speak') {
       setRadioInputMode('speak');
+    }
+  } else if (view === 'procedures') {
+    const icao  = parts[i];
+    const procId = parts[i + 1];
+    if (icao && procId) {
+      const apData = AIRPORTS[icao];
+      if (apData) {
+        const [name, elev] = apData;
+        procState.airport = { icao, name, elev, tpa: Math.round((elev + 1000) / 100) * 100 };
+        document.getElementById('proc-icao').value = icao;
+        lookupAirport();
+      }
+      startProcedure(procId);
     }
   }
 
