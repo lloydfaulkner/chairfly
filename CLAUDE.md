@@ -211,7 +211,38 @@ Controlled field calls do NOT repeat airport name (repeats: false)
 - Uses webkitSpeechRecognition (iOS Safari compatible)
 - Requires HTTPS — works on CloudFront URL, NOT on file:// local
 - Degrades gracefully with clear error message if unavailable
-- Fuzzy word matching normalizes spoken numbers ("four five" = "45")
+
+### Speech grading — scoreSpeechCall()
+Grades spoken transcript against scenario `words[]` chips. Each chip is
+split into individual keyWords and checked against normalized spoken words.
+
+**normalize() pipeline** (applied to both spoken and keyWords):
+1. Digit words: one→1, two→2, ..., nine→9, zero→0, niner→9
+2. Teens: eleven→11, twelve→12, ..., nineteen→19
+3. Tens: ten→10, twenty→20, ..., ninety→90
+4. Tens+ones combine: "thirty 5" → "35"
+5. "N thousand M hundred" → N*1000+M*100 ("three thousand five hundred" → 3500)
+6. "N thousand" → N*1000
+7. "N hundred" → N*100 ("thirty-five hundred" → 3500)
+
+**Matching order** (first match wins):
+1. Exact word match
+2. Multi-digit keyWord (e.g. "3500"): digit sequence in spoken digit stream
+3. Single-digit keyWord (e.g. "4" from tail number): digit inside a spoken
+   multi-digit token — handles recognizer returning "4521" vs "four five two one"
+4. Aircraft type alias: Cessna ↔ Skyhawk (both valid per AIM 4-2-4)
+5. Prefix close match (first 3 chars)
+
+**AIM 4-2-4 callsign variations — all should score 100%:**
+- "Cessna Four Five Two One Golf" — standard
+- "Skyhawk Four Five Two One Golf" — model name, equally valid
+- "Cessna November Four Five Two One Golf" — N-prefix spoken; "November"
+  is extra and ignored by the grader (not a keyWord)
+- Abbreviated form ("Two One Golf") only valid after ATC establishes —
+  not used in initial-contact scenarios, would score low intentionally
+
+**Intentionally grades low:**
+- "N4521G" as a raw alphanumeric — not phonetic, distractor card explains why
 
 ### iOS specific
 - -webkit-tap-highlight-color: transparent on * selector (global)
