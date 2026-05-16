@@ -186,14 +186,17 @@ function renderRadioScenario() {
   document.getElementById('scenario-type').textContent = s.type;
   document.getElementById('scenario-text').textContent = s.situation;
 
-  // Rule badge
+  // Rule badge — collapsed by default
   const ruleEl = document.getElementById('scenario-rule');
   if (s.rule) {
     ruleEl.innerHTML = `
-      <span class="rule-badge ${s.rule.repeats ? 'repeats' : 'no-repeats'}">
-        ${s.rule.repeats ? '↩ Ends with airport name' : '✕ Does not repeat airport name'}
-      </span>
-      <span class="rule-why">${s.rule.why}</span>`;
+      <button class="hint-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">▸ Hint</button>
+      <div class="hint-content">
+        <span class="rule-badge ${s.rule.repeats ? 'repeats' : 'no-repeats'}">
+          ${s.rule.repeats ? '↩ Ends with airport name' : '✕ Does not repeat airport name'}
+        </span>
+        <span class="rule-why">${s.rule.why}</span>
+      </div>`;
   } else {
     ruleEl.innerHTML = '';
   }

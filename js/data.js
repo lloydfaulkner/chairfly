@@ -377,8 +377,9 @@ const RADIO_SCENARIOS = [
   },
   {
     type: 'Checking In — Approach Control',
-    situation: "Tower told you to contact approach on 124.35 after takeoff. You're climbing through 1,800.",
+    situation: "Tower: \"N4521G, contact Raleigh Approach, one two four point three five.\" You've switched over. Climbing through 1,800.",
     data: [
+      { label: 'Facility', value: 'Raleigh Approach', gloss: null },
       { label: 'Frequency', value: '124.35', gloss: 'Frequency' },
       { label: 'Tail', value: 'N4521G', gloss: 'Tail' },
       { label: 'Altitude', value: 'Climbing through 1,800', gloss: 'Altitude' },

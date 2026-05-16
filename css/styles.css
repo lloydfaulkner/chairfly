@@ -456,7 +456,15 @@
     .scenario-type { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; color: var(--accent2); text-transform: uppercase; margin-bottom: 8px; }
     .scenario-text { font-size: 15px; line-height: 1.6; color: var(--text-bright); }
 
-    .scenario-rule { margin-top: 10px; display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+    .scenario-rule { margin-top: 10px; }
+    .hint-toggle {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+      background: #111f30; border: 1px solid #2a4060; color: #9ab8d0;
+      padding: 3px 10px; border-radius: 2px; cursor: pointer;
+    }
+    .hint-toggle.open { color: var(--accent); border-color: var(--accent); }
+    .hint-content { display: none; margin-top: 8px; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+    .hint-content.show { display: flex; }
     .rule-badge {
       font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
       padding: 3px 8px; border-radius: 2px; white-space: nowrap; flex-shrink: 0;
