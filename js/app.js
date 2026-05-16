@@ -9,19 +9,32 @@ let state = {
   emergency: { current: 0, answered: false, correct: 0, total: 0 }
 };
 
-const _NAV_KEY = 'chairfly-nav';
-function _saveNavKey(key, val) {
-  try {
-    const obj = JSON.parse(localStorage.getItem(_NAV_KEY) || '{}');
-    obj[key] = val;
-    localStorage.setItem(_NAV_KEY, JSON.stringify(obj));
-  } catch(e) {}
+let currentView = 'checklist';
+let currentClMode = 'reference';
+let currentRadioMode = 'chips';
+let _restoringNav = false;
+
+function updateHash() {
+  if (_restoringNav) return;
+  const parts = [];
+  if (currentAircraft !== 'c172') parts.push(currentAircraft);
+  parts.push(currentView);
+  if (currentView === 'checklist') {
+    if (currentClMode !== 'reference' || state.checklist.phase !== 'preflight') {
+      parts.push(currentClMode);
+      parts.push(state.checklist.phase);
+    }
+  } else if (currentView === 'radio') {
+    if (currentRadioMode === 'atis') parts.push('atis');
+    else if (radioInputMode === 'speak') parts.push('speak');
+  }
+  const hash = '#' + parts.join('/');
+  if (location.hash !== hash) history.replaceState(null, '', hash);
 }
 
 function switchAircraft(key, btn) {
   if (key === currentAircraft) return;
   currentAircraft = key;
-  _saveNavKey('aircraft', key);
   const ac = ALL_AIRCRAFT[key];
   CHECKLISTS = ac.checklists;
   EMERGENCIES = ac.emergencies;
@@ -48,6 +61,7 @@ function switchAircraft(key, btn) {
   // Reset procedure airport to trigger rebuild with new aircraft
   procState.currentProc = null;
   showProcScreen('proc-screen-setup');
+  updateHash();
 }
 
 function switchView(name, btn) {
@@ -55,7 +69,8 @@ function switchView(name, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   btn.classList.add('active');
-  _saveNavKey('view', name);
+  currentView = name;
+  updateHash();
 }
 
 // ── CHECKLIST ──
@@ -69,12 +84,12 @@ function initChecklist() {
 
 function selectPhase(phase) {
   state.checklist.phase = phase;
-  _saveNavKey('clPhase', phase);
   document.querySelectorAll('.phase-btn').forEach((b, i) => {
     b.classList.toggle('active', Object.keys(CHECKLISTS)[i] === phase);
   });
   document.getElementById('complete-banner').classList.remove('show');
   renderChecklist();
+  updateHash();
 }
 
 function renderChecklist() {
@@ -1528,7 +1543,8 @@ function setClMode(mode, btn) {
   document.getElementById('cl-reference-mode').style.display = mode === 'reference' ? '' : 'none';
   document.getElementById('cl-recall-mode').style.display = mode === 'recall' ? '' : 'none';
   if (mode === 'recall') initSeqRecall();
-  _saveNavKey('clMode', mode);
+  currentClMode = mode;
+  updateHash();
 }
 
 function initSeqRecall() {
@@ -1891,12 +1907,13 @@ function setRadioMode(mode, btn) {
   document.getElementById('radio-calls-mode').style.display = mode === 'chips' ? '' : 'none';
   document.getElementById('radio-atis-mode').style.display = mode === 'atis' ? '' : 'none';
   if (mode === 'atis' && !atisState.generated) newATIS();
-  _saveNavKey('radioMode', mode);
+  currentRadioMode = mode;
+  updateHash();
 }
 
 function setRadioInputMode(mode) {
   radioInputMode = mode;
-  _saveNavKey('radioInputMode', mode);
+  updateHash();
   document.getElementById('rbtn-chips').classList.toggle('active', mode === 'chips');
   document.getElementById('rbtn-speak').classList.toggle('active', mode === 'speak');
   document.getElementById('radio-chip-area').style.display = mode === 'chips' ? '' : 'none';
@@ -2357,40 +2374,57 @@ function playATISAgain() {
   playATIS();
 }
 
+// Hash scheme: #[aircraft/]view[/sub1[/sub2]]
+// Examples: #radio/atis  #checklist/recall/runup  #cherokee140/emergency
 function restoreNav() {
-  let saved;
-  try { saved = JSON.parse(localStorage.getItem(_NAV_KEY) || '{}'); } catch(e) { return; }
+  const raw = location.hash.slice(1);
+  _restoringNav = true;
 
-  // Aircraft must be first — it rebuilds CHECKLISTS
-  if (saved.aircraft && saved.aircraft !== currentAircraft) {
-    const btn = [...document.querySelectorAll('.aircraft-btn')]
-      .find(b => b.getAttribute('onclick').includes(`'${saved.aircraft}'`));
-    if (btn) switchAircraft(saved.aircraft, btn);
+  const parts = raw ? raw.split('/') : [];
+  let i = 0;
+
+  // Optional aircraft prefix
+  if (parts[i] === 'c172' || parts[i] === 'cherokee140') {
+    const aircraft = parts[i++];
+    if (aircraft !== currentAircraft) {
+      const btn = [...document.querySelectorAll('.aircraft-btn')]
+        .find(b => b.getAttribute('onclick').includes(`'${aircraft}'`));
+      if (btn) switchAircraft(aircraft, btn);
+    }
   }
 
-  // Phase before cl-mode (initSeqRecall reads state.checklist.phase)
-  if (saved.clPhase && saved.clPhase !== state.checklist.phase) selectPhase(saved.clPhase);
+  const view = parts[i++] || 'checklist';
 
-  if (saved.clMode && saved.clMode !== 'reference') {
-    const btn = [...document.querySelectorAll('#view-checklist .cl-mode-btn')]
-      .find(b => b.getAttribute('onclick').includes(`'${saved.clMode}'`));
-    if (btn) setClMode(saved.clMode, btn);
+  if (view === 'checklist') {
+    const clMode  = parts[i]     || 'reference';
+    const clPhase = parts[i + 1] || 'preflight';
+    // Phase before mode — initSeqRecall reads state.checklist.phase
+    if (clPhase !== state.checklist.phase) selectPhase(clPhase);
+    if (clMode !== 'reference') {
+      const btn = [...document.querySelectorAll('#view-checklist .cl-mode-btn')]
+        .find(b => b.getAttribute('onclick').includes(`'${clMode}'`));
+      if (btn) setClMode(clMode, btn);
+    }
+  } else if (view === 'radio') {
+    const sub = parts[i] || '';
+    if (sub === 'atis') {
+      const btn = [...document.querySelectorAll('#view-radio .cl-mode-btn')]
+        .find(b => b.getAttribute('onclick').includes("'atis'"));
+      if (btn) setRadioMode('atis', btn);
+    } else if (sub === 'speak') {
+      setRadioInputMode('speak');
+    }
   }
 
-  if (saved.radioMode && saved.radioMode !== 'chips') {
-    const btn = [...document.querySelectorAll('#view-radio .cl-mode-btn')]
-      .find(b => b.getAttribute('onclick').includes(`'${saved.radioMode}'`));
-    if (btn) setRadioMode(saved.radioMode, btn);
-  }
-
-  if (saved.radioInputMode && saved.radioInputMode !== 'chips') setRadioInputMode(saved.radioInputMode);
-
-  // View last — ensures correct tab is visible
-  if (saved.view && saved.view !== 'checklist') {
+  // Switch tab last so the right panel is visible
+  if (view !== 'checklist') {
     const btn = [...document.querySelectorAll('.nav-btn')]
-      .find(b => b.getAttribute('onclick').includes(`'${saved.view}'`));
-    if (btn) switchView(saved.view, btn);
+      .find(b => b.getAttribute('onclick').includes(`'${view}'`));
+    if (btn) switchView(view, btn);
   }
+
+  _restoringNav = false;
+  updateHash(); // canonicalize URL
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2399,4 +2433,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initEmergency();
   lookupAirport();
   restoreNav();
+  window.addEventListener('hashchange', restoreNav);
 });
