@@ -20,6 +20,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Stamp cache version
+        run: sed -i "s/COMMIT_SHA/${GITHUB_SHA:0:8}/" sw.js
+
       - name: Sync to S3
         run: |
           aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET }} \

@@ -1,4 +1,4 @@
-const CACHE = 'chairfly-v2';
+const CACHE = 'chairfly-COMMIT_SHA';
 const PRECACHE = [
   '/',
   '/index.html',
