@@ -25,7 +25,7 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Cache-first for same-origin assets; network-first for Google Fonts
+  // Fonts: cache-first (truly static, never change)
   if (e.request.url.includes('fonts.googleapis.com') || e.request.url.includes('fonts.gstatic.com')) {
     e.respondWith(
       caches.open(CACHE).then(c =>
@@ -36,7 +36,13 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
+  // App files: network-first — always serve fresh when online, cache as offline fallback
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request)
+      .then(res => {
+        if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        return res;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
