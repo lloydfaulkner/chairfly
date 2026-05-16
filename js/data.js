@@ -342,6 +342,7 @@ const RADIO_SCENARIOS = [
     ],
     ideal: 'RDU Ground, Cessna Four Five Two One Golf, at Signature, with information Alpha, VFR departure to the southeast, request taxi.',
     words: ['RDU Ground', 'Cessna Four Five Two One Golf', 'at Signature', 'with information Alpha', 'VFR departure to the southeast', 'request taxi'],
+    speechOptional: ['to', 'the'],
     acceptedVariants: [
       ['RDU Ground', 'Cessna Four Five Two One Golf', 'with information Alpha', 'at Signature', 'VFR departure to the southeast', 'request taxi'],
     ],
@@ -366,6 +367,7 @@ const RADIO_SCENARIOS = [
     ],
     ideal: 'Caldwell traffic, Cessna Four Five Two One Golf, ten miles east, three thousand five hundred, inbound landing runway two seven, Caldwell.',
     words: ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'ten miles east', 'three thousand five hundred', 'inbound landing runway two seven', 'Caldwell'],
+    speechOptional: ['landing'],
     acceptedVariants: [
       ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'three thousand five hundred', 'ten miles east', 'inbound landing runway two seven', 'Caldwell'],
     ],

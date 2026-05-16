@@ -1122,6 +1122,7 @@
     .speech-word.match { border-color: var(--green); color: var(--green); background: #0a2018; }
     .speech-word.miss { border-color: var(--red); color: var(--red); background: #1f0c0c; }
     .speech-word.close { border-color: var(--warn); color: var(--warn); background: #1f1a08; }
+    .speech-word.optional { border-color: #664e00; color: #998200; background: #111000; }
 
     /* â”€â”€ ATIS DECODER â”€â”€ */
     .atis-card {

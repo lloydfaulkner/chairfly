@@ -2000,7 +2000,7 @@ function checkSpeechCall() {
   }
 
   const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
-  const result = scoreSpeechCall(speechState.transcript, s.ideal, s.words);
+  const result = scoreSpeechCall(speechState.transcript, s.ideal, s.words, s.speechOptional || []);
 
   const fb = document.getElementById('radio-feedback');
   fb.classList.add('show');
@@ -2032,7 +2032,7 @@ function checkSpeechCall() {
     </div>` : '');
 }
 
-function scoreSpeechCall(spoken, ideal, words) {
+function scoreSpeechCall(spoken, ideal, words, optionalWords = []) {
   const normalize = s => {
     let t = s.toLowerCase().replace(/[^a-z0-9\s]/g, '');
     // single digit words → digits
@@ -2065,6 +2065,7 @@ function scoreSpeechCall(spoken, ideal, words) {
   const spokenWords = spokenNorm.split(/\s+/);
   const spokenDigits = spokenNorm.replace(/\D/g, '');
 
+  const optionalSet = new Set(optionalWords.flatMap(w => normalize(w).split(/\s+/)));
   const keyWords = words.flatMap(w => normalize(w).split(/\s+/));
 
   const wordResults = keyWords.map(kw => {
@@ -2078,15 +2079,19 @@ function scoreSpeechCall(spoken, ideal, words) {
     // aircraft type alias: "Cessna" and "Skyhawk" are both valid per AIM 4-2-4
     if (CALLSIGN_ALIASES[kw] && spokenWords.includes(CALLSIGN_ALIASES[kw]))
       return { word: kw, status: 'match' };
+    // optional word not said: yellow, excluded from score denominator
+    if (optionalSet.has(kw)) return { word: kw, status: 'optional' };
     const close = spokenWords.some(sw =>
       sw.length > 2 && (sw.startsWith(kw.slice(0,3)) || kw.startsWith(sw.slice(0,3)))
     );
     return { word: kw, status: close ? 'close' : 'miss' };
   });
 
-  const matched = wordResults.filter(w => w.status === 'match').length;
-  const close = wordResults.filter(w => w.status === 'close').length;
-  const score = (matched + close * 0.5) / keyWords.length;
+  // score against required words only — optional words excluded from denominator
+  const required = wordResults.filter(w => w.status !== 'optional');
+  const matched = required.filter(w => w.status === 'match').length;
+  const close = required.filter(w => w.status === 'close').length;
+  const score = required.length > 0 ? (matched + close * 0.5) / required.length : 1;
 
   return { score, words: wordResults };
 }
