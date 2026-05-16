@@ -301,10 +301,14 @@ function clearRadioCall() {
   document.getElementById('radio-feedback').classList.remove('show');
 }
 
+function radioCallMatches(builtCall, step) {
+  const allAccepted = [step.words, ...(step.acceptedVariants || [])];
+  return allAccepted.some(v => builtCall.join(',') === v.join(','));
+}
+
 function checkRadioCall() {
   const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
-  const allAccepted = [s.words, ...(s.acceptedVariants || [])];
-  const isCorrect = allAccepted.some(v => state.radio.builtCall.join(',') === v.join(','));
+  const isCorrect = radioCallMatches(state.radio.builtCall, s);
 
   const usedDistractors = state.radio.builtCall
     .map(w => (s.distractors || []).find(d => d.text === w))
@@ -1415,7 +1419,7 @@ function checkProcRadio() {
   if (procState.answered) return;
   procState.answered = true;
   const step = procState.currentProc.steps[procState.currentStep];
-  const isCorrect = procRadioState.built.join(',') === step.words.join(',');
+  const isCorrect = radioCallMatches(procRadioState.built, step);
 
   // Find any distractors the user included
   const usedDistractors = procRadioState.built
