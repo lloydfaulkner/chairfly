@@ -355,12 +355,14 @@ const RADIO_SCENARIOS = [
   },
   {
     type: 'Pattern Entry — Uncontrolled',
-    situation: "Approaching an uncontrolled airport (CTAF). You're 10 miles out, inbound for runway 27.",
+    situation: "You're inbound to Caldwell Airport (KCDW), 10 miles east at 3,500 ft. Uncontrolled field — announce on CTAF.",
     data: [
+      { label: 'Airport', value: 'Caldwell', gloss: null },
       { label: 'CTAF', value: '122.8', gloss: 'CTAF' },
-      { label: 'Tail', value: 'N4521G', gloss: 'Tail' },
+      { label: 'Runway', value: '27', gloss: 'Runway' },
       { label: 'Position', value: '10 miles east', gloss: null },
       { label: 'Altitude', value: '3,500 ft', gloss: null },
+      { label: 'Tail', value: 'N4521G', gloss: 'Tail' },
     ],
     ideal: 'Caldwell traffic, Cessna Four Five Two One Golf, ten miles east, three thousand five hundred, inbound landing runway two seven, Caldwell.',
     words: ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'ten miles east', 'three thousand five hundred', 'inbound landing runway two seven', 'Caldwell'],
@@ -400,12 +402,13 @@ const RADIO_SCENARIOS = [
   },
   {
     type: 'Base Leg Call — CTAF',
-    situation: "You're on left base for runway 27 at an uncontrolled field.",
+    situation: "You're on left base for runway 27 at Caldwell Airport (KCDW), an uncontrolled field.",
     data: [
+      { label: 'Airport', value: 'Caldwell', gloss: null },
       { label: 'CTAF', value: '122.8', gloss: 'CTAF' },
-      { label: 'Tail', value: 'N4521G', gloss: 'Tail' },
       { label: 'Leg', value: 'Left base', gloss: 'Leg' },
       { label: 'Runway', value: '27', gloss: 'Runway' },
+      { label: 'Tail', value: 'N4521G', gloss: 'Tail' },
     ],
     ideal: 'Caldwell traffic, Cessna Four Five Two One Golf, left base runway two seven, Caldwell.',
     words: ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'left base runway two seven', 'Caldwell'],
