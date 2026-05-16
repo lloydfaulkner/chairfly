@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force -Path \"d:\\\\Github\\\\chairfly\\\\css\",\"d:\\\\Github\\\\chairfly\\\\js\",\".github\\\\workflows\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"Dirs created\")",
+      "Bash(git add *)"
+    ]
+  }
+}
