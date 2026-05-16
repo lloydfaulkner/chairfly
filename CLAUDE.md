@@ -72,6 +72,12 @@ backgrounds unreadable. This has caused repeated contrast issues.
 ### Navigation
 - Aircraft switcher (top bar): C172 Skyhawk | Cherokee 140
 - Tab bar: Checklist | Radio | Procedures | Emergency
+- URL hash scheme: `#[aircraft/]view[/sub1[/sub2]]`
+  - Examples: `#radio/atis`, `#checklist/recall/runup`, `#cherokee140/emergency`
+  - Procedures: `#procedures/ICAO/procId` (e.g. `#procedures/KUZA/pattern_landing`)
+  - `updateHash()` writes the hash on every state change
+  - `restoreNav()` parses hash on load and on `hashchange` event
+  - `_restoringNav` flag suppresses hash writes during restore to prevent URL flicker
 
 ### Checklist tab
 - Two modes toggled by segmented control: Reference | Sequence Recall
@@ -193,6 +199,8 @@ Array of scenario objects:
 data[]: array of { label, value, gloss } for the info cards
 distractors[]: array of { text, why } — 2-3 per scenario
 rule: { repeats: bool, why: string }
+words[]: chip strings; individual entries may carry `optional: true` — these
+  show as yellow in speech grading and are excluded from the score denominator
 
 CTAF calls bookend with airport name (repeats: true)
 Controlled field calls do NOT repeat airport name (repeats: false)
@@ -241,6 +249,11 @@ split into individual keyWords and checked against normalized spoken words.
 - Abbreviated form ("Two One Golf") only valid after ATC establishes —
   not used in initial-contact scenarios, would score low intentionally
 
+**Optional words:**
+- Words with `optional: true` in words[] render as dim yellow (`.speech-word.optional`)
+- Excluded from score denominator — silence on an optional word cannot hurt the grade
+- Currently optional: "to"/"the" in VFR departure call; "landing" in pattern entry call
+
 **Intentionally grades low:**
 - "N4521G" as a raw alphanumeric — not phonetic, distractor card explains why
 
@@ -267,9 +280,18 @@ split into individual keyWords and checked against normalized spoken words.
 - GitHub secrets needed: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
   AWS_S3_BUCKET, AWS_CLOUDFRONT_DISTRIBUTION_ID
 
+### Service worker caching strategy
+- App files (index.html, app.js, styles.css, sw.js, manifest.json): **network-first**
+  — always fetches fresh when online, falls back to cache when offline
+  — prevents the two-reload stale-asset problem that cache-first caused
+- External fonts: cache-first (they never change)
+- `sw.js` contains a `COMMIT_SHA` placeholder for the cache version key
+  — `deploy.yml` replaces it with the first 8 chars of `GITHUB_SHA` before S3 sync
+  — every push produces a unique cache key; do NOT hardcode a version string there
+
 ### GitHub Actions (deploy.yml)
 Trigger: push to main
-Steps: checkout → configure AWS credentials → sync to S3 → invalidate CloudFront
+Steps: checkout → configure AWS credentials → replace COMMIT_SHA in sw.js → sync to S3 → invalidate CloudFront
 
 ## Upcoming features (not yet built)
 - Weather go/no-go decision tool
