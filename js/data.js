@@ -1,4 +1,4 @@
-﻿const ALL_AIRCRAFT = {
+const ALL_AIRCRAFT = {
   c172: {
     name: 'C172 Skyhawk',
     label: 'C172',
@@ -7,99 +7,99 @@
   preflight: {
     label: 'Preflight',
     items: [
-      { action: 'Hobbs / Tach', value: 'CHECK', note: 'Record times for billing and maintenance tracking', why: 'Hobbs tracks engine time for billing and maintenance intervals. Tach records RPM-weighted time used for engine overhaul scheduling. Checking them before and after flight lets you log accurate times and catch discrepancies.', tip: 'Write it down immediately â€” don\'t trust memory after a flight.', zone: 'sixpack' },
-      { action: 'Fuel Quantity', value: 'CHECK VISUALLY', note: 'Always visually confirm â€” gauges can be inaccurate', why: 'Fuel gauges in GA aircraft are notoriously unreliable and are only required to be accurate at empty. A visual check through the fuel cap is the only way to know how much fuel you actually have. Countless accidents trace back to trusting gauges alone.', tip: 'Acronym: CIGAR â€” Controls, Instruments, Gas, Attitude, Runup. Gas = visual fuel check.', tipType: 'acronym', acronym: 'CIGAR', acronymDef: 'Controls Â· Instruments Â· Gas (visual) Â· Attitude Â· Runup â€” a classic preflight flow many pilots use', zone: 'oil' },
-      { action: 'Fuel Caps', value: 'SECURE & VENTED', note: 'Both caps tight; ensure vents face forward', why: 'An unsecured fuel cap can allow fuel to siphon out in flight, especially at cruise. Caps must also be vented (a small hole) so air replaces fuel drawn to the engine â€” a blocked vent causes fuel starvation.', tip: 'After reinstalling: give the cap a firm twist, then tug up. If it moves, it\'s not locked.', zone: 'oil' },
-      { action: 'Fuel Sump (each)', value: 'DRAIN & CHECK', note: 'Check for water (cloudy/bubbles) and correct color (blue/100LL)', why: 'Water is denser than aviation fuel and sinks to the lowest points (sumps). Even small amounts of water can cause engine stoppage. You drain a small sample from each sump drain and look for cloudiness, separation, or bubbles â€” all signs of water contamination.', tip: '100LL fuel is dyed BLUE. If your sample looks clear, purple, or wrong â€” don\'t fly.', zone: 'oil' },
-      { action: 'Oil Quantity', value: 'MIN 6 QTS', note: 'Check with dipstick; add if below 6 quarts', why: 'Oil lubricates, cools, and seals the engine. The C172 holds 8 quarts maximum. Below 6 quarts, oil temperature rises faster and the engine risks damage on longer flights. Always check with a dipstick â€” sight glasses can be misleading.', tip: 'Touch the dipstick to the back of your hand â€” if it\'s cold, the engine hasn\'t run. If warm, wait 5 min for accurate reading.', zone: 'oil' },
+      { action: 'Hobbs / Tach', value: 'CHECK', note: 'Record times for billing and maintenance tracking', why: 'Hobbs tracks engine time for billing and maintenance intervals. Tach records RPM-weighted time used for engine overhaul scheduling. Checking them before and after flight lets you log accurate times and catch discrepancies.', tip: 'Write it down immediately — don\'t trust memory after a flight.', zone: 'sixpack' },
+      { action: 'Fuel Quantity', value: 'CHECK VISUALLY', note: 'Always visually confirm — gauges can be inaccurate', why: 'Fuel gauges in GA aircraft are notoriously unreliable and are only required to be accurate at empty. A visual check through the fuel cap is the only way to know how much fuel you actually have. Countless accidents trace back to trusting gauges alone.', tip: 'Acronym: CIGAR — Controls, Instruments, Gas, Attitude, Runup. Gas = visual fuel check.', tipType: 'acronym', acronym: 'CIGAR', acronymDef: 'Controls · Instruments · Gas (visual) · Attitude · Runup — a classic preflight flow many pilots use', zone: 'oil' },
+      { action: 'Fuel Caps', value: 'SECURE & VENTED', note: 'Both caps tight; ensure vents face forward', why: 'An unsecured fuel cap can allow fuel to siphon out in flight, especially at cruise. Caps must also be vented (a small hole) so air replaces fuel drawn to the engine — a blocked vent causes fuel starvation.', tip: 'After reinstalling: give the cap a firm twist, then tug up. If it moves, it\'s not locked.', zone: 'oil' },
+      { action: 'Fuel Sump (each)', value: 'DRAIN & CHECK', note: 'Check for water (cloudy/bubbles) and correct color (blue/100LL)', why: 'Water is denser than aviation fuel and sinks to the lowest points (sumps). Even small amounts of water can cause engine stoppage. You drain a small sample from each sump drain and look for cloudiness, separation, or bubbles — all signs of water contamination.', tip: '100LL fuel is dyed BLUE. If your sample looks clear, purple, or wrong — don\'t fly.', zone: 'oil' },
+      { action: 'Oil Quantity', value: 'MIN 6 QTS', note: 'Check with dipstick; add if below 6 quarts', why: 'Oil lubricates, cools, and seals the engine. The C172 holds 8 quarts maximum. Below 6 quarts, oil temperature rises faster and the engine risks damage on longer flights. Always check with a dipstick — sight glasses can be misleading.', tip: 'Touch the dipstick to the back of your hand — if it\'s cold, the engine hasn\'t run. If warm, wait 5 min for accurate reading.', zone: 'oil' },
       { action: 'Oil Cap', value: 'SECURE', note: 'Hand-tight and locked', why: 'An open or loose oil cap sprays hot oil over the engine and windshield within seconds of startup. This has caused complete loss of visibility and engine damage in accidents.', tip: 'After every oil check, say out loud: "Cap is on and locked." The verbalization catches the step when distracted.', zone: 'oil' },
-      { action: 'Pitot Tube', value: 'UNOBSTRUCTED', note: 'Check for insects, debris, cover removed', why: 'The pitot tube measures dynamic air pressure to drive the airspeed indicator. Blockage â€” often from insects or a forgotten cover â€” gives false airspeed readings. Pilots have died flying with a blocked pitot thinking they were too slow.', tip: 'Pitot covers are usually red or orange with a "Remove Before Flight" streamer. If you installed it, YOU remove it.', zone: 'pitot' },
-      { action: 'Static Ports', value: 'CLEAR', note: 'Both sides of fuselage; critical for altimeter accuracy', why: 'Static ports measure ambient air pressure for the altimeter, VSI, and airspeed indicator. A blocked static port freezes the altimeter at the altitude where it blocked and makes VSI read zero. Run your finger along both ports â€” look for tape, bugs, or mud.', tip: 'Static ports are usually flush holes on both sides of the fuselage mid-section. They\'re easy to miss â€” deliberately run your fingers over them.', zone: 'static' },
-      { action: 'Control Surfaces', value: 'FREE & CORRECT', note: 'Push/pull each; check for full range, no binding', why: 'You\'re verifying that all flight controls move freely to full deflection AND move in the correct direction. Reversed controls (from improper rigging or maintenance) have caused fatal accidents. You should also feel for any unusual resistance or binding.', tip: 'Move the yoke right â€” look for right aileron UP, left aileron DOWN. Verify visually, not just by feel.', zone: 'controls' },
-      { action: 'Tires', value: 'CONDITION & INFLATION', note: 'Check for flat spots, cuts, proper inflation', why: 'Underinflated or damaged tires can fail on landing or cause ground handling problems, especially in crosswinds. Flat spots indicate hard braking. Check all three tires including the nosewheel.', tip: 'Press your thumb into the tire sidewall â€” proper inflation should feel firm. Any visible cord or deep cuts: do not fly.', zone: 'tires' },
+      { action: 'Pitot Tube', value: 'UNOBSTRUCTED', note: 'Check for insects, debris, cover removed', why: 'The pitot tube measures dynamic air pressure to drive the airspeed indicator. Blockage — often from insects or a forgotten cover — gives false airspeed readings. Pilots have died flying with a blocked pitot thinking they were too slow.', tip: 'Pitot covers are usually red or orange with a "Remove Before Flight" streamer. If you installed it, YOU remove it.', zone: 'pitot' },
+      { action: 'Static Ports', value: 'CLEAR', note: 'Both sides of fuselage; critical for altimeter accuracy', why: 'Static ports measure ambient air pressure for the altimeter, VSI, and airspeed indicator. A blocked static port freezes the altimeter at the altitude where it blocked and makes VSI read zero. Run your finger along both ports — look for tape, bugs, or mud.', tip: 'Static ports are usually flush holes on both sides of the fuselage mid-section. They\'re easy to miss — deliberately run your fingers over them.', zone: 'static' },
+      { action: 'Control Surfaces', value: 'FREE & CORRECT', note: 'Push/pull each; check for full range, no binding', why: 'You\'re verifying that all flight controls move freely to full deflection AND move in the correct direction. Reversed controls (from improper rigging or maintenance) have caused fatal accidents. You should also feel for any unusual resistance or binding.', tip: 'Move the yoke right — look for right aileron UP, left aileron DOWN. Verify visually, not just by feel.', zone: 'controls' },
+      { action: 'Tires', value: 'CONDITION & INFLATION', note: 'Check for flat spots, cuts, proper inflation', why: 'Underinflated or damaged tires can fail on landing or cause ground handling problems, especially in crosswinds. Flat spots indicate hard braking. Check all three tires including the nosewheel.', tip: 'Press your thumb into the tire sidewall — proper inflation should feel firm. Any visible cord or deep cuts: do not fly.', zone: 'tires' },
       { action: 'Brakes', value: 'CHECK', note: 'Look for fluid leaks on struts and brake lines', why: 'Brake fluid leaks can cause brake failure on landing. Look for wet spots or staining around the brake calipers and brake lines. You\'ll also check brake function during taxi.', tip: 'Red or brown fluid on the wheel fairing or strut = brake fluid. Hydraulic brake fluid is a show-stopper.', zone: 'tires' },
-      { action: 'Tie-downs / Chocks', value: 'REMOVED', note: 'Both tie-down ropes and any wheel chocks', why: 'Attempting to taxi or take off with tie-downs attached can cause structural damage or flip the aircraft. This is embarrassingly common â€” even experienced pilots have done it. Chocks left in place prevent taxi.', tip: 'Walk completely around the aircraft during your preflight. You\'ll naturally see tie-downs if they\'re still on. Never skip the walk-around.', zone: 'tires' },
+      { action: 'Tie-downs / Chocks', value: 'REMOVED', note: 'Both tie-down ropes and any wheel chocks', why: 'Attempting to taxi or take off with tie-downs attached can cause structural damage or flip the aircraft. This is embarrassingly common — even experienced pilots have done it. Chocks left in place prevent taxi.', tip: 'Walk completely around the aircraft during your preflight. You\'ll naturally see tie-downs if they\'re still on. Never skip the walk-around.', zone: 'tires' },
     ]
   },
   beforestart: {
     label: 'Before Start',
     items: [
-      { action: 'Preflight Inspection', value: 'COMPLETE', note: 'Confirm walk-around is done', why: 'A verbal confirmation that you\'ve completed the exterior walk-around. It\'s easy to get distracted and sit down before finishing â€” this step forces a conscious check.', tip: 'If you can\'t remember completing a specific preflight item, go back and check it. Memory is not a substitute for action.', zone: 'tires' },
+      { action: 'Preflight Inspection', value: 'COMPLETE', note: 'Confirm walk-around is done', why: 'A verbal confirmation that you\'ve completed the exterior walk-around. It\'s easy to get distracted and sit down before finishing — this step forces a conscious check.', tip: 'If you can\'t remember completing a specific preflight item, go back and check it. Memory is not a substitute for action.', zone: 'tires' },
       { action: 'Hobbs/Tach', value: 'NOTE TIME', note: 'Start time logged', why: 'Logging your start Hobbs time lets you compute accurate flight time for billing, logbook, and maintenance tracking.', tip: 'Take a photo of the Hobbs/Tach with your phone before engine start. Quick, accurate, and searchable later.', zone: 'sixpack' },
       { action: 'Seats & Belts', value: 'ADJUST & LOCK', note: 'Both occupants; seat rails locked', why: 'Seats that aren\'t properly locked on their rails can slide back on takeoff rotation, making it impossible to reach the controls. This has caused accidents on takeoff. The loud click means it\'s locked.', tip: 'After adjusting: grab the seat back and try to push it rearward forcefully. No movement = locked.', zone: 'seats' },
-      { action: 'Brakes', value: 'TEST & SET', note: 'Press firmly; hold during start', why: 'You verify brake function before you have engine power. Holding brakes during start keeps the aircraft stationary while the prop wash is generating significant force. Release brakes before advancing throttle for taxi.', tip: 'Press and hold both toe brakes â€” they should feel firm with no spongy travel. Spongy = air in the lines.', zone: 'tires' },
+      { action: 'Brakes', value: 'TEST & SET', note: 'Press firmly; hold during start', why: 'You verify brake function before you have engine power. Holding brakes during start keeps the aircraft stationary while the prop wash is generating significant force. Release brakes before advancing throttle for taxi.', tip: 'Press and hold both toe brakes — they should feel firm with no spongy travel. Spongy = air in the lines.', zone: 'tires' },
       { action: 'Circuit Breakers', value: 'IN (CHECK)', note: 'All breakers in and set', why: 'A popped circuit breaker means that circuit is unprotected or non-functional. If a breaker is out before start, you have an electrical issue that needs to be resolved before flight.', tip: 'Run your eyes along the CB panel left to right. Any breaker sticking out further than the rest is popped.', zone: 'cb' },
-      { action: 'Electrical Equipment', value: 'OFF', note: 'Reduce electrical load during start', why: 'The starter motor draws enormous current. Additional electrical loads during start can cause voltage spikes that damage avionics or drain the battery, making start more difficult. Turn everything off, then add load after start.', tip: 'Think of it like starting a car in winter â€” you turn off A/C and heated seats first.', zone: 'master' },
-      { action: 'Avionics Master', value: 'OFF', note: 'Protect avionics from start surge', why: 'Engine start creates a momentary voltage spike that can damage sensitive avionics â€” GPS units, radios, and glass panels are vulnerable. The avionics master isolates them during this surge. Turn it on after the engine is running and stable.', tip: 'The avionics master is separate from the main electrical master. It\'s usually a toggle above or near the radio stack. "Avionics on LAST before taxi, off FIRST before shutdown."', zone: 'avionics' },
-      { action: 'Fuel Selector', value: 'BOTH', note: 'Ensures both tanks feed engine during start', why: 'BOTH position draws from both tanks simultaneously, ensuring adequate fuel flow. Starting on a single tank risks fuel starvation if that tank is lower than expected or has a problem.', tip: 'Reach down and physically move the selector to BOTH â€” then look at it. Don\'t just reach and assume.', zone: 'fuel' },
+      { action: 'Electrical Equipment', value: 'OFF', note: 'Reduce electrical load during start', why: 'The starter motor draws enormous current. Additional electrical loads during start can cause voltage spikes that damage avionics or drain the battery, making start more difficult. Turn everything off, then add load after start.', tip: 'Think of it like starting a car in winter — you turn off A/C and heated seats first.', zone: 'master' },
+      { action: 'Avionics Master', value: 'OFF', note: 'Protect avionics from start surge', why: 'Engine start creates a momentary voltage spike that can damage sensitive avionics — GPS units, radios, and glass panels are vulnerable. The avionics master isolates them during this surge. Turn it on after the engine is running and stable.', tip: 'The avionics master is separate from the main electrical master. It\'s usually a toggle above or near the radio stack. "Avionics on LAST before taxi, off FIRST before shutdown."', zone: 'avionics' },
+      { action: 'Fuel Selector', value: 'BOTH', note: 'Ensures both tanks feed engine during start', why: 'BOTH position draws from both tanks simultaneously, ensuring adequate fuel flow. Starting on a single tank risks fuel starvation if that tank is lower than expected or has a problem.', tip: 'Reach down and physically move the selector to BOTH — then look at it. Don\'t just reach and assume.', zone: 'fuel' },
     ]
   },
   start: {
     label: 'Engine Start',
     items: [
       { action: 'Beacon', value: 'ON', note: 'Alert others you are about to start', why: 'The rotating beacon is the universal signal that the engine is running or about to start. Ground crew, linemen, and other pilots will see it and stay clear of the propeller arc. It must be on before you engage the starter.', tip: 'Beacon = engine running. It\'s the first thing on before start, last thing off after shutdown.', zone: 'beacon' },
-      { action: 'Throttle', value: '1/4â€“1/2 INCH OPEN', note: 'Slightly open for start', why: 'A fully closed throttle can make the engine difficult to start and prone to loading up. A slightly open throttle provides the right fuel/air mix for initial combustion. Too much throttle and the engine may race uncontrollably after starting.', tip: 'About the width of two fingers pushed in from fully closed. You\'ll develop a feel for it.', zone: 'throttle' },
-      { action: 'Mixture', value: 'RICH', note: 'Full rich for sea level; lean as needed at altitude', why: 'Rich mixture provides maximum fuel for start. Carbureted engines like the C172 need a rich mixture for cold starts. At higher density altitudes (mountains, hot days) you\'ll lean slightly even for start â€” but full rich at sea level is standard.', tip: 'Red knob, full IN = rich. Remember: red = fuel (rich). You lean it OUT to reduce fuel.', zone: 'mixture' },
-      { action: 'Carb Heat', value: 'COLD', note: 'Off during start â€” only use in flight if icing suspected', why: 'Carb heat on during start reduces engine power and can disrupt the fuel/air mixture needed for starting. It also bypasses the air filter, allowing unfiltered air into the engine. Off for start â€” on in flight if you suspect carb ice.', tip: 'Carb heat = warm unfiltered air. Only useful when you suspect ice. On the ground = off.', zone: 'carbheat' },
-      { action: 'Prime (if cold)', value: '2â€“6 STROKES', note: 'Warm engine needs less; don\'t over-prime', why: 'The primer injects raw fuel directly into the intake manifold, making cold starts easier when fuel vaporization is poor. Over-priming floods the engine with excess fuel, making start very difficult. Warm engines need zero priming.', tip: 'Rule of thumb: cold outside = more primes. Warm engine or hot day = none. If it\'s flooded, mixture to idle-cutoff, throttle full open, crank to clear it.', zone: 'primer' },
-      { action: 'Primer', value: 'IN & LOCKED', note: 'Must be locked in before start', why: 'An unlocked primer allows air to bypass the carburetor, causing a lean stumble or rough running. Engine vibration can also cause an unlocked primer to work itself in or out, creating unpredictable fuel flow.', tip: 'Push IN fully, then twist clockwise to lock. You should feel a positive stop. Tug it â€” it should not come out.', zone: 'primer' },
-      { action: 'Propeller Area', value: 'CLEAR', note: 'Call "CLEAR PROP" audibly before engaging starter', why: 'The propeller is invisible when spinning. Anyone near the prop arc when the engine starts will be seriously injured or killed. You call "CLEAR PROP" out loud and check visually before touching the starter.', tip: 'Open the window, lean out, look both ways, then call it. Don\'t call it just to hear yourself â€” actually look.', zone: 'oil' },
-      { action: 'Master Switch', value: 'ON', note: 'Both ALT and BAT switches', why: 'The master switch has two halves: BAT (battery) powers the electrical system, ALT (alternator) connects the alternator to the bus. Both must be on. Some pilots turn BAT on first to confirm voltage before connecting the alternator.', tip: 'It\'s a split rocker â€” left side ALT, right side BAT. Flip both up together for ON.', zone: 'master' },
-      { action: 'Ignition', value: 'START', note: 'Release when engine catches; don\'t crank more than 10s', why: 'The ignition switch has positions: OFF, R, L, BOTH, START. START engages the starter motor. Release to BOTH as soon as the engine catches â€” running the starter on a live engine damages it. Never crank more than 10 seconds without a 30-second rest.', tip: 'Your hand should be spring-loaded to release. The moment you hear the engine catch, let go.', zone: 'ignition' },
-      { action: 'Oil Pressure', value: 'CHECK (30s)', note: 'Should show pressure within 30 seconds â€” abort if not', why: 'Oil pressure rising confirms that oil is circulating before heat and friction build up. No pressure within 30 seconds means the oil pump may have failed or oil is severely low â€” continuing risks catastrophic engine damage within minutes.', tip: 'Watch the gauge immediately after start. Green arc = good. No movement after 30s = shut down immediately.', zone: 'sixpack' },
+      { action: 'Throttle', value: '1/4–1/2 INCH OPEN', note: 'Slightly open for start', why: 'A fully closed throttle can make the engine difficult to start and prone to loading up. A slightly open throttle provides the right fuel/air mix for initial combustion. Too much throttle and the engine may race uncontrollably after starting.', tip: 'About the width of two fingers pushed in from fully closed. You\'ll develop a feel for it.', zone: 'throttle' },
+      { action: 'Mixture', value: 'RICH', note: 'Full rich for sea level; lean as needed at altitude', why: 'Rich mixture provides maximum fuel for start. Carbureted engines like the C172 need a rich mixture for cold starts. At higher density altitudes (mountains, hot days) you\'ll lean slightly even for start — but full rich at sea level is standard.', tip: 'Red knob, full IN = rich. Remember: red = fuel (rich). You lean it OUT to reduce fuel.', zone: 'mixture' },
+      { action: 'Carb Heat', value: 'COLD', note: 'Off during start — only use in flight if icing suspected', why: 'Carb heat on during start reduces engine power and can disrupt the fuel/air mixture needed for starting. It also bypasses the air filter, allowing unfiltered air into the engine. Off for start — on in flight if you suspect carb ice.', tip: 'Carb heat = warm unfiltered air. Only useful when you suspect ice. On the ground = off.', zone: 'carbheat' },
+      { action: 'Prime (if cold)', value: '2–6 STROKES', note: 'Warm engine needs less; don\'t over-prime', why: 'The primer injects raw fuel directly into the intake manifold, making cold starts easier when fuel vaporization is poor. Over-priming floods the engine with excess fuel, making start very difficult. Warm engines need zero priming.', tip: 'Rule of thumb: cold outside = more primes. Warm engine or hot day = none. If it\'s flooded, mixture to idle-cutoff, throttle full open, crank to clear it.', zone: 'primer' },
+      { action: 'Primer', value: 'IN & LOCKED', note: 'Must be locked in before start', why: 'An unlocked primer allows air to bypass the carburetor, causing a lean stumble or rough running. Engine vibration can also cause an unlocked primer to work itself in or out, creating unpredictable fuel flow.', tip: 'Push IN fully, then twist clockwise to lock. You should feel a positive stop. Tug it — it should not come out.', zone: 'primer' },
+      { action: 'Propeller Area', value: 'CLEAR', note: 'Call "CLEAR PROP" audibly before engaging starter', why: 'The propeller is invisible when spinning. Anyone near the prop arc when the engine starts will be seriously injured or killed. You call "CLEAR PROP" out loud and check visually before touching the starter.', tip: 'Open the window, lean out, look both ways, then call it. Don\'t call it just to hear yourself — actually look.', zone: 'oil' },
+      { action: 'Master Switch', value: 'ON', note: 'Both ALT and BAT switches', why: 'The master switch has two halves: BAT (battery) powers the electrical system, ALT (alternator) connects the alternator to the bus. Both must be on. Some pilots turn BAT on first to confirm voltage before connecting the alternator.', tip: 'It\'s a split rocker — left side ALT, right side BAT. Flip both up together for ON.', zone: 'master' },
+      { action: 'Ignition', value: 'START', note: 'Release when engine catches; don\'t crank more than 10s', why: 'The ignition switch has positions: OFF, R, L, BOTH, START. START engages the starter motor. Release to BOTH as soon as the engine catches — running the starter on a live engine damages it. Never crank more than 10 seconds without a 30-second rest.', tip: 'Your hand should be spring-loaded to release. The moment you hear the engine catch, let go.', zone: 'ignition' },
+      { action: 'Oil Pressure', value: 'CHECK (30s)', note: 'Should show pressure within 30 seconds — abort if not', why: 'Oil pressure rising confirms that oil is circulating before heat and friction build up. No pressure within 30 seconds means the oil pump may have failed or oil is severely low — continuing risks catastrophic engine damage within minutes.', tip: 'Watch the gauge immediately after start. Green arc = good. No movement after 30s = shut down immediately.', zone: 'sixpack' },
     ]
   },
   runup: {
     label: 'Runup',
     items: [
       { action: 'Engine Warm-up', value: '1000 RPM', note: 'Allow oil temp to come up before runup', why: 'Cold oil is thick and doesn\'t lubricate as effectively. Running the engine at idle until oil temperature rises protects engine internals during the high-power runup checks. Rushing this on cold days stresses the engine.', tip: 'Many pilots target 1000 RPM and wait for the oil temp needle to show movement. On cold days this can take several minutes.', zone: 'sixpack' },
-      { action: 'Throttle', value: '1800 RPM', note: 'Set for runup checks', why: '1800 RPM is high enough to load the engine for meaningful magneto and carb heat checks, but low enough to not stress the airframe or blow the aircraft around on the ramp. This is the standard runup power setting for the C172.', tip: 'Set it smoothly â€” slam-advancing the throttle can overstress cold engine parts.', zone: 'throttle' },
-      { action: 'Magnetos', value: 'CHECK L/R', note: 'Max 125 RPM drop; max 50 RPM difference between mags', why: 'The C172 has two independent ignition systems (magnetos) so if one fails, the engine keeps running. You test each one by switching off the other and watching for RPM drop. A large drop means that magneto is doing too much work alone â€” possibly a fouled plug. Zero drop means the dead magneto is still firing (grounding problem).', tip: 'Switch from BOTH â†’ R â†’ BOTH â†’ L â†’ BOTH. The pause at BOTH between checks lets RPM stabilize.', zone: 'ignition' },
-      { action: 'Carb Heat', value: 'ON â€” CHECK', note: 'Expect slight RPM drop (carb heat normal); return to COLD', why: 'Carb heat sends warm unfiltered air through the carburetor to melt any ice. The warm air is less dense, causing a normal small RPM drop. If you had carb ice, the RPM will initially drop more (melting ice disrupts flow), then rise above original. Return to COLD before takeoff â€” carb heat on reduces power.', tip: 'No RPM change at all when applying carb heat = possible icing already melted or control not working. Investigate.', zone: 'carbheat' },
+      { action: 'Throttle', value: '1800 RPM', note: 'Set for runup checks', why: '1800 RPM is high enough to load the engine for meaningful magneto and carb heat checks, but low enough to not stress the airframe or blow the aircraft around on the ramp. This is the standard runup power setting for the C172.', tip: 'Set it smoothly — slam-advancing the throttle can overstress cold engine parts.', zone: 'throttle' },
+      { action: 'Magnetos', value: 'CHECK L/R', note: 'Max 125 RPM drop; max 50 RPM difference between mags', why: 'The C172 has two independent ignition systems (magnetos) so if one fails, the engine keeps running. You test each one by switching off the other and watching for RPM drop. A large drop means that magneto is doing too much work alone — possibly a fouled plug. Zero drop means the dead magneto is still firing (grounding problem).', tip: 'Switch from BOTH → R → BOTH → L → BOTH. The pause at BOTH between checks lets RPM stabilize.', zone: 'ignition' },
+      { action: 'Carb Heat', value: 'ON — CHECK', note: 'Expect slight RPM drop (carb heat normal); return to COLD', why: 'Carb heat sends warm unfiltered air through the carburetor to melt any ice. The warm air is less dense, causing a normal small RPM drop. If you had carb ice, the RPM will initially drop more (melting ice disrupts flow), then rise above original. Return to COLD before takeoff — carb heat on reduces power.', tip: 'No RPM change at all when applying carb heat = possible icing already melted or control not working. Investigate.', zone: 'carbheat' },
       { action: 'Engine Instruments', value: 'GREEN', note: 'Oil temp, oil pressure, fuel flow all in range', why: 'All engine instruments should be in the green arc before applying takeoff power. Red lines and yellow arcs are limits. Takeoff with an instrument in the yellow or near red is asking for an in-flight emergency.', tip: 'Green = go. Scan oil temp, oil pressure, ammeter, and fuel flow. If anything is amber or red, investigate before departing.', zone: 'sixpack' },
-      { action: 'Throttle', value: 'IDLE CHECK', note: 'Confirm idle ~650 RPM; throttle smoothly to 1000', why: 'If idle RPM is too low, the engine may quit during landing rollout or taxi â€” a dangerous time to lose power. If too high, the aircraft may be difficult to slow on approach. Proper idle speed is 600-700 RPM.', tip: 'Pull throttle to idle, count to 3. Engine should stay running smoothly. Then come back up to ~1000 for taxi.', zone: 'throttle' },
-      { action: 'Flight Controls', value: 'FREE & CORRECT', note: 'Full deflection in each direction; verify correct movement', why: 'This final cockpit check ensures no control locks were left in, nothing is obstructing movement, and the controls weren\'t accidentally reconnected incorrectly after maintenance. Full deflection means full â€” not 80%.', tip: 'Yoke full right: look back at RIGHT aileron UP. Full left: LEFT aileron UP. Full back: elevator UP. Full forward: elevator DOWN. Rudder left: left rudder deflects left.', zone: 'controls' },
-      { action: 'Trim', value: 'SET TAKEOFF', note: 'Elevator trim to takeoff position mark', why: 'Takeoff trim reduces the control force needed to rotate at Vr. Wrong trim setting means you\'ll fight an unexpected pitch force at the worst moment â€” during takeoff roll. Most C172s have a green takeoff band on the trim indicator.', tip: 'The trim wheel is on the center console between the seats. Set it to the green takeoff range mark, then verify the trim tab position visually if you can.', zone: 'trim' },
-      { action: 'Fuel Selector', value: 'BOTH', note: 'Confirm on BOTH', why: 'Confirming BOTH again before takeoff ensures you haven\'t inadvertently moved it during runup. Engine failure on takeoff due to fuel selector on a low or empty tank is a known accident cause.', tip: 'Look at the selector handle direction â€” BOTH should point forward (toward the nose). Left or right = single tank.', zone: 'fuel' },
-      { action: 'Mixture', value: 'RICH (or as required)', note: 'Rich at lower elevations; lean for high-density altitude', why: 'Full rich provides maximum power for takeoff at sea level. At high density altitude (hot day, high elevation), full rich actually causes the engine to run rough due to excess fuel â€” you lean slightly to restore smooth power.', tip: 'If your home field is below 3000 ft MSL: full rich for takeoff. Above that or on hot days: lean for smooth operation.', zone: 'mixture' },
-      { action: 'Primer', value: 'IN & LOCKED', note: 'Confirm locked â€” vibration can unlatch it', why: 'Engine vibration during runup can shake loose a primer that wasn\'t fully locked. An unlocked primer during takeoff causes lean mixture and rough running at the critical moment of climb.', tip: 'Tug the primer outward firmly. It should not move. If it comes out â€” it wasn\'t locked.', zone: 'primer' },
+      { action: 'Throttle', value: 'IDLE CHECK', note: 'Confirm idle ~650 RPM; throttle smoothly to 1000', why: 'If idle RPM is too low, the engine may quit during landing rollout or taxi — a dangerous time to lose power. If too high, the aircraft may be difficult to slow on approach. Proper idle speed is 600-700 RPM.', tip: 'Pull throttle to idle, count to 3. Engine should stay running smoothly. Then come back up to ~1000 for taxi.', zone: 'throttle' },
+      { action: 'Flight Controls', value: 'FREE & CORRECT', note: 'Full deflection in each direction; verify correct movement', why: 'This final cockpit check ensures no control locks were left in, nothing is obstructing movement, and the controls weren\'t accidentally reconnected incorrectly after maintenance. Full deflection means full — not 80%.', tip: 'Yoke full right: look back at RIGHT aileron UP. Full left: LEFT aileron UP. Full back: elevator UP. Full forward: elevator DOWN. Rudder left: left rudder deflects left.', zone: 'controls' },
+      { action: 'Trim', value: 'SET TAKEOFF', note: 'Elevator trim to takeoff position mark', why: 'Takeoff trim reduces the control force needed to rotate at Vr. Wrong trim setting means you\'ll fight an unexpected pitch force at the worst moment — during takeoff roll. Most C172s have a green takeoff band on the trim indicator.', tip: 'The trim wheel is on the center console between the seats. Set it to the green takeoff range mark, then verify the trim tab position visually if you can.', zone: 'trim' },
+      { action: 'Fuel Selector', value: 'BOTH', note: 'Confirm on BOTH', why: 'Confirming BOTH again before takeoff ensures you haven\'t inadvertently moved it during runup. Engine failure on takeoff due to fuel selector on a low or empty tank is a known accident cause.', tip: 'Look at the selector handle direction — BOTH should point forward (toward the nose). Left or right = single tank.', zone: 'fuel' },
+      { action: 'Mixture', value: 'RICH (or as required)', note: 'Rich at lower elevations; lean for high-density altitude', why: 'Full rich provides maximum power for takeoff at sea level. At high density altitude (hot day, high elevation), full rich actually causes the engine to run rough due to excess fuel — you lean slightly to restore smooth power.', tip: 'If your home field is below 3000 ft MSL: full rich for takeoff. Above that or on hot days: lean for smooth operation.', zone: 'mixture' },
+      { action: 'Primer', value: 'IN & LOCKED', note: 'Confirm locked — vibration can unlatch it', why: 'Engine vibration during runup can shake loose a primer that wasn\'t fully locked. An unlocked primer during takeoff causes lean mixture and rough running at the critical moment of climb.', tip: 'Tug the primer outward firmly. It should not move. If it comes out — it wasn\'t locked.', zone: 'primer' },
       { action: 'Avionics', value: 'ON & SET', note: 'Radios, transponder set to ALT, GPS programmed', why: 'All avionics should be configured before takeoff: COM frequency set, ATIS noted, transponder in ALT mode (so it reports altitude to ATC), and GPS flight plan loaded and verified. Troubleshooting avionics in the air is dangerous distraction.', tip: 'Mnemonic for transponder: ALT mode = altitude reporting = always on in flight. Code 1200 = VFR squawk if no ATC code assigned.', zone: 'avionics' },
-      { action: 'Squawk Code', value: 'SET & VERIFY', note: 'Enter code from ATC clearance; confirm ALT mode', why: 'The transponder broadcasts your identity and altitude to ATC radar. The wrong code can make you appear as another aircraft or trigger alerts. ALT mode reports your pressure altitude. SBY (standby) means you\'re invisible to radar.', tip: 'Enter the code one digit at a time, verify visually on the display, then check mode is ALT. Never enter 7500, 7600, or 7700 accidentally â€” these are emergency codes.', zone: 'avionics' },
-      { action: 'Doors & Windows', value: 'CLOSED & LATCHED', note: 'Secure before takeoff', why: 'A door that opens in flight â€” while usually not structurally dangerous â€” creates enormous noise, distraction, and aerodynamic drag. Pilots have lost control attempting to close doors in flight. Secure them on the ground.', tip: 'Lift the door handle up to verify it\'s engaged, then push the door firmly inward. You should hear the latch catch.', zone: 'seats' },
+      { action: 'Squawk Code', value: 'SET & VERIFY', note: 'Enter code from ATC clearance; confirm ALT mode', why: 'The transponder broadcasts your identity and altitude to ATC radar. The wrong code can make you appear as another aircraft or trigger alerts. ALT mode reports your pressure altitude. SBY (standby) means you\'re invisible to radar.', tip: 'Enter the code one digit at a time, verify visually on the display, then check mode is ALT. Never enter 7500, 7600, or 7700 accidentally — these are emergency codes.', zone: 'avionics' },
+      { action: 'Doors & Windows', value: 'CLOSED & LATCHED', note: 'Secure before takeoff', why: 'A door that opens in flight — while usually not structurally dangerous — creates enormous noise, distraction, and aerodynamic drag. Pilots have lost control attempting to close doors in flight. Secure them on the ground.', tip: 'Lift the door handle up to verify it\'s engaged, then push the door firmly inward. You should hear the latch catch.', zone: 'seats' },
     ]
   },
   landing: {
     label: 'Before Landing',
     items: [
-      { action: 'Fuel Selector', value: 'BOTH', note: 'Ensure both tanks selected', why: 'Switching to BOTH before landing ensures you have maximum fuel available for a go-around and eliminates the risk of the selected tank running dry during the approach, which requires full power at a critical moment.', tip: 'Check it on downwind as part of your "GUMPS" check.', tipType: 'acronym', acronym: 'GUMPS', acronymDef: 'Gas (BOTH) Â· Undercarriage (down â€” if retractable) Â· Mixture (rich) Â· Prop (full forward â€” if variable) Â· Seat belts (secure)', zone: 'fuel' },
-      { action: 'Mixture', value: 'RICH (or as required)', note: 'Enrich for go-around power availability', why: 'If you need to go around, you\'ll need full power immediately. A lean mixture can cause the engine to run rough or lose power at full throttle. Enriching on the downwind ensures the engine is ready for max power on demand.', tip: 'Part of GUMPS on downwind â€” M = Mixture rich.', zone: 'mixture' },
-      { action: 'Carb Heat', value: 'AS REQUIRED', note: 'On if conditions warrant; monitor RPM for ice', why: 'At reduced power settings on approach, the carburetor is more susceptible to icing â€” particularly in humid conditions at 20-70Â°F. If in doubt, carb heat on. Remember to return it to cold before any go-around (it reduces power).', tip: 'Carb heat on approach is good practice in marginal conditions. But remember: carb heat OFF for go-around â€” you need full power.', zone: 'carbheat' },
-      { action: 'Seats & Belts', value: 'SECURE', note: 'Confirm both occupants belted', why: 'Landing is the highest-risk phase of flight for injury in an accident. Shoulder harnesses significantly reduce injury in hard landings. Check both occupants â€” passengers may have loosened their belts during flight.', tip: 'Announce it: "Seat belts check â€” mine\'s locked." Then look over at your passenger.', zone: 'seats' },
-      { action: 'Airspeed (downwind)', value: '90 KIAS', note: 'Reduce from cruise; verify before pattern entry', why: 'Slowing to pattern speed on downwind gives you time to configure the aircraft without rushing. 90 KIAS is the C172 standard downwind speed â€” fast enough for safety margin, slow enough to add flaps on base.', tip: 'Reduce power to ~1500 RPM abeam the numbers. Let speed bleed to 90, add first notch of flaps (10Â°).', zone: 'sixpack' },
-      { action: 'Flaps (base)', value: '20Â°', note: 'Add second notch on base leg', why: 'Adding flaps progressively (not all at once) lets you control the pitch change each time. 20Â° on base steepens your descent and slows you further for a stabilized final approach. Full flaps (30Â°) added on final if runway assured.', tip: 'Each notch: check airspeed is below Vfe (white arc top = 85 KIAS), add flap, re-trim.', zone: 'flaps' },
-      { action: 'Airspeed (final)', value: '65â€“70 KIAS', note: 'With full flaps; adjust for weight/wind', why: '65 KIAS is the C172 Vref with full flaps at typical training weights. Add half the gust factor in gusty conditions.', tip: 'Look at the far end of the runway throughout the flare â€” not the nose or the numbers.', zone: 'sixpack' },
-      { action: 'Go-Around', value: 'BRIEF & READY', note: 'Have plan â€” unstabilized = go around', why: 'Deciding to go around on the ground takes far less courage than deciding at 50 feet. If not stabilized by 500 ft AGL â€” go around. No exceptions.', tip: 'Go-around: Full throttle â†’ carb heat COLD â†’ pitch for Vy (74 KIAS) â†’ flaps 20Â° â†’ 10Â° â†’ 0Â°.', zone: 'throttle' },
+      { action: 'Fuel Selector', value: 'BOTH', note: 'Ensure both tanks selected', why: 'Switching to BOTH before landing ensures you have maximum fuel available for a go-around and eliminates the risk of the selected tank running dry during the approach, which requires full power at a critical moment.', tip: 'Check it on downwind as part of your "GUMPS" check.', tipType: 'acronym', acronym: 'GUMPS', acronymDef: 'Gas (BOTH) · Undercarriage (down — if retractable) · Mixture (rich) · Prop (full forward — if variable) · Seat belts (secure)', zone: 'fuel' },
+      { action: 'Mixture', value: 'RICH (or as required)', note: 'Enrich for go-around power availability', why: 'If you need to go around, you\'ll need full power immediately. A lean mixture can cause the engine to run rough or lose power at full throttle. Enriching on the downwind ensures the engine is ready for max power on demand.', tip: 'Part of GUMPS on downwind — M = Mixture rich.', zone: 'mixture' },
+      { action: 'Carb Heat', value: 'AS REQUIRED', note: 'On if conditions warrant; monitor RPM for ice', why: 'At reduced power settings on approach, the carburetor is more susceptible to icing — particularly in humid conditions at 20-70°F. If in doubt, carb heat on. Remember to return it to cold before any go-around (it reduces power).', tip: 'Carb heat on approach is good practice in marginal conditions. But remember: carb heat OFF for go-around — you need full power.', zone: 'carbheat' },
+      { action: 'Seats & Belts', value: 'SECURE', note: 'Confirm both occupants belted', why: 'Landing is the highest-risk phase of flight for injury in an accident. Shoulder harnesses significantly reduce injury in hard landings. Check both occupants — passengers may have loosened their belts during flight.', tip: 'Announce it: "Seat belts check — mine\'s locked." Then look over at your passenger.', zone: 'seats' },
+      { action: 'Airspeed (downwind)', value: '90 KIAS', note: 'Reduce from cruise; verify before pattern entry', why: 'Slowing to pattern speed on downwind gives you time to configure the aircraft without rushing. 90 KIAS is the C172 standard downwind speed — fast enough for safety margin, slow enough to add flaps on base.', tip: 'Reduce power to ~1500 RPM abeam the numbers. Let speed bleed to 90, add first notch of flaps (10°).', zone: 'sixpack' },
+      { action: 'Flaps (base)', value: '20°', note: 'Add second notch on base leg', why: 'Adding flaps progressively (not all at once) lets you control the pitch change each time. 20° on base steepens your descent and slows you further for a stabilized final approach. Full flaps (30°) added on final if runway assured.', tip: 'Each notch: check airspeed is below Vfe (white arc top = 85 KIAS), add flap, re-trim.', zone: 'flaps' },
+      { action: 'Airspeed (final)', value: '65–70 KIAS', note: 'With full flaps; adjust for weight/wind', why: '65 KIAS is the C172 Vref with full flaps at typical training weights. Add half the gust factor in gusty conditions.', tip: 'Look at the far end of the runway throughout the flare — not the nose or the numbers.', zone: 'sixpack' },
+      { action: 'Go-Around', value: 'BRIEF & READY', note: 'Have plan — unstabilized = go around', why: 'Deciding to go around on the ground takes far less courage than deciding at 50 feet. If not stabilized by 500 ft AGL — go around. No exceptions.', tip: 'Go-around: Full throttle → carb heat COLD → pitch for Vy (74 KIAS) → flaps 20° → 10° → 0°.', zone: 'throttle' },
     ]
   }
     },
     emergencies: [
   {
-    icon: 'ðŸ”¥',
-    title: 'Engine Fire â€” Starting',
+    icon: '🔥',
+    title: 'Engine Fire — Starting',
     situation: 'During engine start, flames appear from the engine cowling. What is your FIRST action?',
     correct: 1,
     options: [
       'Shut off fuel selector and mixture immediately',
-      'Continue cranking â€” draw fire into engine',
+      'Continue cranking — draw fire into engine',
       'Jump out immediately and call for help',
       'Call tower on radio first'
     ],
     explanation: 'Continue cranking to draw the fire back into the engine with mixture rich and throttle full open. If fire persists after ~30 seconds, shut everything down and evacuate.',
-    why: "Counterintuitive but correct â€” continued cranking ingests the fire into the intake manifold. Only abort and evacuate if cranking doesn't extinguish it quickly."
+    why: "Counterintuitive but correct — continued cranking ingests the fire into the intake manifold. Only abort and evacuate if cranking doesn't extinguish it quickly."
   },
   {
-    icon: 'âš ï¸',
-    title: 'Engine Failure â€” Low Altitude',
+    icon: '⚠️️',
+    title: 'Engine Failure — Low Altitude',
     situation: 'Engine fails immediately after liftoff at 200 ft AGL. Runway behind you. First action?',
     correct: 0,
     options: [
@@ -109,49 +109,49 @@
       'Raise flaps and maintain best glide'
     ],
     explanation: 'Immediately lower the nose to maintain flying speed and land straight ahead (or a slight turn if needed). Below ~500 ft AGL you almost certainly cannot make it back.',
-    why: "The 'impossible turn' back to runway kills pilots. At low altitude the math almost never works. Land what's in front of you â€” even off-field. Fly the airplane first."
+    why: "The 'impossible turn' back to runway kills pilots. At low altitude the math almost never works. Land what's in front of you — even off-field. Fly the airplane first."
   },
   {
-    icon: 'ðŸ“Š',
-    title: 'Engine Failure â€” Cruise',
+    icon: '📊',
+    title: 'Engine Failure — Cruise',
     situation: 'At 4,500 ft MSL, engine quits suddenly. Correct memory item sequence?',
     correct: 2,
     options: [
-      'Declare Mayday â†’ Best glide â†’ Restart checklist',
-      'Best glide â†’ Land immediately â†’ Skip restart',
-      'Best glide â†’ Fuel BOTH â†’ Mixture RICH â†’ Carb heat ON â†’ Restart attempt',
-      'Carb heat ON â†’ Mayday â†’ Best glide'
+      'Declare Mayday → Best glide → Restart checklist',
+      'Best glide → Land immediately → Skip restart',
+      'Best glide → Fuel BOTH → Mixture RICH → Carb heat ON → Restart attempt',
+      'Carb heat ON → Mayday → Best glide'
     ],
-    explanation: 'Best glide first (65 KIAS in C172) â€” altitude = time. Then work restart: fuel selector BOTH, mixture rich, primer in/locked, carb heat on. Identify a landing area while working.',
-    why: 'Flying the airplane is always job one. Best glide maximizes range and options. Identify a landing area while you troubleshoot â€” not after.'
+    explanation: 'Best glide first (65 KIAS in C172) — altitude = time. Then work restart: fuel selector BOTH, mixture rich, primer in/locked, carb heat on. Identify a landing area while working.',
+    why: 'Flying the airplane is always job one. Best glide maximizes range and options. Identify a landing area while you troubleshoot — not after.'
   },
   {
-    icon: 'ðŸŒ¡ï¸',
+    icon: '🌡️',
     title: 'Carburetor Ice',
-    situation: 'Cruise at 3,000 ft, humid 50Â°F day. Gradual unexplained RPM drop, no roughness. First action?',
+    situation: 'Cruise at 3,000 ft, humid 50°F day. Gradual unexplained RPM drop, no roughness. First action?',
     correct: 1,
     options: [
-      'Lean aggressively â€” fouled plug',
+      'Lean aggressively — fouled plug',
       'Apply full carb heat immediately',
       'Switch fuel tanks',
       'Check magnetos L/R'
     ],
-    explanation: 'Gradual RPM loss with no roughness in humid, moderate-temp air is classic carb ice. Apply full carb heat â€” expect a further temporary RPM drop as ice melts. That drop confirms the diagnosis.',
-    why: 'Carb ice forms between 20â€“70Â°F with visible moisture â€” prime altitude conditions. The temporary RPM drop after carb heat is the good news: you\'re melting ice.'
+    explanation: 'Gradual RPM loss with no roughness in humid, moderate-temp air is classic carb ice. Apply full carb heat — expect a further temporary RPM drop as ice melts. That drop confirms the diagnosis.',
+    why: 'Carb ice forms between 20–70°F with visible moisture — prime altitude conditions. The temporary RPM drop after carb heat is the good news: you\'re melting ice.'
   },
   {
-    icon: 'âš¡',
+    icon: '⚡',
     title: 'Electrical Failure',
     situation: 'Ammeter shows discharge. Alternator light illuminates. First action?',
     correct: 3,
     options: [
-      'Land immediately â€” no power available',
+      'Land immediately — no power available',
       'Turn on all lights to discharge static',
       'Declare emergency',
-      'Check alternator circuit breaker â€” reset if tripped'
+      'Check alternator circuit breaker — reset if tripped'
     ],
-    explanation: 'Check the alternator circuit breaker first â€” often the culprit. Reset once if tripped. If that fails, shed non-essential electrical load and plan to land before battery depletes (~30 min).',
-    why: "A tripped CB is a simple fix. If it trips again after reset, don't reset â€” there's an underlying fault. Battery gives roughly 30 min of essential loads."
+    explanation: 'Check the alternator circuit breaker first — often the culprit. Reset once if tripped. If that fails, shed non-essential electrical load and plan to land before battery depletes (~30 min).',
+    why: "A tripped CB is a simple fix. If it trips again after reset, don't reset — there's an underlying fault. Battery gives roughly 30 min of essential loads."
   }
     ]
   },
@@ -165,41 +165,41 @@
         label: 'Preflight',
         items: [
           { action: 'Hobbs / Tach', value: 'CHECK', note: 'Record for billing and engine maintenance', why: 'Hobbs records engine time for billing and TBO tracking. Always note times before and after flight.', tip: 'Photo the gauges with your phone before engine start.', zone: 'sixpack' },
-          { action: 'Fuel Quantity', value: 'CHECK VISUALLY', note: 'Always visually confirm â€” gauges unreliable', why: 'Fuel gauges are only required to be accurate at empty. Physically look into each tank to confirm level.', tip: 'Blue = 100LL. Any other color or cloudiness â€” do not fly.', zone: 'oil' },
+          { action: 'Fuel Quantity', value: 'CHECK VISUALLY', note: 'Always visually confirm — gauges unreliable', why: 'Fuel gauges are only required to be accurate at empty. Physically look into each tank to confirm level.', tip: 'Blue = 100LL. Any other color or cloudiness — do not fly.', zone: 'oil' },
           { action: 'Fuel Caps', value: 'SECURE', note: 'Both caps tight and locked', why: 'Loose caps allow fuel to siphon out in flight, especially on a low-wing where fuel heads are higher.', tip: 'Twist firmly until it stops, then tug upward to verify.', zone: 'oil' },
-          { action: 'Fuel Drains', value: 'DRAIN & CHECK', note: 'Check for water and correct color', why: 'Low-wing aircraft sumps sit lower â€” water accumulates readily. Drain each sump until the sample runs clear and blue.', tip: 'Drain into a clear tester cup. Water sinks to the bottom â€” even a few drops can be dangerous.', zone: 'oil' },
-          { action: 'Oil Quantity', value: 'CHECK â€” MIN 6 QTS', note: 'Check dipstick; add if needed', why: 'Oil is life for the engine. The Cherokee\'s Lycoming O-320 typically holds 8 quarts max. Below 6 is marginal for longer flights.', tip: 'Wipe dipstick clean, reinsert fully, then read.', zone: 'oil' },
+          { action: 'Fuel Drains', value: 'DRAIN & CHECK', note: 'Check for water and correct color', why: 'Low-wing aircraft sumps sit lower — water accumulates readily. Drain each sump until the sample runs clear and blue.', tip: 'Drain into a clear tester cup. Water sinks to the bottom — even a few drops can be dangerous.', zone: 'oil' },
+          { action: 'Oil Quantity', value: 'CHECK — MIN 6 QTS', note: 'Check dipstick; add if needed', why: 'Oil is life for the engine. The Cherokee\'s Lycoming O-320 typically holds 8 quarts max. Below 6 is marginal for longer flights.', tip: 'Wipe dipstick clean, reinsert fully, then read.', zone: 'oil' },
           { action: 'Oil Cap', value: 'SECURE', note: 'Hand-tight and locked', why: 'Loose oil cap sprays hot oil on the windshield and engine, causing loss of visibility and potential fire.', tip: 'Say out loud: "Cap is on and locked."', zone: 'oil' },
-          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Select the fullest tank for start', why: 'Unlike the C172\'s BOTH position, the Cherokee has LEFT / RIGHT / OFF. Select the fuller tank to start and for takeoff.', tip: 'Fuel selector is on the floor between the seats. Verify visually â€” don\'t assume.', zone: 'fuel' },
-          { action: 'Pitot Tube', value: 'UNOBSTRUCTED', note: 'Check for insects, debris, cover removed', why: 'Blocked pitot = false airspeed. The pitot cover must be removed â€” check for the "Remove Before Flight" streamer.', tip: 'If you installed the cover, YOU remove it.', zone: 'pitot' },
-          { action: 'Static Ports', value: 'CLEAR', note: 'Both sides of fuselage', why: 'Blocked static ports freeze the altimeter and VSI. Flush holes â€” check for tape, mud, or insects.', tip: 'Run your fingernail over each port. Clear = nothing catches.', zone: 'static' },
-          { action: 'Control Surfaces', value: 'FREE & CORRECT', note: 'Full deflection â€” verify correct direction', why: 'Reversed or restricted controls have caused fatal accidents. Always verify visually that the surface moves the right way.', tip: 'Yoke right: right aileron UP. Yoke back: elevator UP. Rudder left: rudder left.', zone: 'controls' },
-          { action: 'Tires', value: 'CONDITION & INFLATION', note: 'All three â€” check for cuts and flat spots', why: 'Underinflated or damaged tires can blow on landing. The Cherokee sits lower than most â€” tires are easy to check.', tip: 'Press firmly with your thumb. Any cord showing = do not fly.', zone: 'tires' },
-          { action: 'Tie-downs / Chocks', value: 'REMOVED', note: 'Remove all before engine start', why: 'Attempting to taxi with tie-downs attached is more dangerous on a low-wing â€” propeller blast won\'t reveal them.', tip: 'Walk all the way around during preflight and you\'ll see them naturally.', zone: 'tires' },
+          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Select the fullest tank for start', why: 'Unlike the C172\'s BOTH position, the Cherokee has LEFT / RIGHT / OFF. Select the fuller tank to start and for takeoff.', tip: 'Fuel selector is on the floor between the seats. Verify visually — don\'t assume.', zone: 'fuel' },
+          { action: 'Pitot Tube', value: 'UNOBSTRUCTED', note: 'Check for insects, debris, cover removed', why: 'Blocked pitot = false airspeed. The pitot cover must be removed — check for the "Remove Before Flight" streamer.', tip: 'If you installed the cover, YOU remove it.', zone: 'pitot' },
+          { action: 'Static Ports', value: 'CLEAR', note: 'Both sides of fuselage', why: 'Blocked static ports freeze the altimeter and VSI. Flush holes — check for tape, mud, or insects.', tip: 'Run your fingernail over each port. Clear = nothing catches.', zone: 'static' },
+          { action: 'Control Surfaces', value: 'FREE & CORRECT', note: 'Full deflection — verify correct direction', why: 'Reversed or restricted controls have caused fatal accidents. Always verify visually that the surface moves the right way.', tip: 'Yoke right: right aileron UP. Yoke back: elevator UP. Rudder left: rudder left.', zone: 'controls' },
+          { action: 'Tires', value: 'CONDITION & INFLATION', note: 'All three — check for cuts and flat spots', why: 'Underinflated or damaged tires can blow on landing. The Cherokee sits lower than most — tires are easy to check.', tip: 'Press firmly with your thumb. Any cord showing = do not fly.', zone: 'tires' },
+          { action: 'Tie-downs / Chocks', value: 'REMOVED', note: 'Remove all before engine start', why: 'Attempting to taxi with tie-downs attached is more dangerous on a low-wing — propeller blast won\'t reveal them.', tip: 'Walk all the way around during preflight and you\'ll see them naturally.', zone: 'tires' },
         ]
       },
       beforestart: {
         label: 'Before Start',
         items: [
-          { action: 'Seat Track / Back', value: 'LOCK', note: 'Adjust and lock â€” both occupants', why: 'Unlocked seat rails can cause the seat to slide aft on rotation â€” you\'d lose control with no way to reach the yoke.', tip: 'Push seat back hard after adjusting. No movement = locked.', zone: 'seats' },
-          { action: 'Avionics', value: 'OFF', note: 'Protect from start voltage spike', why: 'Engine start causes a momentary voltage spike that can damage radios and GPS. Turn all avionics off before master.', tip: '"Avionics off first, avionics on last" â€” every aircraft, every time.', zone: 'avionics' },
-          { action: 'Autopilot', value: 'OFF', note: 'Disconnect before start', why: 'Autopilot servos engaged during start can cause unexpected control inputs when the electrical system surges.', tip: 'Short toggle â€” verify the AP annunciator is out.', zone: 'avionics' },
-          { action: 'Carb Heat', value: 'OFF (COLD)', note: 'Cold for start â€” on only if icing suspected in flight', why: 'Carb heat bypasses the air filter and reduces power. Never use it on the ground unless troubleshooting icing.', tip: 'The Cherokee Lycoming O-320 is particularly susceptible to carb ice at low power â€” always check carb heat in flight.', zone: 'carbheat' },
+          { action: 'Seat Track / Back', value: 'LOCK', note: 'Adjust and lock — both occupants', why: 'Unlocked seat rails can cause the seat to slide aft on rotation — you\'d lose control with no way to reach the yoke.', tip: 'Push seat back hard after adjusting. No movement = locked.', zone: 'seats' },
+          { action: 'Avionics', value: 'OFF', note: 'Protect from start voltage spike', why: 'Engine start causes a momentary voltage spike that can damage radios and GPS. Turn all avionics off before master.', tip: '"Avionics off first, avionics on last" — every aircraft, every time.', zone: 'avionics' },
+          { action: 'Autopilot', value: 'OFF', note: 'Disconnect before start', why: 'Autopilot servos engaged during start can cause unexpected control inputs when the electrical system surges.', tip: 'Short toggle — verify the AP annunciator is out.', zone: 'avionics' },
+          { action: 'Carb Heat', value: 'OFF (COLD)', note: 'Cold for start — on only if icing suspected in flight', why: 'Carb heat bypasses the air filter and reduces power. Never use it on the ground unless troubleshooting icing.', tip: 'The Cherokee Lycoming O-320 is particularly susceptible to carb ice at low power — always check carb heat in flight.', zone: 'carbheat' },
           { action: 'Mixture', value: 'FULL RICH', note: 'Rich for start at sea level', why: 'Rich mixture ensures adequate fuel for cold start. Lean only at high density altitude airports.', tip: 'Red knob full IN = rich.', zone: 'mixture' },
           { action: 'Throttle', value: 'SLIGHT', note: '1/4 to 1/2 inch open', why: 'Too closed and the engine won\'t catch. Too open and it may race dangerously after starting.', tip: 'Two finger widths from fully closed.', zone: 'throttle' },
-          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Fuller tank for start', why: 'The Cherokee has no BOTH â€” you must select L or R. The fuller tank reduces the chance of running a tank dry at a bad time.', tip: 'Look at the selector, not just feel it. The detent clicks are similar for L and R.', zone: 'fuel' },
+          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Fuller tank for start', why: 'The Cherokee has no BOTH — you must select L or R. The fuller tank reduces the chance of running a tank dry at a bad time.', tip: 'Look at the selector, not just feel it. The detent clicks are similar for L and R.', zone: 'fuel' },
           { action: 'Brakes', value: 'SET', note: 'Hold firmly during start', why: 'Engine start generates prop blast. Holding brakes keeps the aircraft stationary on the ramp.', tip: 'Press both toe brakes and hold. Release only when ready to taxi.', zone: 'tires' },
         ]
       },
       start: {
         label: 'Engine Start',
         items: [
-          { action: 'Beacon', value: 'ON', note: 'Signal others â€” engine about to start', why: 'The beacon is the universal "prop is turning" warning. Always on before the starter engages.', tip: 'Beacon on = engine running or starting. Last thing off after shutdown.', zone: 'beacon' },
+          { action: 'Beacon', value: 'ON', note: 'Signal others — engine about to start', why: 'The beacon is the universal "prop is turning" warning. Always on before the starter engages.', tip: 'Beacon on = engine running or starting. Last thing off after shutdown.', zone: 'beacon' },
           { action: 'Master', value: 'ON', note: 'Both ALT and BAT', why: 'Powers the electrical system. Some pilots turn BAT on first to check voltage, then ALT.', tip: 'Left side = ALT, right side = BAT on the split rocker.', zone: 'master' },
           { action: 'Fuel Pump', value: 'ON', note: 'Electric boost pump on for start', why: 'The Cherokee has an electric fuel pump to prime the fuel-injected or carbureted system and ensure fuel pressure before the engine-driven pump takes over. On for start, off after engine running.', tip: 'Check fuel pressure rises after pump ON. Should show green within seconds.', zone: 'throttle' },
-          { action: 'Prime', value: 'AS REQUIRED', note: 'Cold engine: 2â€“4 strokes; hot start: none', why: 'Cold engines need raw fuel in the intake. Hot engines already have residual fuel â€” over-priming floods it.', tip: 'Hot start: skip prime, set mixture idle-cutoff, crank until it catches, then advance mixture quickly.', zone: 'primer' },
-          { action: 'Mags', value: 'START', note: 'Both mags â€” START position', why: 'START engages the starter motor. Release immediately when the engine catches.', tip: 'Don\'t crank more than 10 seconds. Rest 30 seconds between attempts to protect the starter.', zone: 'ignition' },
-          { action: 'Fuel Pump', value: 'OFF (after start)', note: 'Off once engine running smoothly', why: 'Running the electric pump continuously can flood the carburetor or cause vapor lock in fuel-injected models. Off after engine-driven pump takes over.', tip: 'Watch fuel pressure â€” it should hold steady after turning pump off. If it drops: investigate.', zone: 'throttle' },
+          { action: 'Prime', value: 'AS REQUIRED', note: 'Cold engine: 2–4 strokes; hot start: none', why: 'Cold engines need raw fuel in the intake. Hot engines already have residual fuel — over-priming floods it.', tip: 'Hot start: skip prime, set mixture idle-cutoff, crank until it catches, then advance mixture quickly.', zone: 'primer' },
+          { action: 'Mags', value: 'START', note: 'Both mags — START position', why: 'START engages the starter motor. Release immediately when the engine catches.', tip: 'Don\'t crank more than 10 seconds. Rest 30 seconds between attempts to protect the starter.', zone: 'ignition' },
+          { action: 'Fuel Pump', value: 'OFF (after start)', note: 'Off once engine running smoothly', why: 'Running the electric pump continuously can flood the carburetor or cause vapor lock in fuel-injected models. Off after engine-driven pump takes over.', tip: 'Watch fuel pressure — it should hold steady after turning pump off. If it drops: investigate.', zone: 'throttle' },
           { action: 'Oil Pressure', value: 'CHECK (30s)', note: 'Should rise within 30 seconds', why: 'No oil pressure means oil isn\'t circulating. Continued running causes rapid engine damage.', tip: 'Eyes on the oil pressure gauge immediately after start. Green within 30s or shut down.', zone: 'sixpack' },
         ]
       },
@@ -207,40 +207,40 @@
         label: 'Runup',
         items: [
           { action: 'Engine Warm-up', value: '1000 RPM', note: 'Allow oil temp to rise before runup', why: 'Cold oil doesn\'t lubricate as well. Wait for oil temperature to show movement before runup checks.', tip: 'On cold days this may take several minutes. Don\'t rush it.', zone: 'sixpack' },
-          { action: 'Throttle', value: '2000 RPM', note: 'Set for runup checks', why: 'The Cherokee Lycoming O-320 runup is typically done at 2000 RPM â€” slightly higher than the C172\'s 1700-1800 RPM setting.', tip: 'Set smoothly. Rapid throttle advances can cause engine stress when cold.', zone: 'throttle' },
-          { action: 'Magnetos', value: 'CHECK L/R (R-L-Both)', note: 'Max RPM drop per mag check', why: 'Each magneto is tested independently. A large RPM drop indicates fouled plugs or mag issues.', tip: 'BOTH â†’ R (note drop) â†’ BOTH â†’ L (note drop) â†’ BOTH. Max ~125 RPM drop, max 50 RPM difference between mags.', zone: 'ignition' },
-          { action: 'Carb Heat', value: 'ON â€” TEST', note: 'Slight RPM drop expected; return to COLD', why: 'Warm unfiltered air reduces power slightly â€” a small RPM drop is normal and expected. Return to COLD before takeoff.', tip: 'If RPM initially drops then rises above original = you had ice. Normal drop then back = no ice.', zone: 'carbheat' },
+          { action: 'Throttle', value: '2000 RPM', note: 'Set for runup checks', why: 'The Cherokee Lycoming O-320 runup is typically done at 2000 RPM — slightly higher than the C172\'s 1700-1800 RPM setting.', tip: 'Set smoothly. Rapid throttle advances can cause engine stress when cold.', zone: 'throttle' },
+          { action: 'Magnetos', value: 'CHECK L/R (R-L-Both)', note: 'Max RPM drop per mag check', why: 'Each magneto is tested independently. A large RPM drop indicates fouled plugs or mag issues.', tip: 'BOTH → R (note drop) → BOTH → L (note drop) → BOTH. Max ~125 RPM drop, max 50 RPM difference between mags.', zone: 'ignition' },
+          { action: 'Carb Heat', value: 'ON — TEST', note: 'Slight RPM drop expected; return to COLD', why: 'Warm unfiltered air reduces power slightly — a small RPM drop is normal and expected. Return to COLD before takeoff.', tip: 'If RPM initially drops then rises above original = you had ice. Normal drop then back = no ice.', zone: 'carbheat' },
           { action: 'Vacuum', value: 'CHECK', note: 'Should read ~5 in. Hg in green arc', why: 'Vacuum drives the attitude indicator and directional gyro. Low vacuum means unreliable gyro instruments.', tip: 'Green arc on the gauge. Any reading below = investigate before flight in IMC.', zone: 'sixpack' },
           { action: 'Amps / Volts', value: 'CHECK', note: 'Ammeter should show charge', why: 'Confirms the alternator is charging the battery. Discharge at runup = possible alternator or regulator issue.', tip: 'Ammeter needle in the + (positive/charge) side. Zero or negative = problem.', zone: 'sixpack' },
-          { action: 'Oil Pressure', value: 'GREEN', note: 'In normal operating range', why: 'Oil pressure should be fully stabilized by runup. Any fluctuation or below-green reading = abort.', zone: 'sixpack', tip: 'If it was good at startup but has dropped at runup â€” something changed. Don\'t depart.', },
-          { action: 'Oil Temperature', value: 'GREEN', note: 'Warm enough to proceed', why: 'Running a full-power takeoff with cold oil stresses engine internals. Oil temp in green = ready.', tip: 'Wait for the needle to enter the green arc â€” not just show movement.', zone: 'sixpack' },
-          { action: 'Throttle', value: 'IDLE â€” CHECK CLOSED', note: 'Verify idle; return to 1000 RPM for taxi', why: 'Checks that the throttle returns to proper idle and won\'t stick.', tip: 'Idle should be smooth at ~600-700 RPM. Rough idle = possible fouled plug or carb issue.', zone: 'throttle' },
+          { action: 'Oil Pressure', value: 'GREEN', note: 'In normal operating range', why: 'Oil pressure should be fully stabilized by runup. Any fluctuation or below-green reading = abort.', zone: 'sixpack', tip: 'If it was good at startup but has dropped at runup — something changed. Don\'t depart.', },
+          { action: 'Oil Temperature', value: 'GREEN', note: 'Warm enough to proceed', why: 'Running a full-power takeoff with cold oil stresses engine internals. Oil temp in green = ready.', tip: 'Wait for the needle to enter the green arc — not just show movement.', zone: 'sixpack' },
+          { action: 'Throttle', value: 'IDLE — CHECK CLOSED', note: 'Verify idle; return to 1000 RPM for taxi', why: 'Checks that the throttle returns to proper idle and won\'t stick.', tip: 'Idle should be smooth at ~600-700 RPM. Rough idle = possible fouled plug or carb issue.', zone: 'throttle' },
           { action: 'Friction Lock', value: 'AS DESIRED', note: 'Set throttle friction', why: 'The Cherokee has a friction lock on the throttle to prevent creep. Set to hold position without requiring constant hand pressure.', tip: 'Tighten until throttle stays where you set it but can still be moved deliberately.', zone: 'throttle' },
-          { action: 'Flight Controls', value: 'FREE & CORRECT', note: 'Full deflection each direction', why: 'Final confirmation that nothing is blocking controls before takeoff. Full deflection only â€” partial doesn\'t count.', tip: 'Yoke right: right aileron UP. Back: elevator UP. Rudder left: left rudder.', zone: 'controls' },
-          { action: 'Trim', value: 'SET TAKEOFF', note: 'Elevator trim to takeoff range', why: 'Correct trim reduces stick force at rotation. Wrong trim = fighting the aircraft at the worst moment.', tip: 'Trim wheel is on the ceiling between the seats in most Cherokees â€” easy to miss.', zone: 'trim' },
-          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Fuller tank for takeoff', why: 'Takeoff is the most critical phase. Use the fuller tank so you have maximum fuel available if a go-around is needed immediately.', tip: 'Look at the selector â€” don\'t just feel the position.', zone: 'fuel' },
-          { action: 'Primer', value: 'IN & LOCKED', note: 'Confirm locked before takeoff', why: 'Vibration can unlatch an improperly locked primer, causing lean mixture and rough running at full power.', tip: 'Tug it outward â€” it should not move at all.', zone: 'primer' },
+          { action: 'Flight Controls', value: 'FREE & CORRECT', note: 'Full deflection each direction', why: 'Final confirmation that nothing is blocking controls before takeoff. Full deflection only — partial doesn\'t count.', tip: 'Yoke right: right aileron UP. Back: elevator UP. Rudder left: left rudder.', zone: 'controls' },
+          { action: 'Trim', value: 'SET TAKEOFF', note: 'Elevator trim to takeoff range', why: 'Correct trim reduces stick force at rotation. Wrong trim = fighting the aircraft at the worst moment.', tip: 'Trim wheel is on the ceiling between the seats in most Cherokees — easy to miss.', zone: 'trim' },
+          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Fuller tank for takeoff', why: 'Takeoff is the most critical phase. Use the fuller tank so you have maximum fuel available if a go-around is needed immediately.', tip: 'Look at the selector — don\'t just feel the position.', zone: 'fuel' },
+          { action: 'Primer', value: 'IN & LOCKED', note: 'Confirm locked before takeoff', why: 'Vibration can unlatch an improperly locked primer, causing lean mixture and rough running at full power.', tip: 'Tug it outward — it should not move at all.', zone: 'primer' },
           { action: 'Doors & Windows', value: 'CLOSED & LATCHED', note: 'Secure all before departure', why: 'A Cherokee door opening in flight creates noise and distraction. The Cherokee\'s door design makes it prone to appearing closed when it isn\'t fully latched.', tip: 'Lift the handle and push the door firmly inward. Listen for the latch click.', zone: 'seats' },
         ]
       },
       landing: {
         label: 'Before Landing',
         items: [
-          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Fullest tank for approach and go-around', why: 'Engine failure on approach due to fuel exhaustion on the selected tank is a known accident cause. Use the fuller tank.', tip: 'Part of GUMPS on downwind â€” G = Gas (proper tank).', tipType: 'acronym', acronym: 'GUMPS', acronymDef: 'Gas (proper tank) Â· Undercarriage Â· Mixture (rich) Â· Prop Â· Seatbelts', zone: 'fuel' },
+          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Fullest tank for approach and go-around', why: 'Engine failure on approach due to fuel exhaustion on the selected tank is a known accident cause. Use the fuller tank.', tip: 'Part of GUMPS on downwind — G = Gas (proper tank).', tipType: 'acronym', acronym: 'GUMPS', acronymDef: 'Gas (proper tank) · Undercarriage · Mixture (rich) · Prop · Seatbelts', zone: 'fuel' },
           { action: 'Fuel Pump', value: 'ON', note: 'Electric pump on for approach', why: 'The electric boost pump provides backup fuel pressure in case the engine-driven pump falters at low power settings during approach. Critical for go-around power availability.', tip: 'On before you start the approach. Off only after landing and clear of the runway.', zone: 'throttle' },
           { action: 'Mixture', value: 'BEST POWER', note: 'Enrich for go-around capability', why: 'A lean mixture at full throttle during a go-around can cause the engine to run rough or lose power at the worst moment. Enrich before approach.', tip: 'At low altitudes: full rich. At higher elevations: best power mixture (slightly leaned).', zone: 'mixture' },
-          { action: 'Carb Heat', value: 'AS REQUIRED', note: 'On if icing conditions suspected', why: 'Carb ice forms readily at low power â€” prime approach conditions. Apply carb heat if temps are 20-70Â°F and there\'s visible moisture.', tip: 'Remember to go CARB HEAT OFF for go-around â€” you need full power without restriction.', zone: 'carbheat' },
-          { action: 'Seats & Belts', value: 'SECURE', note: 'Both occupants â€” shoulder harness on', why: 'Landing is the highest-risk phase for injury. Shoulder harnesses dramatically reduce injury in hard landings. Check your passenger too.', tip: 'Announce it out loud: "Belts â€” mine\'s locked." Then look at your passenger.', zone: 'seats' },
-          { action: 'Flaps', value: '10Â°â€“25Â° AS REQ.', note: 'Progressive â€” based on conditions', why: 'Unlike the C172\'s fixed flap schedule, the Cherokee gives you flexibility. 10Â° for short field initial, 25Â° for normal full flap landing. 40Â° is the maximum.', tip: '25Â° flaps for normal full-stop. Below Vfe (101 KIAS) before extending.', zone: 'flaps' },
+          { action: 'Carb Heat', value: 'AS REQUIRED', note: 'On if icing conditions suspected', why: 'Carb ice forms readily at low power — prime approach conditions. Apply carb heat if temps are 20-70°F and there\'s visible moisture.', tip: 'Remember to go CARB HEAT OFF for go-around — you need full power without restriction.', zone: 'carbheat' },
+          { action: 'Seats & Belts', value: 'SECURE', note: 'Both occupants — shoulder harness on', why: 'Landing is the highest-risk phase for injury. Shoulder harnesses dramatically reduce injury in hard landings. Check your passenger too.', tip: 'Announce it out loud: "Belts — mine\'s locked." Then look at your passenger.', zone: 'seats' },
+          { action: 'Flaps', value: '10°–25° AS REQ.', note: 'Progressive — based on conditions', why: 'Unlike the C172\'s fixed flap schedule, the Cherokee gives you flexibility. 10° for short field initial, 25° for normal full flap landing. 40° is the maximum.', tip: '25° flaps for normal full-stop. Below Vfe (101 KIAS) before extending.', zone: 'flaps' },
           { action: 'Airspeed (final)', value: '70 KIAS / 59 SHORT', note: 'Approach 70, short final 59 KIAS', why: 'The Cherokee is heavier and stalls at a higher speed than it appears. 70 KIAS gives adequate margin. Short final 59 KIAS is the published approach speed with flaps.', tip: 'Add half the gust factor in gusty winds. If gusting 10 knots, fly final at 74-75 KIAS.', zone: 'sixpack' },
-          { action: 'Go-Around', value: 'BRIEF & READY', note: 'Unstabilized at 500 ft AGL = go around', why: 'The Cherokee is heavier and slower to accelerate than a C172. A go-around decision made late is a go-around that might not succeed. Decide early.', tip: 'Go-around: Full power â†’ Carb heat OFF â†’ Positive climb â†’ Flaps 25Â° â†’ Flaps 0Â° above 70 KIAS.', zone: 'throttle' },
+          { action: 'Go-Around', value: 'BRIEF & READY', note: 'Unstabilized at 500 ft AGL = go around', why: 'The Cherokee is heavier and slower to accelerate than a C172. A go-around decision made late is a go-around that might not succeed. Decide early.', tip: 'Go-around: Full power → Carb heat OFF → Positive climb → Flaps 25° → Flaps 0° above 70 KIAS.', zone: 'throttle' },
         ]
       }
     },
     emergencies: [
   {
-    icon: 'ðŸ”¥',
-    title: 'Engine Fire â€” Starting',
+    icon: '🔥',
+    title: 'Engine Fire — Starting',
     situation: 'During engine start, flames appear from the cowling. First action?',
     correct: 0,
     options: [
@@ -250,11 +250,11 @@
       'Call for help on radio first'
     ],
     explanation: 'On the Cherokee: mixture to idle cutoff, fuel selector OFF, master OFF, evacuate. Unlike the C172 (where you crank to ingest the fire), the Cherokee procedure is to cut fuel and evacuate immediately.',
-    why: 'The Cherokee has a different starting fire procedure than the C172 â€” confirm with your specific POH. The key difference: cut the fuel source immediately rather than trying to ingest the fire.'
+    why: 'The Cherokee has a different starting fire procedure than the C172 — confirm with your specific POH. The key difference: cut the fuel source immediately rather than trying to ingest the fire.'
   },
   {
-    icon: 'âš ï¸',
-    title: 'Engine Failure â€” Low Altitude',
+    icon: '⚠️️',
+    title: 'Engine Failure — Low Altitude',
     situation: 'Engine fails immediately after liftoff at 200 ft AGL. Runway behind you. First action?',
     correct: 0,
     options: [
@@ -263,50 +263,50 @@
       'Declare emergency on radio',
       'Raise flaps to clean up aircraft'
     ],
-    explanation: 'Lower the nose immediately to maintain flying speed and land straight ahead. Below 500 ft AGL the "impossible turn" back to the runway almost never works â€” and the Cherokee accelerates slowly.',
-    why: 'The Cherokee is heavier than a C172 and loses altitude faster in a turn. The geometry of a return to runway requires more altitude than most pilots think â€” 500-1000 ft minimum in practice.'
+    explanation: 'Lower the nose immediately to maintain flying speed and land straight ahead. Below 500 ft AGL the "impossible turn" back to the runway almost never works — and the Cherokee accelerates slowly.',
+    why: 'The Cherokee is heavier than a C172 and loses altitude faster in a turn. The geometry of a return to runway requires more altitude than most pilots think — 500-1000 ft minimum in practice.'
   },
   {
-    icon: 'â›½',
-    title: 'Engine Failure â€” Cruise',
+    icon: '⛽',
+    title: 'Engine Failure — Cruise',
     situation: 'Engine quits at cruise. Correct first action sequence?',
     correct: 1,
     options: [
-      'Declare Mayday immediately â†’ then best glide',
-      'Best glide speed (60 KIAS) â†’ fuel selector other tank â†’ fuel pump ON â†’ mixture rich â†’ check mags BOTH',
-      'Switch fuel tanks â†’ best glide â†’ restart checklist',
-      'Carb heat ON â†’ best glide â†’ restart'
+      'Declare Mayday immediately → then best glide',
+      'Best glide speed (60 KIAS) → fuel selector other tank → fuel pump ON → mixture rich → check mags BOTH',
+      'Switch fuel tanks → best glide → restart checklist',
+      'Carb heat ON → best glide → restart'
     ],
     explanation: 'Best glide (60 KIAS) first to maximize time and options. Then: switch to the other fuel tank, fuel pump ON, mixture rich, mags to BOTH. Identify a landing area while working the restart.',
-    why: 'Many Cherokee engine failures are fuel-related â€” wrong tank selected, or a tank run dry. Switching tanks is often the fix. The electric fuel pump ensures pressure while the engine-driven pump is windmilling.'
+    why: 'Many Cherokee engine failures are fuel-related — wrong tank selected, or a tank run dry. Switching tanks is often the fix. The electric fuel pump ensures pressure while the engine-driven pump is windmilling.'
   },
   {
-    icon: 'ðŸŒ¡ï¸',
+    icon: '🌡️',
     title: 'Carburetor Ice',
-    situation: 'Gradual RPM loss, humid conditions, 50Â°F. No roughness. First action?',
+    situation: 'Gradual RPM loss, humid conditions, 50°F. No roughness. First action?',
     correct: 1,
     options: [
-      'Switch fuel tanks â€” possible contamination',
+      'Switch fuel tanks — possible contamination',
       'Full carb heat immediately',
-      'Lean mixture â€” possible over-rich condition',
+      'Lean mixture — possible over-rich condition',
       'Check mags L/R'
     ],
-    explanation: 'Apply full carb heat immediately. Expect a further RPM drop as ice melts â€” this confirms carb ice. Once RPM rises back, the ice is cleared. Return carb heat to cold at full power.',
-    why: 'The Lycoming O-320 in the Cherokee is particularly susceptible to carb ice at low power settings â€” approach and cruise descent are prime times. Always use carb heat preemptively in suspect conditions.'
+    explanation: 'Apply full carb heat immediately. Expect a further RPM drop as ice melts — this confirms carb ice. Once RPM rises back, the ice is cleared. Return carb heat to cold at full power.',
+    why: 'The Lycoming O-320 in the Cherokee is particularly susceptible to carb ice at low power settings — approach and cruise descent are prime times. Always use carb heat preemptively in suspect conditions.'
   },
   {
-    icon: 'â›½',
+    icon: '⛽',
     title: 'Fuel Pump Failure',
     situation: 'Fuel pressure drops in cruise. Fuel pump circuit breaker is in. First action?',
     correct: 2,
     options: [
       'Declare emergency and land immediately',
-      'Switch fuel tanks â€” other tank may be higher',
-      'Turn electric fuel pump ON â€” check pressure restores',
+      'Switch fuel tanks — other tank may be higher',
+      'Turn electric fuel pump ON — check pressure restores',
       'Lean mixture to reduce fuel flow demand'
     ],
-    explanation: 'Turn the electric boost pump ON. If fuel pressure restores, the engine-driven pump has likely failed. The electric pump can sustain flight â€” but plan to land soon and have maintenance check the engine-driven pump.',
-    why: 'The Cherokee has two fuel pumps: engine-driven (primary) and electric (backup). The electric pump is there exactly for this scenario. Low fuel pressure doesn\'t mean emergency if the backup works â€” but don\'t delay landing.'
+    explanation: 'Turn the electric boost pump ON. If fuel pressure restores, the engine-driven pump has likely failed. The electric pump can sustain flight — but plan to land soon and have maintenance check the engine-driven pump.',
+    why: 'The Cherokee has two fuel pumps: engine-driven (primary) and electric (backup). The electric pump is there exactly for this scenario. Low fuel pressure doesn\'t mean emergency if the backup works — but don\'t delay landing.'
   }
     ]
   }
@@ -314,25 +314,25 @@
 
 
 const GLOSSARY = {
-  'RDU Ground': { term: 'Ground Control', def: 'The ATC frequency that controls aircraft movement on the ground â€” taxiways, ramps, and runways not in use. You call Ground to get your taxi clearance before heading to the runway. RDU is the ICAO identifier for Raleigh-Durham International Airport.' },
+  'RDU Ground': { term: 'Ground Control', def: 'The ATC frequency that controls aircraft movement on the ground — taxiways, ramps, and runways not in use. You call Ground to get your taxi clearance before heading to the runway. RDU is the ICAO identifier for Raleigh-Durham International Airport.' },
   'N4521G': { term: 'Tail Number / N-Number', def: 'Your aircraft\'s unique FAA registration number, like a license plate. All US-registered aircraft start with N. When you say it on the radio, you use the phonetic alphabet: N4521G becomes "November Four Five Two One Golf." You always identify yourself this way.' },
-  'Signature FBO': { term: 'FBO (Fixed Base Operator)', def: 'A private company at an airport that provides services to general aviation pilots â€” fuel, parking, tie-downs, pilot lounges, rental cars, and sometimes aircraft rentals. Signature is one of the largest FBO chains. Think of it as the "pilot hotel lobby" at an airport.' },
-  'Taxi for VFR departure': { term: 'VFR (Visual Flight Rules)', def: 'A set of FAA regulations for flying when you can see where you\'re going â€” at least 3 miles visibility and clear of clouds. The alternative is IFR (Instrument Flight Rules), used in clouds. As a student pilot, you\'re flying VFR.' },
-  'CTAF': { term: 'CTAF (Common Traffic Advisory Frequency)', def: 'At airports without a control tower, pilots self-announce their position on a shared radio frequency. Everyone on the frequency can hear each other and coordinate. Listed in your chart supplement â€” usually 122.8 or similar.' },
+  'Signature FBO': { term: 'FBO (Fixed Base Operator)', def: 'A private company at an airport that provides services to general aviation pilots — fuel, parking, tie-downs, pilot lounges, rental cars, and sometimes aircraft rentals. Signature is one of the largest FBO chains. Think of it as the "pilot hotel lobby" at an airport.' },
+  'Taxi for VFR departure': { term: 'VFR (Visual Flight Rules)', def: 'A set of FAA regulations for flying when you can see where you\'re going — at least 3 miles visibility and clear of clouds. The alternative is IFR (Instrument Flight Rules), used in clouds. As a student pilot, you\'re flying VFR.' },
+  'CTAF': { term: 'CTAF (Common Traffic Advisory Frequency)', def: 'At airports without a control tower, pilots self-announce their position on a shared radio frequency. Everyone on the frequency can hear each other and coordinate. Listed in your chart supplement — usually 122.8 or similar.' },
   'Tail': { term: 'Tail Number / Callsign', def: 'Your aircraft\'s FAA registration number, used as your callsign on the radio. Always identify yourself with this when calling ATC or making position reports.' },
   'Frequency': { term: 'Radio Frequency (MHz)', def: 'Aviation uses VHF frequencies between 118.0 and 136.975 MHz. ATC assigns you specific frequencies to switch to as you move through their airspace. Your radio must be set to the correct frequency to communicate.' },
-  'Squawk': { term: 'Transponder Code (Squawk)', def: 'A 4-digit code you enter into your transponder â€” a radar beacon that tells ATC exactly who you are on their radar screen. ATC assigns you a unique code. "Squawk 4521" means dial in 4521. Special codes: 7700 = emergency, 7600 = lost comms, 7500 = hijacking.' },
+  'Squawk': { term: 'Transponder Code (Squawk)', def: 'A 4-digit code you enter into your transponder — a radar beacon that tells ATC exactly who you are on their radar screen. ATC assigns you a unique code. "Squawk 4521" means dial in 4521. Special codes: 7700 = emergency, 7600 = lost comms, 7500 = hijacking.' },
   'Altitude': { term: 'Altitude Report', def: 'When checking in with ATC while climbing or descending, say "out of [altitude]" rather than just the number. This tells them you\'re in motion. "Out of one thousand eight hundred" means you\'re passing through 1,800 ft and still climbing.' },
   'Leg': { term: 'Traffic Pattern Leg', def: 'The standard rectangular flight path around an airport for landing. Legs in order: Crosswind (perpendicular after takeoff), Downwind (parallel to runway, opposite direction), Base (perpendicular turning toward runway), Final (aligned with runway for landing).' },
-  'Runway': { term: 'Runway Number', def: 'Runways are numbered by their magnetic heading rounded to the nearest 10Â°, then divided by 10. Runway 27 points roughly 270Â° (west). The opposite end would be Runway 09 (east). On the radio, say each digit: "runway two seven" not "runway twenty-seven."' },
-  'Airport': { term: 'Airport Identifier', def: 'Each airport has a unique code. In the US, towered airports often use 3-letter codes (RDU, JFK, LAX). Ground control is the ATC facility that handles surface movement â€” you call them after ATIS to get your taxi clearance.' },
+  'Runway': { term: 'Runway Number', def: 'Runways are numbered by their magnetic heading rounded to the nearest 10°, then divided by 10. Runway 27 points roughly 270° (west). The opposite end would be Runway 09 (east). On the radio, say each digit: "runway two seven" not "runway twenty-seven."' },
+  'Airport': { term: 'Airport Identifier', def: 'Each airport has a unique code. In the US, towered airports often use 3-letter codes (RDU, JFK, LAX). Ground control is the ATC facility that handles surface movement — you call them after ATIS to get your taxi clearance.' },
   'with information Alpha': { term: 'ATIS / Information Code', def: 'ATIS (Automatic Terminal Information Service) is a recorded loop of current weather, runways in use, and NOTAMs at towered airports. Each recording is labeled with a letter (Alpha, Bravo, Charlie...). Telling ATC you "have information Alpha" confirms you\'ve listened to it and know the current conditions.' },
 };
 
 
 const RADIO_SCENARIOS = [
   {
-    type: 'Initial Callup â€” Class D',
+    type: 'Initial Callup — Class D',
     situation: "You're departing from a towered airport. You need to call ground for taxi.",
     data: [
       { label: 'Airport', value: 'RDU Ground', gloss: 'Airport' },
@@ -343,15 +343,15 @@ const RADIO_SCENARIOS = [
     ideal: 'RDU Ground, Cessna Four Five Two One Golf, at Signature, with information Alpha, VFR departure to the southeast, request taxi.',
     words: ['RDU Ground', 'Cessna Four Five Two One Golf', 'at Signature', 'with information Alpha', 'VFR departure to the southeast', 'request taxi'],
     distractors: [
-      { text: 'N4521G', why: 'Use the spoken phonetic form â€” "Cessna Four Five Two One Golf" â€” not the raw N-number.' },
+      { text: 'N4521G', why: 'Use the spoken phonetic form — "Cessna Four Five Two One Golf" — not the raw N-number.' },
       { text: 'request takeoff clearance', why: 'Ground control handles taxi only. Tower issues takeoff clearance when you\'re at the runway.' },
-      { text: 'over', why: '"Over" is not used in aviation radio calls â€” it\'s a civilian misconception from military/CB radio.' },
+      { text: 'over', why: '"Over" is not used in aviation radio calls — it\'s a civilian misconception from military/CB radio.' },
     ],
-    rule: { repeats: false, why: 'Controlled field â€” tower knows which airport you\'re at. No need to repeat the name; it wastes airtime and sounds odd to ATC.' },
-    note: "Lead with WHO YOU'RE CALLING â†’ WHO YOU ARE â†’ WHERE YOU ARE â†’ ATIS CODE â†’ REQUEST. This is the universal format for any initial callup."
+    rule: { repeats: false, why: 'Controlled field — tower knows which airport you\'re at. No need to repeat the name; it wastes airtime and sounds odd to ATC.' },
+    note: "Lead with WHO YOU'RE CALLING → WHO YOU ARE → WHERE YOU ARE → ATIS CODE → REQUEST. This is the universal format for any initial callup."
   },
   {
-    type: 'Pattern Entry â€” Uncontrolled',
+    type: 'Pattern Entry — Uncontrolled',
     situation: "Approaching an uncontrolled airport (CTAF). You're 10 miles out, inbound for runway 27.",
     data: [
       { label: 'CTAF', value: '122.8', gloss: 'CTAF' },
@@ -362,15 +362,15 @@ const RADIO_SCENARIOS = [
     ideal: 'Caldwell traffic, Cessna Four Five Two One Golf, ten miles east, three thousand five hundred, inbound landing runway two seven, Caldwell.',
     words: ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'ten miles east', 'three thousand five hundred', 'inbound landing runway two seven', 'Caldwell'],
     distractors: [
-      { text: 'Caldwell tower', why: 'Uncontrolled fields have no tower. The correct suffix is "traffic" â€” it addresses all aircraft on frequency.' },
+      { text: 'Caldwell tower', why: 'Uncontrolled fields have no tower. The correct suffix is "traffic" — it addresses all aircraft on frequency.' },
       { text: 'with information Bravo', why: 'ATIS codes are only reported to controlled fields with towers. At uncontrolled airports, there\'s no ATIS to report.' },
-      { text: 'any traffic please advise', why: 'This phrase is not standard FAA phraseology and is actively discouraged â€” it clutters the frequency and doesn\'t add useful information.' },
+      { text: 'any traffic please advise', why: 'This phrase is not standard FAA phraseology and is actively discouraged — it clutters the frequency and doesn\'t add useful information.' },
     ],
-    rule: { repeats: true, why: 'Uncontrolled field â€” multiple airports can share the same CTAF frequency. The trailing airport name confirms you and other traffic are talking about the same field.' },
-    note: "Uncontrolled calls: Airport + 'traffic' â†’ who you are â†’ position â†’ altitude â†’ intentions â†’ airport name again. That final airport name confirms you're on the right frequency."
+    rule: { repeats: true, why: 'Uncontrolled field — multiple airports can share the same CTAF frequency. The trailing airport name confirms you and other traffic are talking about the same field.' },
+    note: "Uncontrolled calls: Airport + 'traffic' → who you are → position → altitude → intentions → airport name again. That final airport name confirms you're on the right frequency."
   },
   {
-    type: 'Checking In â€” Approach Control',
+    type: 'Checking In — Approach Control',
     situation: "Tower told you to contact approach on 124.35 after takeoff. You're climbing through 1,800.",
     data: [
       { label: 'Frequency', value: '124.35', gloss: 'Frequency' },
@@ -381,15 +381,15 @@ const RADIO_SCENARIOS = [
     ideal: 'Raleigh Approach, Cessna Four Five Two One Golf, out of one thousand eight hundred, climbing VFR.',
     words: ['Raleigh Approach', 'Cessna Four Five Two One Golf', 'out of one thousand eight hundred', 'climbing VFR'],
     distractors: [
-      { text: 'squawking four five two one', why: 'Don\'t repeat your squawk code when checking in â€” approach already sees it on radar. Saying it wastes airtime.' },
-      { text: 'at one thousand eight hundred', why: 'Say "out of" when climbing or descending â€” it tells approach you\'re in motion, not level. "At" implies you\'re established at that altitude.' },
-      { text: 'request flight following', why: 'This would be appropriate later once established â€” but your first call is just a check-in. Keep it short.' },
+      { text: 'squawking four five two one', why: 'Don\'t repeat your squawk code when checking in — approach already sees it on radar. Saying it wastes airtime.' },
+      { text: 'at one thousand eight hundred', why: 'Say "out of" when climbing or descending — it tells approach you\'re in motion, not level. "At" implies you\'re established at that altitude.' },
+      { text: 'request flight following', why: 'This would be appropriate later once established — but your first call is just a check-in. Keep it short.' },
     ],
-    rule: { repeats: false, why: 'Controlled airspace â€” approach has your squawk on radar and knows exactly who and where you are. No need to repeat the airport name.' },
-    note: "When checking in with approach, give: facility â†’ callsign â†’ current altitude (say 'out of' if climbing/descending) â†’ intentions. They already have your squawk â€” don't repeat it."
+    rule: { repeats: false, why: 'Controlled airspace — approach has your squawk on radar and knows exactly who and where you are. No need to repeat the airport name.' },
+    note: "When checking in with approach, give: facility → callsign → current altitude (say 'out of' if climbing/descending) → intentions. They already have your squawk — don't repeat it."
   },
   {
-    type: 'Base Leg Call â€” CTAF',
+    type: 'Base Leg Call — CTAF',
     situation: "You're on left base for runway 27 at an uncontrolled field.",
     data: [
       { label: 'CTAF', value: '122.8', gloss: 'CTAF' },
@@ -400,19 +400,19 @@ const RADIO_SCENARIOS = [
     ideal: 'Caldwell traffic, Cessna Four Five Two One Golf, left base runway two seven, Caldwell.',
     words: ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'left base runway two seven', 'Caldwell'],
     distractors: [
-      { text: 'turning base', why: 'Say "left base" â€” not "turning base." You\'re announcing your current leg, not the maneuver. If you\'re still turning, wait until established.' },
+      { text: 'turning base', why: 'Say "left base" — not "turning base." You\'re announcing your current leg, not the maneuver. If you\'re still turning, wait until established.' },
       { text: 'final approach', why: 'You\'re on base, not final. Announcing the wrong leg confuses other traffic who are trying to sequence behind you.' },
-      { text: 'souls on board two', why: 'Souls on board is emergency phraseology only â€” used when declaring a Mayday. Never used in normal pattern calls.' },
+      { text: 'souls on board two', why: 'Souls on board is emergency phraseology only — used when declaring a Mayday. Never used in normal pattern calls.' },
     ],
-    rule: { repeats: true, why: 'Uncontrolled field â€” bookend every CTAF call with the airport name. Short pattern calls especially need it since there\'s less context for other traffic to work with.' },
+    rule: { repeats: true, why: 'Uncontrolled field — bookend every CTAF call with the airport name. Short pattern calls especially need it since there\'s less context for other traffic to work with.' },
     note: "Keep pattern calls concise. Announce each leg: crosswind, downwind, base, final. Always bookend with the airport name so other traffic confirms they're on the right freq."
   }
 ];
 
 const AIRPORTS = {
-  // â”€â”€ ROCK HILL / CHARLOTTE AREA â”€â”€
+  // ── ROCK HILL / CHARLOTTE AREA ──
   KUZA: ['Rock Hill / York County', 666, ''],
-  KCLT: ['Charlotte Douglas Intl', 748, 'Class B â€” not for pattern work'],
+  KCLT: ['Charlotte Douglas Intl', 748, 'Class B — not for pattern work'],
   KJQF: ['Concord-Padgett Regional', 705, ''],
   KSVH: ['Statesville Regional', 968, ''],
   KRUQ: ['Rowan County', 773, ''],
@@ -431,7 +431,7 @@ const AIRPORTS = {
   KMYR: ['Myrtle Beach Intl', 25, ''],
   KFLO: ['Florence Regional', 146, ''],
 
-  // â”€â”€ NC TRIANGLE / PIEDMONT â”€â”€
+  // ── NC TRIANGLE / PIEDMONT ──
   KRDU: ['Raleigh-Durham Intl', 435, 'Class C'],
   Kigx: ['Horace Williams / Chapel Hill', 521, ''],
   KLHZ: ['Triangle North / Franklin County', 587, ''],
@@ -441,14 +441,14 @@ const AIRPORTS = {
   KINT: ['Smith Reynolds / Winston-Salem', 969, ''],
   KGBR: ['Walter J Koladza / Great Barrington', 728, ''],
   KHKY: ['Hickory Regional', 1190, ''],
-  KAVL: ['Asheville Regional', 2165, 'Mountain â€” DA matters'],
+  KAVL: ['Asheville Regional', 2165, 'Mountain — DA matters'],
   KMRN: ['Foothills Regional / Morganton', 1270, ''],
   KFAY: ['Fayetteville Regional', 189, ''],
   KPOB: ['Pope Field', 217, ''],
   KILM: ['Wilmington Intl', 32, ''],
   KOGB: ['Orangeburg Municipal', 195, ''],
 
-  // â”€â”€ SC â”€â”€
+  // ── SC ──
   KCHS: ['Charleston Intl', 46, 'Class C'],
   KHXD: ['Hilton Head', 19, ''],
   KBMG: ['Bloomington / Monroe County', 846, ''],
@@ -458,9 +458,9 @@ const AIRPORTS = {
   KCNI: ['Cherokee County', 897, ''],
   KGGE: ['Georgetown County', 39, ''],
 
-  // â”€â”€ GA â”€â”€
+  // ── GA ──
   KATL: ['Hartsfield-Jackson Atlanta Intl', 1026, 'Class B'],
-  KPDK: ['DeKalb-Peachtree', 1003, 'Class D â€” busy GA field'],
+  KPDK: ['DeKalb-Peachtree', 1003, 'Class D — busy GA field'],
   KFTY: ['Fulton County / Charlie Brown', 841, ''],
   KVPC: ['Cartersville', 759, ''],
   KLZU: ['Gwinnett County / Briscoe Field', 1061, ''],
@@ -474,7 +474,7 @@ const AIRPORTS = {
   KMCN: ['Middle Georgia Regional', 354, ''],
   KCSV: ['Crossville Memorial', 1881, ''],
 
-  // â”€â”€ NATIONAL â€” MAJOR GA HUBS â”€â”€
+  // ── NATIONAL — MAJOR GA HUBS ──
   KOSH: ['Wittman Regional / Oshkosh', 808, 'Home of AirVenture'],
   KADS: ['Addison / Dallas area', 644, ''],
   KDVN: ['Quad City Intl', 589, ''],
@@ -508,7 +508,7 @@ const AIRPORTS = {
   KGYR: ['Phoenix Goodyear', 968, ''],
   KTUS: ['Tucson Intl', 2643, 'Class C'],
   KRYN: ['Ryan Field / Tucson', 2417, ''],
-  KABQ: ['Albuquerque Intl Sunport', 5355, 'High DA â€” density altitude matters'],
+  KABQ: ['Albuquerque Intl Sunport', 5355, 'High DA — density altitude matters'],
   KAEG: ['Double Eagle II / Albuquerque', 5837, ''],
   KDEN: ['Denver Intl', 5431, 'Class B'],
   KAPA: ['Centennial', 5883, 'Busy GA'],
@@ -603,7 +603,7 @@ const AIRPORTS = {
   KJFK: ['John F Kennedy Intl', 13, 'Class B'],
   KLGA: ['LaGuardia', 21, 'Class B'],
   KEWR: ['Newark Liberty Intl', 18, 'Class B'],
-  KTEB: ['Teterboro', 9, 'Class D â€” busy bizjet field'],
+  KTEB: ['Teterboro', 9, 'Class D — busy bizjet field'],
   KCDW: ['Caldwell / Essex County', 173, ''],
   KSMQ: ['Somerset Hills / Somerville NJ', 105, ''],
   KMMU: ['Morristown Municipal', 187, ''],
@@ -614,7 +614,7 @@ const AIRPORTS = {
   KBWI: ['Baltimore-Washington Intl', 146, 'Class B'],
   KGAI: ['Montgomery County Airpark', 539, ''],
   KFME: ['Tipton / Fort Meade', 150, ''],
-  KDCA: ['Reagan National', 15, 'Class B â€” SFRA'],
+  KDCA: ['Reagan National', 15, 'Class B — SFRA'],
   KIAD: ['Dulles Intl', 313, 'Class B'],
   KDAN: ['Danville Regional', 571, ''],
   KLFI: ['Langley AFB / Hampton', 11, ''],

@@ -9,7 +9,13 @@
       "Bash(git -C \"d:\\\\Github\\\\chairfly\" log --oneline -3)",
       "Bash(git -C \"d:\\\\Github\\\\chairfly\" add .github/workflows/deploy.yml)",
       "Bash(git -C 'd:\\\\Github\\\\chairfly' commit -m ' *)",
-      "Bash(git -C \"d:\\\\Github\\\\chairfly\" push origin main)"
+      "Bash(git -C \"d:\\\\Github\\\\chairfly\" push origin main)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git add css/*)",
+      "Bash(git add js/*)",
+      "PowerShell(*)",
+      "Bash(node -e ' *)"
     ]
   }
 }
