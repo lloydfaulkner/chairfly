@@ -1936,7 +1936,7 @@ function startSpeech() {
 
   const rec = new SpeechRecognition();
   rec.lang = 'en-US';
-  rec.continuous = false;
+  rec.continuous = true;
   rec.interimResults = true;
   rec.maxAlternatives = 3;
 
@@ -1955,15 +1955,14 @@ function startSpeech() {
 
   rec.onresult = (e) => {
     let interim = '';
-    let final = '';
+    let finals = speechState.transcript;
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final += t;
+      if (e.results[i].isFinal) finals = (finals + ' ' + t).trim();
       else interim += t;
     }
-    const display = final || interim;
-    output.textContent = display;
-    if (final) speechState.transcript = final.trim();
+    speechState.transcript = finals;
+    output.textContent = interim ? finals + ' ' + interim : finals;
   };
 
   rec.onerror = (e) => {
