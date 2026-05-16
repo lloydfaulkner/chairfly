@@ -303,7 +303,8 @@ function clearRadioCall() {
 
 function checkRadioCall() {
   const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
-  const isCorrect = state.radio.builtCall.join(',') === s.words.join(',');
+  const allAccepted = [s.words, ...(s.acceptedVariants || [])];
+  const isCorrect = allAccepted.some(v => state.radio.builtCall.join(',') === v.join(','));
 
   const usedDistractors = state.radio.builtCall
     .map(w => (s.distractors || []).find(d => d.text === w))

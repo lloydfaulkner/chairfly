@@ -342,6 +342,9 @@ const RADIO_SCENARIOS = [
     ],
     ideal: 'RDU Ground, Cessna Four Five Two One Golf, at Signature, with information Alpha, VFR departure to the southeast, request taxi.',
     words: ['RDU Ground', 'Cessna Four Five Two One Golf', 'at Signature', 'with information Alpha', 'VFR departure to the southeast', 'request taxi'],
+    acceptedVariants: [
+      ['RDU Ground', 'Cessna Four Five Two One Golf', 'with information Alpha', 'at Signature', 'VFR departure to the southeast', 'request taxi'],
+    ],
     distractors: [
       { text: 'N4521G', why: 'Use the spoken phonetic form — "Cessna Four Five Two One Golf" — not the raw N-number.' },
       { text: 'request takeoff clearance', why: 'Ground control handles taxi only. Tower issues takeoff clearance when you\'re at the runway.' },
@@ -361,6 +364,9 @@ const RADIO_SCENARIOS = [
     ],
     ideal: 'Caldwell traffic, Cessna Four Five Two One Golf, ten miles east, three thousand five hundred, inbound landing runway two seven, Caldwell.',
     words: ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'ten miles east', 'three thousand five hundred', 'inbound landing runway two seven', 'Caldwell'],
+    acceptedVariants: [
+      ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'three thousand five hundred', 'ten miles east', 'inbound landing runway two seven', 'Caldwell'],
+    ],
     distractors: [
       { text: 'Caldwell tower', why: 'Uncontrolled fields have no tower. The correct suffix is "traffic" — it addresses all aircraft on frequency.' },
       { text: 'with information Bravo', why: 'ATIS codes are only reported to controlled fields with towers. At uncontrolled airports, there\'s no ATIS to report.' },
@@ -380,6 +386,9 @@ const RADIO_SCENARIOS = [
     ],
     ideal: 'Raleigh Approach, Cessna Four Five Two One Golf, out of one thousand eight hundred, climbing VFR.',
     words: ['Raleigh Approach', 'Cessna Four Five Two One Golf', 'out of one thousand eight hundred', 'climbing VFR'],
+    acceptedVariants: [
+      ['Raleigh Approach', 'Cessna Four Five Two One Golf', 'climbing VFR', 'out of one thousand eight hundred'],
+    ],
     distractors: [
       { text: 'squawking four five two one', why: 'Don\'t repeat your squawk code when checking in — approach already sees it on radar. Saying it wastes airtime.' },
       { text: 'at one thousand eight hundred', why: 'Say "out of" when climbing or descending — it tells approach you\'re in motion, not level. "At" implies you\'re established at that altitude.' },
