@@ -219,6 +219,16 @@ Controlled field calls do NOT repeat airport name (repeats: false)
 - Uses webkitSpeechRecognition (iOS Safari compatible)
 - Requires HTTPS — works on CloudFront URL, NOT on file:// local
 - Degrades gracefully with clear error message if unavailable
+- Works in BOTH the Radio tab and Procedures tab radio steps
+- `speechContext` ('radio' | 'proc') controls which DOM elements speech functions target
+- `SPEECH_DOM` maps each context to its element IDs (mic-btn, label, status, output)
+- `startSpeech()` / `stopSpeech()` are shared — set `speechContext` before calling
+- `buildSpeechResultHTML(result, retryFn, revealFn)` — single source of truth for
+  rendering speech results (score line, word highlights, Try Again / Show Ideal buttons).
+  Both `checkSpeechCall()` (Radio tab) and `checkProcSpeech()` (Procedures tab) use it.
+  Change the visual format here and it applies everywhere.
+- Procedures: `setProcRadioMode('chips'|'speak')` toggles the mode; `wireInteractive()`
+  resets to chips mode and restores speechContext='radio' on each new step
 
 ### Speech grading — scoreSpeechCall()
 Grades spoken transcript against scenario `words[]` chips. Each chip is

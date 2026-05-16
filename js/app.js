@@ -1249,6 +1249,9 @@ function renderControl(ctrl) {
 
 function wireInteractive(step) {
   if (step.type === 'radio') {
+    if (speechState.listening) stopSpeech();
+    procRadioInputMode = 'chips';
+    speechContext = 'radio';
     procRadioState = { built: [], builtKeys: [], words: [...step.words] };
     const wb = document.getElementById('proc-word-bank');
     if (wb) {
@@ -1407,14 +1410,33 @@ function renderRadioStep(step) {
   ).join('');
 
   return `
-    <div class="proc-radio-output" id="proc-radio-output">
-      <span class="placeholder">Tap words below in the correct order...</span>
+    <div class="radio-input-toggle">
+      <button class="radio-input-btn active" id="proc-rbtn-chips" onclick="setProcRadioMode('chips')">Word Chips</button>
+      <button class="radio-input-btn" id="proc-rbtn-speak" onclick="setProcRadioMode('speak')">🎙 Speak It</button>
     </div>
-    <div class="proc-word-bank" id="proc-word-bank">${chips}</div>
-    <div class="word-bank-hint">tap a word to add · tap again to remove</div>
+    <div id="proc-chip-area">
+      <div class="proc-radio-output" id="proc-radio-output">
+        <span class="placeholder">Tap words below in the correct order...</span>
+      </div>
+      <div class="proc-word-bank" id="proc-word-bank">${chips}</div>
+      <div class="word-bank-hint">tap a word to add · tap again to remove</div>
+    </div>
+    <div id="proc-speak-area" style="display:none">
+      <div class="radio-output" id="proc-speak-output">
+        <span class="placeholder">Tap the mic and say your call...</span>
+      </div>
+      <div class="speak-mic-wrap">
+        <button class="mic-btn" id="proc-mic-btn" onclick="toggleProcSpeech()">
+          <span class="mic-icon">🎙</span>
+          <span class="mic-label" id="proc-mic-label">Tap to speak</span>
+        </button>
+        <div class="mic-status" id="proc-mic-status"></div>
+      </div>
+      <div class="speak-hint">Say the full radio call out loud — speak clearly and at normal radio pace</div>
+    </div>
     <div class="proc-radio-actions">
-      <button class="btn btn-primary btn-sm" onclick="checkProcRadio()">Check Call</button>
-      <button class="btn btn-sm" onclick="clearProcRadio()">Clear</button>
+      <button class="btn btn-primary btn-sm" onclick="checkProcRadioActive()">Check Call</button>
+      <button class="btn btn-sm" onclick="clearProcRadioActive()">Clear</button>
     </div>`;
 }
 
@@ -1449,6 +1471,74 @@ function clearProcRadio() {
   document.getElementById('proc-feedback').innerHTML = '';
   document.getElementById('proc-next-btn').classList.remove('show');
   procState.answered = false;
+}
+
+function setProcRadioMode(mode) {
+  procRadioInputMode = mode;
+  document.getElementById('proc-rbtn-chips').classList.toggle('active', mode === 'chips');
+  document.getElementById('proc-rbtn-speak').classList.toggle('active', mode === 'speak');
+  document.getElementById('proc-chip-area').style.display = mode === 'chips' ? '' : 'none';
+  document.getElementById('proc-speak-area').style.display = mode === 'speak' ? '' : 'none';
+  if (mode === 'speak') {
+    speechState.transcript = '';
+    document.getElementById('proc-speak-output').innerHTML =
+      '<span class="placeholder">Tap the mic and say your call...</span>';
+    document.getElementById('proc-mic-status').textContent = '';
+  }
+}
+
+function toggleProcSpeech() {
+  speechContext = 'proc';
+  toggleSpeech();
+}
+
+function checkProcRadioActive() {
+  if (procRadioInputMode === 'chips') checkProcRadio();
+  else checkProcSpeech();
+}
+
+function clearProcRadioActive() {
+  if (procRadioInputMode === 'chips') {
+    clearProcRadio();
+  } else {
+    if (speechState.listening) stopSpeech();
+    speechState.transcript = '';
+    document.getElementById('proc-speak-output').innerHTML =
+      '<span class="placeholder">Tap the mic and say your call...</span>';
+    const fb = document.getElementById('proc-feedback');
+    fb.className = 'proc-feedback';
+    fb.innerHTML = '';
+    document.getElementById('proc-mic-status').textContent = '';
+    document.getElementById('proc-next-btn').classList.remove('show');
+    procState.answered = false;
+  }
+}
+
+function checkProcSpeech() {
+  if (!speechState.transcript) {
+    document.getElementById('proc-mic-status').textContent = 'Say your call first';
+    return;
+  }
+  if (procState.answered) return;
+  procState.answered = true;
+
+  const step = procState.currentProc.steps[procState.currentStep];
+  const result = scoreSpeechCall(speechState.transcript, step.ideal, step.words, step.speechOptional || []);
+  const { isGood, pct, wordHtml, buttonsHtml } = buildSpeechResultHTML(
+    result, 'clearProcRadioActive()', 'revealProcRadio()'
+  );
+
+  const fb = document.getElementById('proc-feedback');
+  fb.className = `proc-feedback show ${isGood ? 'correct' : 'wrong'}`;
+  fb.innerHTML = `
+    <div style="font-weight:600;margin-bottom:8px">
+      ${isGood ? `✓ Good call — ${pct}% match` : `✗ ${pct}% match — review below`}
+    </div>
+    <div style="margin-bottom:6px;font-size:11px;color:#9ab8d0">Word match:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:${isGood ? '0' : '4px'}">${wordHtml}</div>
+    ${buttonsHtml}`;
+
+  if (isGood) document.getElementById('proc-next-btn').classList.add('show');
 }
 
 function checkProcRadio() {
@@ -1907,6 +1997,12 @@ function seqNextPhase() {
 // ══════════════════════════════════════
 
 let radioInputMode = 'chips'; // 'chips' | 'speak'
+let procRadioInputMode = 'chips'; // 'chips' | 'speak'
+let speechContext = 'radio'; // 'radio' | 'proc' — controls which DOM elements speech functions target
+const SPEECH_DOM = {
+  radio: { btn: 'mic-btn', label: 'mic-label', status: 'mic-status', output: 'radio-speak-output' },
+  proc:  { btn: 'proc-mic-btn', label: 'proc-mic-label', status: 'proc-mic-status', output: 'proc-speak-output' }
+};
 let speechState = { recognition: null, listening: false, transcript: '' };
 
 function setRadioMode(mode, btn) {
@@ -1969,8 +2065,9 @@ function toggleSpeech() {
 
 function startSpeech() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const dom = SPEECH_DOM[speechContext];
   if (!SpeechRecognition) {
-    document.getElementById('mic-status').textContent = 'Speech not supported in this browser';
+    document.getElementById(dom.status).textContent = 'Speech not supported in this browser';
     return;
   }
 
@@ -1984,14 +2081,14 @@ function startSpeech() {
   speechState.listening = true;
   speechState.transcript = '';
 
-  const btn = document.getElementById('mic-btn');
-  const status = document.getElementById('mic-status');
-  const output = document.getElementById('radio-speak-output');
+  const btn = document.getElementById(dom.btn);
+  const status = document.getElementById(dom.status);
+  const output = document.getElementById(dom.output);
 
   btn.classList.add('listening');
-  document.getElementById('mic-label').textContent = 'Listening...';
+  document.getElementById(dom.label).textContent = 'Listening...';
   status.textContent = 'Speak now';
-  document.getElementById('radio-feedback').classList.remove('show');
+  if (speechContext === 'radio') document.getElementById('radio-feedback').classList.remove('show');
 
   rec.onresult = (e) => {
     let interim = '';
@@ -2028,9 +2125,11 @@ function stopSpeech() {
     try { speechState.recognition.stop(); } catch(e) {}
     speechState.recognition = null;
   }
-  const btn = document.getElementById('mic-btn');
-  btn.classList.remove('listening');
-  document.getElementById('mic-label').textContent = 'Tap to speak';
+  const dom = SPEECH_DOM[speechContext];
+  const btn = document.getElementById(dom.btn);
+  if (btn) btn.classList.remove('listening');
+  const label = document.getElementById(dom.label);
+  if (label) label.textContent = 'Tap to speak';
 }
 
 function checkSpeechCall() {
@@ -2041,35 +2140,37 @@ function checkSpeechCall() {
 
   const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
   const result = scoreSpeechCall(speechState.transcript, s.ideal, s.words, s.speechOptional || []);
+  const { isGood, pct, wordHtml, buttonsHtml } = buildSpeechResultHTML(
+    result, 'clearRadioCallActive()', 'revealRadioCall()'
+  );
 
   const fb = document.getElementById('radio-feedback');
   fb.classList.add('show');
 
   const hdr = document.getElementById('feedback-header');
-  const isGood = result.score >= 0.8;
   hdr.className = 'feedback-header ' + (isGood ? 'correct' : 'incorrect');
-  hdr.textContent = isGood
-    ? `✓ Good call — ${Math.round(result.score * 100)}% match`
-    : `✗ ${Math.round(result.score * 100)}% match — review below`;
-
-  // Word-by-word highlight
-  const wordHtml = result.words.map(w =>
-    `<span class="speech-word ${w.status}">${w.word}</span>`
-  ).join(' ');
+  hdr.textContent = isGood ? `✓ Good call — ${pct}% match` : `✗ ${pct}% match — review below`;
 
   document.getElementById('feedback-ideal').innerHTML =
     `<div style="margin-bottom:8px;font-size:11px;color:#9ab8d0">Ideal call — word match:</div>
      <div class="speech-score" style="padding:0;background:none;border:none;flex-wrap:wrap;gap:4px">${wordHtml}</div>`;
 
-  let note = s.note;
-  const usedDistractors = s.words
-    ? [] // speech mode doesn't use chips so no distractor tracking
-    : [];
-  document.getElementById('feedback-note').innerHTML = note +
-    (!isGood ? `<br><br><div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn btn-sm" onclick="clearRadioCallActive()">↩ Try Again</button>
-      <button class="btn btn-sm" onclick="revealRadioCall()">Show Ideal</button>
-    </div>` : '');
+  document.getElementById('feedback-note').innerHTML = s.note + buttonsHtml;
+}
+
+function buildSpeechResultHTML(result, retryFn, revealFn) {
+  const isGood = result.score >= 0.8;
+  const pct = Math.round(result.score * 100);
+  const wordHtml = result.words.map(w =>
+    `<span class="speech-word ${w.status}">${w.word}</span>`
+  ).join(' ');
+  const buttonsHtml = !isGood
+    ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn btn-sm" onclick="${retryFn}">↩ Try Again</button>
+        <button class="btn btn-sm" onclick="${revealFn}">Show Ideal Call</button>
+      </div>`
+    : '';
+  return { isGood, pct, wordHtml, buttonsHtml };
 }
 
 function scoreSpeechCall(spoken, ideal, words, optionalWords = []) {
