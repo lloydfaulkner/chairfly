@@ -4,7 +4,12 @@
       "Bash(New-Item -ItemType Directory -Force -Path \"d:\\\\Github\\\\chairfly\\\\css\",\"d:\\\\Github\\\\chairfly\\\\js\",\".github\\\\workflows\")",
       "Bash(Out-Null)",
       "Bash(Write-Host \"Dirs created\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git -C \"d:\\\\Github\\\\chairfly\" status)",
+      "Bash(git -C \"d:\\\\Github\\\\chairfly\" log --oneline -3)",
+      "Bash(git -C \"d:\\\\Github\\\\chairfly\" add .github/workflows/deploy.yml)",
+      "Bash(git -C 'd:\\\\Github\\\\chairfly' commit -m ' *)",
+      "Bash(git -C \"d:\\\\Github\\\\chairfly\" push origin main)"
     ]
   }
 }
