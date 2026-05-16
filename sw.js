@@ -1,4 +1,4 @@
-const CACHE = 'chairfly-v1';
+const CACHE = 'chairfly-v2';
 const PRECACHE = [
   '/',
   '/index.html',
