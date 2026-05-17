@@ -101,10 +101,10 @@ MIT — free to use, fork, and adapt.
 
 Built by a returning pilot, for student pilots.
 
-Flying was my original career path. I earned my PPL about 30 years ago, then life took a turn and yadda yadda I got into software. Now I'm student piloting again, starting from scratch, learning in an age without ADF and paper on kneeboards.
+Flying was my original career path. I earned my PPL about 30 years ago, then life took a turn and yadda yadda I got into software (current day job is lead architect). Now I'm student piloting again, starting from scratch, learning in an age without ADF and paper on kneeboards.
 
-I'm a software architect by day. This started as a vibe-coding experiment — I couldn't find anything for drilling radio calls and procedures in isolation, outside of an actual flight or full sim session. I really needed the practice; somewhere past the gauges, the checklists, the radio calls, and the procedures is a really nice view that I hope to enjoy someday.
+This started as a vibe-coding experiment — I couldn't find anything for drilling radio calls and procedures in isolation, outside of an actual flight or full sim session. I really needed the practice; somewhere past the gauges, the checklists, the radio calls, and the procedures is a really nice view that I hope to enjoy someday.
 
 ChairFly was built almost entirely with Claude Code and Claude Design and hosted as cheaply as possible. It helps my training and is genuinely fun to work on.
 
-I almost know how much I don't know, which makes me extremely qualified to build pilot training software.
+I almost know how much I don't know, which makes me extremely qualified to build training software.
