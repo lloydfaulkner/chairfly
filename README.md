@@ -4,6 +4,8 @@
 
 ChairFly is an open-source progressive web app (PWA) that drills the cognitive skills you use in the cockpit: radio calls, checklists from memory, standard procedures step-by-step, and emergency recall. It works offline and installs on your phone like a native app — on iOS, use **Share → Add to Home Screen**; on Android, tap **Install app** in the browser menu.
 
+**[Try ChairFly →](https://d8eyn5b7uchha.cloudfront.net/)** — open in any browser, installs as a PWA on iOS and Android.
+
 ---
 
 ## What you do in ChairFly

@@ -1,1 +1,9 @@
 .claude/settings.local.json
+
+# Terraform / Terragrunt
+**/.terraform/
+**/.terragrunt-cache/
+*.tfstate
+*.tfstate.backup
+**/backend.tf
+**/provider.tf
