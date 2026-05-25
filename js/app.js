@@ -1442,8 +1442,8 @@ function renderProcSeqRecall() {
         <div class="seq-done-sub">${s.totalReal} / ${s.totalReal} in ${fmtSeqTime(s.elapsed)} · ${accuracy}% accuracy</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="_initProcRecall(procState.currentProc);renderProcSeqRecall()">Try again</button>
-        <button onclick="procAdvanceFromRecall()" style="background:#003020;border-color:#00e887;color:#00e887">Begin Procedure &#8594;</button>
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="_initProcRecall(procState.currentProc);renderProcSeqRecall()">Try again</button>
+        <button class="cf-btn cf-btn--primary cf-btn--sm" onclick="procAdvanceFromRecall()">Begin Procedure &#8594;</button>
       </div>
     </div>` : '';
 
@@ -1480,7 +1480,7 @@ function renderProcSeqRecall() {
           ${distractorHtml}
           <div class="seq-pool-footer">
             <span class="seq-pool-hint">Tap steps in correct order · distractor steps are traps</span>
-            ${!s.done ? `<button onclick="procAdvanceFromRecall()" style="margin-top:10px;width:100%;background:#111f30;border-color:#2a4060;color:#9ab8d0">Skip &#8594;</button>` : ''}
+            ${!s.done ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" style="margin-top:10px;width:100%" onclick="procAdvanceFromRecall()">Skip &#8594;</button>` : ''}
           </div>
         </div>
       </div>
