@@ -909,8 +909,8 @@
     .proc-tip-box {
       margin-top: 10px;
       padding: 10px 14px;
-      background: var(--kb-accent-soft);
-      border: 1px solid var(--rule-strong);
+      background: var(--paper-2);
+      border: 1px solid var(--rule);
       border-radius: var(--radius-s);
       font-family: var(--font-sans);
       font-size: 13px;
