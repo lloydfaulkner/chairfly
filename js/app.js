@@ -593,7 +593,8 @@ const procState = {
   airport: { icao: '', name: '', elev: 0, tpa: 1000 },
   currentProc: null,
   currentStep: 0,
-  answered: false
+  answered: false,
+  inRecall: false,
 };
 
 // ── AIRPORT DATABASE (bundled — works offline & file://) ──
@@ -990,24 +991,13 @@ function buildPatternLanding(ap) {
 
 // ── PROC STATE ──
 let procRadioState = { built: [], words: [] };
-let procMode = 'steps'; // 'steps' | 'recall'
 
 const procSeqState = {
-  procId: null, pool: [], totalReal: 0,
+  pool: [], totalReal: 0,
   nextSlot: 0, ok: 0, miss: 0,
   elapsed: 0, done: false, _timer: null,
   shakingIdx: -1, lastDistractorMsg: ''
 };
-
-function setProcMode(mode, btn) {
-  document.querySelectorAll('#proc-mode-toggle .cl-mode-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  procMode = mode;
-}
-
-function launchProc(procId) {
-  procMode === 'recall' ? startProcSeqRecall(procId) : startProcedure(procId);
-}
 
 function startProcedure(procId) {
   const ap = procState.airport;
@@ -1026,10 +1016,44 @@ function startProcedure(procId) {
   procState.currentProc = builders[procId](ap);
   procState.currentStep = 0;
   procState.answered = false;
-  document.getElementById('proc-step-title').textContent = procState.currentProc.title;
+  procState.inRecall = true;
+  document.getElementById('proc-step-title').textContent = procState.currentProc.title + ' · Briefing';
   document.getElementById('proc-airport-tag').textContent = ap.icao || '';
-  document.querySelector('.proc-progress').style.display = '';
+  document.querySelector('.proc-progress').style.display = 'none';
   showProcScreen('proc-screen-steps');
+  _initProcRecall(procState.currentProc);
+  renderProcStep();
+}
+
+function _initProcRecall(proc) {
+  const steps = proc.steps;
+  const allDistractors = proc.distractors || [];
+  const shuffledD = [...allDistractors].sort(() => Math.random() - 0.5);
+  const picked = shuffledD.slice(0, Math.random() < 0.5 ? 2 : 3);
+  const pool = [
+    ...steps.map((s, i) => ({ phase: s.phase, origIdx: i, isDistractor: false, why: '' })),
+    ...picked.map(d => ({ phase: d.phase, origIdx: -1, isDistractor: true, why: d.why })),
+  ].sort(() => Math.random() - 0.5);
+  if (procSeqState._timer) clearInterval(procSeqState._timer);
+  procSeqState.pool = pool;
+  procSeqState.totalReal = steps.length;
+  procSeqState.nextSlot = 0;
+  procSeqState.ok = 0;
+  procSeqState.miss = 0;
+  procSeqState.elapsed = 0;
+  procSeqState.done = false;
+  procSeqState.shakingIdx = -1;
+  procSeqState.lastDistractorMsg = '';
+  procSeqState._timer = setInterval(() => {
+    if (!procSeqState.done) { procSeqState.elapsed++; renderProcSeqRecall(); }
+  }, 1000);
+}
+
+function procAdvanceFromRecall() {
+  if (procSeqState._timer) { clearInterval(procSeqState._timer); procSeqState._timer = null; }
+  procState.inRecall = false;
+  document.getElementById('proc-step-title').textContent = procState.currentProc.title;
+  document.querySelector('.proc-progress').style.display = '';
   renderProcStep();
 }
 
@@ -1345,55 +1369,6 @@ function buildPowerOnStall(ap) {
 
 // ── PROC SEQUENCE RECALL ──
 
-function startProcSeqRecall(procId) {
-  const ap = procState.airport;
-  if (!ap.tpa) { ap.elev = ap.elev || 0; ap.tpa = ap.elev + 1000; ap.name = ap.name || 'Your Field'; }
-
-  const builders = {
-    pattern_landing: buildPatternLanding,
-    normal_takeoff:  buildNormalTakeoff,
-    slow_flight:     buildSlowFlight,
-    power_off_stall: buildPowerOffStall,
-    power_on_stall:  buildPowerOnStall,
-  };
-  if (!builders[procId]) return;
-
-  const proc = builders[procId](ap);
-  const steps = proc.steps;
-  const allDistractors = proc.distractors || [];
-
-  // pick 2 or 3 random distractors
-  const shuffledD = [...allDistractors].sort(() => Math.random() - 0.5);
-  const picked = shuffledD.slice(0, Math.random() < 0.5 ? 2 : 3);
-
-  // build pool: real steps + picked distractors, then shuffle
-  const pool = [
-    ...steps.map((s, i) => ({ phase: s.phase, origIdx: i, isDistractor: false, why: '' })),
-    ...picked.map(d => ({ phase: d.phase, origIdx: -1, isDistractor: true, why: d.why })),
-  ].sort(() => Math.random() - 0.5);
-
-  if (procSeqState._timer) clearInterval(procSeqState._timer);
-  procSeqState.procId = procId;
-  procSeqState.pool = pool;
-  procSeqState.totalReal = steps.length;
-  procSeqState.nextSlot = 0;
-  procSeqState.ok = 0;
-  procSeqState.miss = 0;
-  procSeqState.elapsed = 0;
-  procSeqState.done = false;
-  procSeqState.shakingIdx = -1;
-  procSeqState.lastDistractorMsg = '';
-  procSeqState._timer = setInterval(() => {
-    if (!procSeqState.done) { procSeqState.elapsed++; renderProcSeqRecall(); }
-  }, 1000);
-
-  document.getElementById('proc-step-title').textContent = proc.title + ' · Recall';
-  document.getElementById('proc-airport-tag').textContent = ap.icao || '';
-  document.querySelector('.proc-progress').style.display = 'none';
-  showProcScreen('proc-screen-steps');
-  renderProcSeqRecall();
-}
-
 function tapProcSeqChip(idx) {
   const s = procSeqState;
   if (s.done) return;
@@ -1466,7 +1441,10 @@ function renderProcSeqRecall() {
         <div class="seq-done-title">Nailed it.</div>
         <div class="seq-done-sub">${s.totalReal} / ${s.totalReal} in ${fmtSeqTime(s.elapsed)} · ${accuracy}% accuracy</div>
       </div>
-      <button onclick="startProcSeqRecall(procSeqState.procId)">Try again</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="_initProcRecall(procState.currentProc);renderProcSeqRecall()">Try again</button>
+        <button onclick="procAdvanceFromRecall()" style="background:#003020;border-color:#00e887;color:#00e887">Begin Procedure &#8594;</button>
+      </div>
     </div>` : '';
 
   document.getElementById('proc-step-content').innerHTML = `
@@ -1502,6 +1480,7 @@ function renderProcSeqRecall() {
           ${distractorHtml}
           <div class="seq-pool-footer">
             <span class="seq-pool-hint">Tap steps in correct order · distractor steps are traps</span>
+            ${!s.done ? `<button onclick="procAdvanceFromRecall()" style="margin-top:10px;width:100%;background:#111f30;border-color:#2a4060;color:#9ab8d0">Skip &#8594;</button>` : ''}
           </div>
         </div>
       </div>
@@ -1509,6 +1488,7 @@ function renderProcSeqRecall() {
 }
 
 function renderProcStep() {
+  if (procState.inRecall) { renderProcSeqRecall(); return; }
   const proc = procState.currentProc;
   const steps = proc.steps;
   const idx = procState.currentStep;
