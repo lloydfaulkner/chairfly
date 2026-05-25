@@ -564,6 +564,21 @@
 
 </div>
 
+<!-- VERDICT SHEET -->
+<div class="verdict-overlay" id="verdict-overlay" onclick="closeVerdictSheet()"></div>
+<div class="verdict-sheet" id="verdict-sheet" role="dialog" aria-modal="true">
+  <div class="verdict-handle"></div>
+  <div class="verdict-header">
+    <div class="verdict-title" id="verdict-title"></div>
+    <button class="verdict-close" onclick="closeVerdictSheet()" aria-label="Close">&#x2715;</button>
+  </div>
+  <div class="verdict-body" id="verdict-body"></div>
+  <div class="verdict-actions">
+    <button class="cf-btn cf-btn--ghost" id="verdict-try-again-btn" onclick="verdictTryAgain()">&#x21A9; Try Again</button>
+    <button class="cf-btn cf-btn--primary" id="verdict-next-btn" onclick="verdictNext()">Next &#x2192;</button>
+  </div>
+</div>
+
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>

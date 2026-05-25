@@ -67,6 +67,7 @@ function updateHash() {
     if (currentProcScreen === 'proc-screen-steps' && procState._lastProcId && procState.airport.icao) {
       parts.push(procState.airport.icao);
       parts.push(procState._lastProcId);
+      parts.push(procState.inRecall ? 'recall' : procState.currentStep);
     }
   }
   const hash = '#' + parts.join('/');
@@ -137,7 +138,7 @@ function switchDrill(type) {
   _setBottomTabActive('drills');
   if (type === 'checklist')        _switchViewOnly('checklist');
   else if (type === 'radio')       _switchViewOnly('radio');
-  else if (type === 'procedures')  _switchViewOnly('procedures');
+  else if (type === 'procedures')  { _switchViewOnly('procedures'); showProcScreen('proc-screen-setup'); }
   else if (type === 'emergency')   _switchViewOnly('emergency');
   updateHash();
 }
@@ -431,34 +432,24 @@ function checkRadioCall() {
     .map(w => (s.distractors || []).find(d => d.text === w))
     .filter(Boolean);
 
-  const fb = document.getElementById('radio-feedback');
-  fb.classList.add('show');
-  document.getElementById('feedback-header').className = 'feedback-header ' + (isCorrect ? 'correct' : 'incorrect');
+  let bodyHtml = `<p style="font-family:var(--font-mono);font-size:13px;line-height:1.7;color:var(--ink)">${s.ideal}</p>`;
 
-  if (isCorrect) {
-    document.getElementById('feedback-header').textContent = '✓ Correct sequence';
-    document.getElementById('feedback-ideal').textContent = s.ideal;
-    let noteText = s.note;
-    if (usedDistractors.length > 0) {
-      noteText += '\n\n⚠️ Trap chips you avoided — good:\n' +
-        usedDistractors.map(d => `• "${d.text}" — ${d.why}`).join('\n');
-    }
-    document.getElementById('feedback-note').textContent = noteText;
-  } else {
-    document.getElementById('feedback-header').textContent = '✗ Not quite';
-    document.getElementById('feedback-ideal').textContent = '';
-
-    let noteHtml = '';
-    if (usedDistractors.length > 0) {
-      noteHtml += '⚠️ Trap chips you included:<br>' +
-        usedDistractors.map(d => `• "${d.text}" — ${d.why}`).join('<br>') + '<br><br>';
-    }
-    noteHtml += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-      <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryRadioCall()">↩ Try Again</button>
-      <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="revealRadioCall()">Show Ideal Call</button>
-    </div>`;
-    document.getElementById('feedback-note').innerHTML = noteHtml;
+  if (usedDistractors.length > 0) {
+    bodyHtml += `<p style="margin-top:10px;font-size:13px">` +
+      (isCorrect ? '⚠️ Trap chips you avoided — good:' : '⚠️ Trap chips you included:') +
+      '<br>' + usedDistractors.map(d => `• "<strong>${d.text}</strong>" — ${d.why}`).join('<br>') + '</p>';
   }
+  if (s.note) {
+    bodyHtml += `<p style="margin-top:10px;font-size:13px;color:var(--ink-3)">${s.note}</p>`;
+  }
+
+  openVerdictSheet(
+    isCorrect ? 'correct' : 'wrong',
+    isCorrect ? '✓ Correct sequence' : '✗ Not quite',
+    bodyHtml,
+    () => retryRadioCall(),
+    () => newRadioScenario()
+  );
 }
 
 function retryRadioCall() {
@@ -595,6 +586,7 @@ const procState = {
   currentStep: 0,
   answered: false,
   inRecall: false,
+  recallGroupIdx: 0,
 };
 
 // ── AIRPORT DATABASE (bundled — works offline & file://) ──
@@ -682,7 +674,7 @@ function buildPatternLanding(ap) {
       // ── 1. ALTITUDE — config
       {
         type: 'config',
-        phase: 'Inbound / Setup',
+        phase: 'Pattern Altitude',
         prompt: 'Set your target altitude for entering the downwind leg.',
         context: `Field elevation at ${ap.name || icao} is ${elev} ft MSL.`,
         controls: [
@@ -706,7 +698,7 @@ function buildPatternLanding(ap) {
       // ── 2. DOWNWIND RADIO — radio
       {
         type: 'radio',
-        phase: 'Downwind — Radio',
+        phase: 'Radio Call',
         prompt: 'Build your downwind position call.',
         context: `Uncontrolled field (CTAF). You're entering left downwind for runway ${rwy}. Announce so other traffic can sequence.`,
         words: [`${icao} traffic`, 'Skyhawk Four Five Two One Golf', `entering left downwind runway ${rwy}`, icao],
@@ -720,28 +712,12 @@ function buildPatternLanding(ap) {
         tip: { title: 'Every pattern leg', text: `Make a call on downwind, base, and final. At controlled fields, tower handles sequencing — but at ${icao} you\'re all each other has.` }
       },
 
-      // ── 3. GUMPS — choice (knowledge, no cheating possible — all plausible)
-      {
-        type: 'choice',
-        phase: 'Downwind — GUMPS',
-        prompt: 'On downwind abeam the numbers, you run GUMPS. Which item is NOT part of the check?',
-        context: 'GUMPS is a pre-landing flow for GA pilots. One of these does not belong.',
-        options: [
-          { text: 'Primer — in and locked', correct: true,  why: 'Primer is a START flow item, not GUMPS. GUMPS = Gas · Undercarriage · Mixture · Prop · Seatbelts.' },
-          { text: 'Gas — fuel selector BOTH', correct: false, why: '' },
-          { text: 'Mixture — rich', correct: false, why: '' },
-          { text: 'Seatbelts — secure', correct: false, why: '' },
-        ],
-        feedback: 'GUMPS = Gas (BOTH) · Undercarriage (down/confirmed) · Mixture (rich) · Prop (full forward) · Seatbelts (secure). Primer is a start-up item, not a landing flow item.',
-        tip: { title: 'C172 GUMPS in practice', text: 'On a fixed-gear fixed-pitch C172, Undercarriage and Prop are non-events — you still say them to build the habit for complex aircraft later. Run it every downwind, every time, out loud.' }
-      },
-
-      // ── 4. ABEAM NUMBERS CONFIG — config (the main event)
+      // ── 3. ABEAM — DESCENT SETUP — config (Before Landing checklist + descent config)
       {
         type: 'config',
-        phase: 'Downwind — Abeam the Numbers',
-        prompt: 'Set up the aircraft abeam the runway threshold to begin descent.',
-        context: `You're at pattern altitude, numbers at your 4 o'clock. Configure for descent.`,
+        phase: 'Abeam — Descent Setup',
+        prompt: 'Threshold at your 4 o\'clock. Run the Before Landing checklist and configure for descent.',
+        context: `Numbers abeam — the trigger for everything. Power back, run the checklist, add flaps once below Vfe.`,
         controls: [
           {
             id: 'power', label: 'Power', type: 'slider',
@@ -750,16 +726,48 @@ function buildPatternLanding(ap) {
             unit: 'RPM',
             correct: abeamPower,
             tolerance: 100,
-            correctLabel: `~${abeamPower} RPM — reduces speed below Vfe so flaps can be extended`,
+            correctLabel: `~${abeamPower} RPM — begins speed bleed so flaps can be extended`,
             wrongLabel: `Target ~${abeamPower} RPM abeam the numbers. Too high keeps you fast; idle descends too steep.`,
+          },
+          {
+            id: 'carbheat', label: 'Carb Heat', type: 'chips',
+            options: ['OFF', 'ON'],
+            default: 'OFF',
+            correct: 'ON',
+            correctLabel: 'ON — apply immediately after power reduction',
+            wrongLabel: 'Carb heat ON right after reducing power. Low power settings are prime carb ice conditions.',
+          },
+          {
+            id: 'fuel', label: fuelLabel, type: 'chips',
+            options: fuelOptions,
+            default: 'LEFT',
+            correct: fuelCorrect,
+            correctLabel: fuelCorrectLabel,
+            wrongLabel: fuelWrongLabel,
+          },
+          {
+            id: 'mixture', label: 'Mixture', type: 'chips',
+            options: ['LEAN', 'RICH'],
+            default: 'LEAN',
+            correct: 'RICH',
+            correctLabel: 'RICH — go-around power available instantly',
+            wrongLabel: 'Mixture RICH before landing. A lean mixture at full throttle during a go-around causes rough running or power loss.',
+          },
+          {
+            id: 'seats', label: 'Seats & Belts', type: 'chips',
+            options: ['Unchecked', 'SECURE'],
+            default: 'Unchecked',
+            correct: 'SECURE',
+            correctLabel: 'SECURE — confirmed both occupants',
+            wrongLabel: 'Confirm seats and belts secure. Check your passenger too.',
           },
           {
             id: 'flaps', label: 'Flaps', type: 'chips',
             options: baseFlapsOptions,
             default: '0°',
             correct: '10°',
-            correctLabel: `10° — first notch once below ${vfe} KIAS (Vfe)`,
-            wrongLabel: `Flaps 10° abeam the numbers, after speed is below ${vfe} KIAS. Not full flaps yet — that's for final.`,
+            correctLabel: `10° — first notch once speed is below ${vfe} KIAS (Vfe)`,
+            wrongLabel: `Flaps 10° after speed drops below ${vfe} KIAS. Power back first, then wait for the speed to bleed before extending.`,
           },
           {
             id: 'speed', label: 'Target Airspeed', type: 'slider',
@@ -768,28 +776,20 @@ function buildPatternLanding(ap) {
             unit: 'KIAS',
             correct: abeamSpeed,
             tolerance: 5,
-            correctLabel: `~${abeamSpeed} KIAS — stabilized after first flap extension, trimmed`,
-            wrongLabel: `Target ~${abeamSpeed} KIAS after flaps 10°. Trim to hold it — don't hold back pressure all the way around.`,
-          },
-          {
-            id: 'carbheat', label: 'Carb Heat', type: 'chips',
-            options: ['OFF', 'ON'],
-            default: 'OFF',
-            correct: 'ON',
-            correctLabel: 'ON — reduced power = susceptibility to carb ice',
-            wrongLabel: 'Apply carb heat when reducing power on approach. Low power settings are when carb ice most commonly forms.',
+            correctLabel: `~${abeamSpeed} KIAS — stabilized with flaps 10°, trimmed`,
+            wrongLabel: `Target ~${abeamSpeed} KIAS after flaps 10°. Trim to hold it hands-off.`,
           },
           ...(hasFuelPump ? [{
             id: 'fuelpump', label: 'Fuel Pump', type: 'chips',
             options: ['OFF', 'ON'],
             default: 'OFF',
             correct: 'ON',
-            correctLabel: 'ON — electric pump provides backup fuel pressure for approach and go-around',
-            wrongLabel: 'Fuel pump ON for approach. Provides backup pressure if the engine-driven pump falters at low power.',
+            correctLabel: 'ON — backup fuel pressure for approach and go-around',
+            wrongLabel: 'Fuel pump ON for approach. Backup pressure if the engine-driven pump falters at low power.',
           }] : []),
         ],
-        feedback: `Abeam sequence: power to ~${abeamPower} → hold altitude, let speed bleed → below ${vfe} KIAS add flaps 10° → trim for ${abeamSpeed} KIAS → carb heat on${hasFuelPump ? ' → fuel pump ON' : ''} → begin descent.`,
-        tip: { title: 'The order matters', text: `Power FIRST to bleed speed, THEN flaps. Adding flaps above Vfe (${vfe} KIAS on ${acName}) can damage the flap structure. Once configured, trim hands-off — don't muscle it around the pattern.` }
+        feedback: `Abeam sequence: power ~${abeamPower} → carb heat ON → GUMPS (${fuelCorrect} · mixture rich · seats) → flaps 10° below ${vfe} KIAS → trim ${abeamSpeed} KIAS → begin descent.`,
+        tip: { title: 'Power before flaps', text: `Reduce power first to bleed speed below Vfe (${vfe} KIAS), then add flaps. Extending flaps above Vfe can damage the flap structure. Once trimmed for ${abeamSpeed} KIAS, hands off — don't muscle it around the pattern.` }
       },
 
       // ── 5. BASE TURN — choice (judgment, distractors are real mistakes)
@@ -841,7 +841,7 @@ function buildPatternLanding(ap) {
       // ── 7. BASE RADIO — radio
       {
         type: 'radio',
-        phase: 'Base — Radio',
+        phase: 'Radio Call',
         prompt: 'Build your base leg position call.',
         context: `You've turned base for runway ${rwy}. Announce before or early in the turn.`,
         words: [`${icao} traffic`, 'Skyhawk Four Five Two One Golf', `left base runway ${rwy}`, icao],
@@ -858,7 +858,7 @@ function buildPatternLanding(ap) {
       // ── 8. FINAL CONFIG — config
       {
         type: 'config',
-        phase: 'Final — Configuration',
+        phase: 'Configuration',
         prompt: 'Established on final, set your configuration.',
         context: 'Runway straight ahead. You have the runway made. Complete your final configuration.',
         controls: [
@@ -904,7 +904,7 @@ function buildPatternLanding(ap) {
       // ── 9. GLIDEPATH — choice (no obvious wrong answers)
       {
         type: 'choice',
-        phase: 'Final — Glidepath',
+        phase: 'Glidepath',
         prompt: 'The PAPI shows 3 red, 1 white. What\'s your situation and response?',
         context: 'PAPI is a row of 4 lights left of the runway. Each light is red or white depending on your glidepath.',
         options: [
@@ -978,13 +978,38 @@ function buildPatternLanding(ap) {
       },
 
     ],
-    distractors: [
-      { phase: 'Takeoff Roll',        why: 'Takeoff roll is a departure step — not part of the approach and landing sequence.' },
-      { phase: 'Trim for Vy',         why: 'Vy trim is set during initial climb after takeoff, not on approach.' },
-      { phase: 'Carb Heat — OFF',     why: 'Carb heat goes ON abeam the numbers. Turning it off early removes icing protection during descent.' },
-      { phase: 'Mixture — Lean',      why: 'Lean mixture is a cruise technique. For pattern work at low altitudes, mixture stays full rich.' },
-      { phase: 'Flaps 10° on Base',   why: 'Flaps 10° is the abeam-the-numbers setting. Base calls for the second notch.' },
-      { phase: 'Transponder — ALT',   why: 'Setting transponder to ALT is a departure checklist item, not a landing step.' },
+    recallGroups: [
+      {
+        label: 'Downwind',
+        context: `Entering on the 45° to left downwind runway ${rwy} at ${icao}. Altitude set. What are the downwind steps in order?`,
+        stepStart: 0, stepEnd: 2,
+        distractors: [
+          { phase: 'Takeoff Roll',       why: 'Takeoff roll is a departure step — you\'re inbound to land.' },
+          { phase: 'Trim for Vy',        why: 'Vy trim is a climb-out item, not pattern work.' },
+          { phase: 'Flaps 30° — Full',   why: 'Full flaps go on final once the runway is made — not on downwind.' },
+          { phase: 'Transponder — ALT',  why: 'Transponder to ALT is a departure item, not part of the landing sequence.' },
+        ],
+      },
+      {
+        label: 'Base',
+        context: `Downwind complete — Before Landing checklist done, abeam numbers configured. Turning left base for runway ${rwy}.`,
+        stepStart: 3, stepEnd: 5,
+        distractors: [
+          { phase: 'Abeam — Descent Setup',  why: 'Descent setup happens on downwind — already completed before the base turn.' },
+          { phase: 'Pattern Altitude',        why: 'Pattern altitude is set before entering downwind — already behind you.' },
+          { phase: 'Mixture — Lean',            why: 'Mixture stays full rich for approach — don\'t lean it on base.' },
+        ],
+      },
+      {
+        label: 'Final',
+        context: `Turning final for runway ${rwy}. Complete the configuration and land.`,
+        stepStart: 6, stepEnd: 9,
+        distractors: [
+          { phase: 'Flaps 20° — Base', why: 'Flaps 20° was the base leg setting — already behind you.' },
+          { phase: 'Base Radio Call',   why: 'Base call was already made. This is final.' },
+          { phase: 'Carb Heat OFF',     why: 'Carb heat stays ON throughout approach — only off on rollout after landing.' },
+        ],
+      },
     ],
   };
 }
@@ -1017,21 +1042,26 @@ function startProcedure(procId) {
   procState.currentStep = 0;
   procState.answered = false;
   procState.inRecall = true;
-  document.getElementById('proc-step-title').textContent = procState.currentProc.title + ' · Briefing';
+  procState.recallGroupIdx = 0;
+  const firstGroup = procState.currentProc.recallGroups?.[0] || null;
+  const recallLabel = firstGroup ? firstGroup.label : 'Briefing';
+  document.getElementById('proc-step-title').textContent = procState.currentProc.title + ' · ' + recallLabel;
   document.getElementById('proc-airport-tag').textContent = ap.icao || '';
   document.querySelector('.proc-progress').style.display = 'none';
   showProcScreen('proc-screen-steps');
-  _initProcRecall(procState.currentProc);
+  _initProcRecall(procState.currentProc, firstGroup);
   renderProcStep();
 }
 
-function _initProcRecall(proc) {
-  const steps = proc.steps;
-  const allDistractors = proc.distractors || [];
+function _initProcRecall(proc, group) {
+  const steps = group
+    ? proc.steps.slice(group.stepStart, group.stepEnd + 1)
+    : proc.steps;
+  const allDistractors = group ? (group.distractors || []) : (proc.distractors || []);
   const shuffledD = [...allDistractors].sort(() => Math.random() - 0.5);
   const picked = shuffledD.slice(0, Math.random() < 0.5 ? 2 : 3);
   const pool = [
-    ...steps.map((s, i) => ({ phase: s.phase, origIdx: i, isDistractor: false, why: '' })),
+    ...steps.map((s, relIdx) => ({ phase: s.phase, origIdx: relIdx, isDistractor: false, why: '' })),
     ...picked.map(d => ({ phase: d.phase, origIdx: -1, isDistractor: true, why: d.why })),
   ].sort(() => Math.random() - 0.5);
   if (procSeqState._timer) clearInterval(procSeqState._timer);
@@ -1049,12 +1079,22 @@ function _initProcRecall(proc) {
   }, 1000);
 }
 
+function retryProcRecall() {
+  const proc = procState.currentProc;
+  const group = proc.recallGroups ? proc.recallGroups[procState.recallGroupIdx] : null;
+  _initProcRecall(proc, group);
+  renderProcSeqRecall();
+}
+
 function procAdvanceFromRecall() {
   if (procSeqState._timer) { clearInterval(procSeqState._timer); procSeqState._timer = null; }
   procState.inRecall = false;
+  const group = procState.currentProc.recallGroups?.[procState.recallGroupIdx] || null;
+  if (group) procState.currentStep = group.stepStart;
   document.getElementById('proc-step-title').textContent = procState.currentProc.title;
   document.querySelector('.proc-progress').style.display = '';
   renderProcStep();
+  updateHash();
 }
 
 // ── NORMAL TAKEOFF ──
@@ -1406,6 +1446,11 @@ function renderProcSeqRecall() {
   const s = procSeqState;
   const ok = s.ok, miss = s.miss;
   const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
+  const group = procState.currentProc?.recallGroups?.[procState.recallGroupIdx] || null;
+  const eyebrow = group ? `↳ ${group.label.toUpperCase()} PHASE · SEQUENCE RECALL` : '↳ SEQUENCE RECALL · TAP IN ORDER';
+  const recallTitle = group ? `Build the ${group.label.toLowerCase()} flow from memory` : 'Build the procedure from memory';
+  const contextHtml = group?.context ? `<div class="seq-group-context">${group.context}</div>` : '';
+  const advanceBtnLabel = group ? `Practice ${group.label} ›` : 'Begin Procedure →';
   const pct = s.totalReal > 0 ? Math.round((s.nextSlot / s.totalReal) * 100) : 0;
 
   const slotsHtml = Array.from({ length: s.totalReal }, (_, i) => {
@@ -1442,16 +1487,17 @@ function renderProcSeqRecall() {
         <div class="seq-done-sub">${s.totalReal} / ${s.totalReal} in ${fmtSeqTime(s.elapsed)} · ${accuracy}% accuracy</div>
       </div>
       <div>
-        <button class="cf-btn cf-btn--primary cf-btn--sm" onclick="procAdvanceFromRecall()">Begin Procedure &#8594;</button>
-        <div style="margin-top:8px"><a href="#" onclick="_initProcRecall(procState.currentProc);renderProcSeqRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Try again</a></div>
+        <button class="cf-btn cf-btn--primary cf-btn--sm" onclick="procAdvanceFromRecall()">${advanceBtnLabel}</button>
+        <div style="margin-top:8px"><a href="#" onclick="retryProcRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Try again</a></div>
       </div>
     </div>` : '';
 
   document.getElementById('proc-step-content').innerHTML = `
     <div class="seq-page-header">
       <div>
-        <div class="seq-page-eyebrow">↳ SEQUENCE RECALL · TAP IN ORDER</div>
-        <div class="seq-page-title">Build the procedure from memory</div>
+        <div class="seq-page-eyebrow">${eyebrow}</div>
+        <div class="seq-page-title">${recallTitle}</div>
+        ${contextHtml}
       </div>
       <div class="seq-hud">
         <div class="seq-hud-stat"><div class="seq-hud-label">TIME</div><div class="seq-hud-val" id="proc-seq-timer">${fmtSeqTime(s.elapsed)}</div></div>
@@ -1538,7 +1584,10 @@ function renderProcStep() {
     </div>
     <button class="proc-next-btn" id="proc-next-btn" onclick="nextProcStep()">
       ${idx + 1 < steps.length ? 'Next Step →' : 'Finish ✓'}
-    </button>`;
+    </button>
+    <div style="text-align:center;margin-top:10px">
+      <a href="#" onclick="nextProcStep();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Skip</a>
+    </div>`;
 
   wireInteractive(step);
 }
@@ -1662,12 +1711,14 @@ function checkConfigStep() {
   document.querySelectorAll('.config-chip').forEach(c => { c.style.pointerEvents = 'none'; });
   document.getElementById('proc-check-btn').style.display = 'none';
 
-  const fb = document.getElementById('proc-feedback');
-  fb.className = 'proc-feedback show ' + (allCorrect ? 'correct' : 'wrong');
-
   if (allCorrect) {
-    fb.textContent = '✓ ' + step.feedback;
-    document.getElementById('proc-next-btn').classList.add('show');
+    openVerdictSheet(
+      'correct',
+      'Configuration correct!',
+      `<p>${step.feedback || 'Your configuration is correct.'}</p>`,
+      () => retryConfigStep(),
+      () => nextProcStep()
+    );
   } else {
     // Hide wrong labels — don't reveal answers yet
     step.controls.forEach(ctrl => {
@@ -1675,12 +1726,13 @@ function checkConfigStep() {
       const row = document.getElementById('row-' + ctrl.id);
       if (row.classList.contains('wrong')) result.textContent = '✗ Not quite';
     });
-    fb.innerHTML = `
-      <div class="proc-feedback-hd">✗ One or more controls need adjustment.</div>
-      <div class="proc-feedback-bd" style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryConfigStep()">↩ Try Again</button>
-        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="revealConfigAnswers()">Show Answers</button>
-      </div>`;
+    openVerdictSheet(
+      'wrong',
+      'Needs adjustment',
+      '<p>One or more controls need adjustment. Tap Try Again to retry, or Next to see the correct values.</p>',
+      () => retryConfigStep(),
+      () => revealConfigAnswers()
+    );
   }
 }
 
@@ -1856,23 +1908,24 @@ function checkProcSpeech() {
 
   const step = procState.currentProc.steps[procState.currentStep];
   const result = scoreSpeechCall(speechState.transcript, step.ideal, step.words, step.speechOptional || []);
-  const { isGood, pct, wordHtml, buttonsHtml } = buildSpeechResultHTML(
-    result, 'clearProcRadioActive()', 'revealProcRadio()'
+  const isGood = result.score >= 0.8;
+  const pct = Math.round(result.score * 100);
+  const wordHtml = result.words.map(w =>
+    `<span class="speech-word ${w.status}">${w.word}</span>`
+  ).join(' ');
+
+  const bodyHtml = `
+    <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-bottom:8px">${pct}% phonetic match</div>
+    <div class="speech-score" style="margin-bottom:12px">${wordHtml}</div>
+    <p style="font-size:13px;color:var(--ink-3)">${step.feedback || ''}</p>`;
+
+  openVerdictSheet(
+    isGood ? 'correct' : 'wrong',
+    isGood ? `✓ Good call — ${pct}%` : `✗ ${pct}% — review below`,
+    bodyHtml,
+    () => clearProcRadioActive(),
+    () => nextProcStep()
   );
-
-  const fb = document.getElementById('proc-feedback');
-  fb.className = `proc-feedback show ${isGood ? 'correct' : 'wrong'}`;
-  const speechBody = `
-    <div style="margin-bottom:6px;font-size:11px;color:var(--ink-3)">Word match:</div>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:${isGood ? '0' : '4px'}">${wordHtml}</div>
-    ${buttonsHtml}`;
-  if (isGood) {
-    fb.innerHTML = `<div style="font-weight:600;margin-bottom:8px">✓ Good call — ${pct}% match</div>${speechBody}`;
-  } else {
-    fb.innerHTML = `<div class="proc-feedback-hd">✗ ${pct}% match — review below</div><div class="proc-feedback-bd">${speechBody}</div>`;
-  }
-
-  if (isGood) document.getElementById('proc-next-btn').classList.add('show');
 }
 
 function checkProcRadio() {
@@ -1881,30 +1934,30 @@ function checkProcRadio() {
   const step = procState.currentProc.steps[procState.currentStep];
   const isCorrect = radioCallMatches(procRadioState.built, step);
 
-  // Find any distractors the user included
   const usedDistractors = procRadioState.built
     .map(w => (step.distractors || []).find(d => d.text === w))
     .filter(Boolean);
 
-  const fb = document.getElementById('proc-feedback');
   document.querySelectorAll('.proc-word-chip').forEach(c => { c.style.pointerEvents = 'none'; });
 
-  if (isCorrect) {
-    fb.className = 'proc-feedback show correct';
-    fb.textContent = '✓ ' + step.feedback;
-    document.getElementById('proc-next-btn').classList.add('show');
-  } else {
-    fb.className = 'proc-feedback show wrong';
-    const detail = usedDistractors.length > 0
-      ? `<div style="font-size:13px;color:var(--ink-3);margin-bottom:10px">⚠️ Trap chips you included:<br>${usedDistractors.map(d => `• "${d.text}" — ${d.why}`).join('<br>')}</div>`
-      : '';
-    fb.innerHTML = `
-      <div class="proc-feedback-hd">✗ Not quite.</div>
-      <div class="proc-feedback-bd">${detail}<div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="clearProcRadio()">↩ Try Again</button>
-        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="revealProcRadio()">Show Ideal Call</button>
-      </div></div>`;
+  let bodyHtml = `<p style="font-family:var(--font-mono);font-size:13px;line-height:1.7;color:var(--ink)">${step.ideal}</p>`;
+
+  if (usedDistractors.length > 0) {
+    bodyHtml += `<p style="margin-top:10px;font-size:13px">` +
+      (isCorrect ? '⚠️ Trap chips you avoided — good:' : '⚠️ Trap chips you included:') +
+      '<br>' + usedDistractors.map(d => `• "<strong>${d.text}</strong>" — ${d.why}`).join('<br>') + '</p>';
   }
+  if (step.feedback) {
+    bodyHtml += `<p style="margin-top:10px;font-size:13px;color:var(--ink-3)">${step.feedback}</p>`;
+  }
+
+  openVerdictSheet(
+    isCorrect ? 'correct' : 'wrong',
+    isCorrect ? '✓ Correct call' : '✗ Not quite',
+    bodyHtml,
+    () => clearProcRadio(),
+    () => nextProcStep()
+  );
 }
 
 function revealProcRadio() {
@@ -1950,7 +2003,25 @@ function answerProcStep(btn) {
 
 function nextProcStep() {
   procState.currentStep++;
+  const proc = procState.currentProc;
+  if (proc.recallGroups) {
+    const group = proc.recallGroups[procState.recallGroupIdx];
+    const nextGroupIdx = procState.recallGroupIdx + 1;
+    if (group && procState.currentStep > group.stepEnd && nextGroupIdx < proc.recallGroups.length) {
+      procState.recallGroupIdx = nextGroupIdx;
+      procState.inRecall = true;
+      const nextGroup = proc.recallGroups[nextGroupIdx];
+      document.getElementById('proc-step-title').textContent = proc.title + ' · ' + nextGroup.label;
+      document.querySelector('.proc-progress').style.display = 'none';
+      _initProcRecall(proc, nextGroup);
+      renderProcStep();
+      updateHash();
+      document.getElementById('view-procedures').scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  }
   renderProcStep();
+  updateHash();
   document.getElementById('view-procedures').scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -2576,22 +2647,24 @@ function checkSpeechCall() {
 
   const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
   const result = scoreSpeechCall(speechState.transcript, s.ideal, s.words, s.speechOptional || []);
-  const { isGood, pct, wordHtml, buttonsHtml } = buildSpeechResultHTML(
-    result, 'clearRadioCallActive()', 'revealRadioCall()'
+  const isGood = result.score >= 0.8;
+  const pct = Math.round(result.score * 100);
+  const wordHtml = result.words.map(w =>
+    `<span class="speech-word ${w.status}">${w.word}</span>`
+  ).join(' ');
+
+  const bodyHtml = `
+    <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-bottom:8px">${pct}% phonetic match</div>
+    <div class="speech-score" style="margin-bottom:12px">${wordHtml}</div>
+    <p style="font-size:13px;color:var(--ink-3)">${s.note}</p>`;
+
+  openVerdictSheet(
+    isGood ? 'correct' : 'wrong',
+    isGood ? `✓ Good call — ${pct}%` : `✗ ${pct}% — review below`,
+    bodyHtml,
+    () => clearRadioCallActive(),
+    () => newRadioScenario()
   );
-
-  const fb = document.getElementById('radio-feedback');
-  fb.classList.add('show');
-
-  const hdr = document.getElementById('feedback-header');
-  hdr.className = 'feedback-header ' + (isGood ? 'correct' : 'incorrect');
-  hdr.textContent = isGood ? `✓ Good call — ${pct}% match` : `✗ ${pct}% match — review below`;
-
-  document.getElementById('feedback-ideal').innerHTML =
-    `<div class="speech-match-label">Ideal call — word match:</div>
-     <div class="speech-score">${wordHtml}</div>`;
-
-  document.getElementById('feedback-note').innerHTML = s.note + buttonsHtml;
 }
 
 function buildSpeechResultHTML(result, retryFn, revealFn) {
@@ -2990,8 +3063,9 @@ function restoreNav() {
       setRadioInputMode('speak');
     }
   } else if (view === 'procedures') {
-    const icao  = parts[i];
-    const procId = parts[i + 1];
+    const icao     = parts[i];
+    const procId   = parts[i + 1];
+    const stepPart = parts[i + 2];
     if (icao && procId) {
       const apData = AIRPORTS[icao];
       if (apData) {
@@ -3001,6 +3075,16 @@ function restoreNav() {
         lookupAirport();
       }
       startProcedure(procId);
+      if (stepPart && stepPart !== 'recall') {
+        const stepIdx = parseInt(stepPart, 10);
+        if (!isNaN(stepIdx)) {
+          procAdvanceFromRecall();
+          procState.currentStep = stepIdx;
+          renderProcStep();
+        }
+      }
+    } else {
+      showProcScreen('proc-screen-setup');
     }
   }
 
@@ -3013,6 +3097,38 @@ function restoreNav() {
 
   _restoringNav = false;
   updateHash(); // canonicalize URL
+}
+
+// ── VERDICT SHEET ──
+const verdictState = { onTryAgain: null, onNext: null };
+
+function openVerdictSheet(status, title, body, onTryAgain, onNext) {
+  verdictState.onTryAgain = onTryAgain;
+  verdictState.onNext = onNext;
+  document.getElementById('verdict-title').textContent = title;
+  document.getElementById('verdict-body').innerHTML = body;
+  const sheet = document.getElementById('verdict-sheet');
+  sheet.dataset.status = status;
+  document.getElementById('verdict-try-again-btn').style.display = onTryAgain ? '' : 'none';
+  document.getElementById('verdict-overlay').classList.add('open');
+  sheet.classList.add('open');
+}
+
+function closeVerdictSheet() {
+  document.getElementById('verdict-overlay').classList.remove('open');
+  document.getElementById('verdict-sheet').classList.remove('open');
+  const nextBtn = document.getElementById('proc-next-btn');
+  if (nextBtn) nextBtn.classList.add('show');
+}
+
+function verdictTryAgain() {
+  closeVerdictSheet();
+  if (verdictState.onTryAgain) verdictState.onTryAgain();
+}
+
+function verdictNext() {
+  closeVerdictSheet();
+  if (verdictState.onNext) verdictState.onNext();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
