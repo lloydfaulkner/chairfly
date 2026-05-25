@@ -1480,7 +1480,7 @@ function renderProcSeqRecall() {
           ${distractorHtml}
           <div class="seq-pool-footer">
             <span class="seq-pool-hint">Tap steps in correct order · distractor steps are traps</span>
-            ${!s.done ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" style="margin-top:10px;width:100%" onclick="procAdvanceFromRecall()">Skip &#8594;</button>` : ''}
+            ${!s.done ? `<div style="margin-top:10px;text-align:center"><a href="#" onclick="procAdvanceFromRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Skip</a></div>` : ''}
           </div>
         </div>
       </div>
