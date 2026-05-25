@@ -75,12 +75,43 @@
 
     <!-- DRILLS HUB (mobile landing view) -->
     <div class="view" id="view-drills-hub">
-      <div class="cf-hub">
-        <div class="cf-hub-context mono" id="drills-hub-context">C172 · Skyhawk</div>
-        <button class="cf-hub-btn" data-drill="checklist" onclick="switchDrill('checklist')">Checklist</button>
-        <button class="cf-hub-btn" data-drill="radio" onclick="switchDrill('radio')">Radio Calls</button>
-        <button class="cf-hub-btn" data-drill="procedures" onclick="switchDrill('procedures')">Procedures</button>
-        <button class="cf-hub-btn" data-drill="emergency" onclick="switchDrill('emergency')">Emergency Procs</button>
+      <div class="hub-hero">
+        <div class="hub-hero-tag" id="drills-hub-context">C172 · Skyhawk</div>
+        <h1 class="hub-hero-title">Train between<br>flights.</h1>
+      </div>
+      <div class="hub-grid">
+        <button class="hub-card hub-card--green" data-drill="checklist" onclick="switchDrill('checklist')">
+          <div class="hub-card-icon">✅</div>
+          <div class="hub-card-text">
+            <div class="hub-card-name">Checklist</div>
+            <div class="hub-card-desc">Know what to do before you touch anything</div>
+          </div>
+          <span class="hub-card-arrow">›</span>
+        </button>
+        <button class="hub-card hub-card--blue" data-drill="radio" onclick="switchDrill('radio')">
+          <div class="hub-card-icon">📡</div>
+          <div class="hub-card-text">
+            <div class="hub-card-name">Radio Calls</div>
+            <div class="hub-card-desc">Sound like you belong up there</div>
+          </div>
+          <span class="hub-card-arrow">›</span>
+        </button>
+        <button class="hub-card hub-card--orange" data-drill="procedures" onclick="switchDrill('procedures')">
+          <div class="hub-card-icon">✈️</div>
+          <div class="hub-card-text">
+            <div class="hub-card-name">Procedures</div>
+            <div class="hub-card-desc">Fly the full pattern from memory</div>
+          </div>
+          <span class="hub-card-arrow">›</span>
+        </button>
+        <button class="hub-card hub-card--red" data-drill="emergency" onclick="switchDrill('emergency')">
+          <div class="hub-card-icon">⚡</div>
+          <div class="hub-card-text">
+            <div class="hub-card-name">Emergency Procs</div>
+            <div class="hub-card-desc">Be ready when seconds matter</div>
+          </div>
+          <span class="hub-card-arrow">›</span>
+        </button>
       </div>
     </div>
 

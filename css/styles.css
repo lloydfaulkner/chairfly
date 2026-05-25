@@ -3741,3 +3741,85 @@
   .verdict-actions { padding-bottom: 20px; }
 }
 
+/* ── Drills Hub ──────────────────────────────────────────────────────────── */
+.hub-hero {
+  padding: 32px 24px 20px;
+}
+.hub-hero-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kb-accent);
+  margin-bottom: 10px;
+}
+.hub-hero-title {
+  font-family: var(--font-serif);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.hub-grid {
+  padding: 8px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hub-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px 14px 14px;
+  border-radius: var(--radius-l);
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.12s, border-color 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: var(--shadow-1);
+}
+.hub-card:active { background: var(--paper-3); }
+
+.hub-card-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-m);
+}
+.hub-card--green  .hub-card-icon { background: var(--terrain-soft); }
+.hub-card--blue   .hub-card-icon { background: var(--sky-soft); }
+.hub-card--orange .hub-card-icon { background: var(--kb-accent-soft); }
+.hub-card--red    .hub-card-icon { background: var(--hazard-soft); }
+
+.hub-card-text { flex: 1; min-width: 0; }
+.hub-card-name {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.hub-card-desc {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+.hub-card-arrow {
+  font-size: 20px;
+  color: var(--ink-4);
+  flex-shrink: 0;
+  line-height: 1;
+}
