@@ -1585,7 +1585,8 @@ function renderProcStep() {
     <button class="proc-next-btn" id="proc-next-btn" onclick="nextProcStep()">
       ${idx + 1 < steps.length ? 'Next Step →' : 'Finish ✓'}
     </button>
-    <div style="text-align:center;margin-top:10px">
+    <div style="text-align:center;margin-top:10px;display:flex;justify-content:center;gap:24px">
+      ${idx > 0 ? `<a href="#" onclick="prevProcStep();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">← Back</a>` : ''}
       <a href="#" onclick="nextProcStep();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Skip</a>
     </div>`;
 
@@ -2018,6 +2019,24 @@ function nextProcStep() {
       updateHash();
       document.getElementById('view-procedures').scrollTo({ top: 0, behavior: 'smooth' });
       return;
+    }
+  }
+  renderProcStep();
+  updateHash();
+  document.getElementById('view-procedures').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevProcStep() {
+  if (procState.currentStep <= 0) return;
+  procState.currentStep--;
+  const proc = procState.currentProc;
+  if (proc.recallGroups) {
+    for (let i = 0; i < proc.recallGroups.length; i++) {
+      const g = proc.recallGroups[i];
+      if (procState.currentStep >= g.stepStart && procState.currentStep <= g.stepEnd) {
+        procState.recallGroupIdx = i;
+        break;
+      }
     }
   }
   renderProcStep();
