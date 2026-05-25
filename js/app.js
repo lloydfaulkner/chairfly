@@ -155,6 +155,7 @@ function initChecklist() {
   document.getElementById('phase-selector').innerHTML = phases.map(p =>
     `<button class="phase-btn ${p === state.checklist.phase ? 'active' : ''}" onclick="selectPhase('${p}')">${CHECKLISTS[p].label}</button>`
   ).join('');
+  updatePreflightBtn();
   renderChecklist();
 }
 
@@ -1780,9 +1781,27 @@ function setClMode(mode, btn) {
   btn.classList.add('active');
   document.getElementById('cl-reference-mode').style.display = mode === 'reference' ? '' : 'none';
   document.getElementById('cl-recall-mode').style.display = mode === 'recall' ? '' : 'none';
-  if (mode === 'recall') initSeqRecall();
+  if (mode === 'recall') {
+    if (state.checklist.phase === 'preflight') {
+      state.checklist.phase = 'beforestart';
+      document.querySelectorAll('.phase-btn').forEach((b, i) => {
+        b.classList.toggle('active', Object.keys(CHECKLISTS)[i] === 'beforestart');
+      });
+    }
+    initSeqRecall();
+  }
   currentClMode = mode;
+  updatePreflightBtn();
   updateHash();
+}
+
+function updatePreflightBtn() {
+  const btn = document.querySelector('.phase-btn');
+  if (!btn) return;
+  const inRecall = currentClMode === 'recall';
+  btn.disabled = inRecall;
+  const note = document.getElementById('preflight-recall-note');
+  if (note) note.style.display = inRecall ? '' : 'none';
 }
 
 function initSeqRecall() {
