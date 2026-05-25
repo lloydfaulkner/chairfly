@@ -976,12 +976,38 @@ function buildPatternLanding(ap) {
         tip: { title: 'After-landing flow (off the runway)', text: `Once clear: Flaps UP · Carb heat COLD${hasFuelPump ? ' · Fuel Pump OFF' : ''} · Transponder STBY · Note time · Taxi to parking. Do NOT run this flow while still rolling on the runway.` }
       },
 
-    ]
+    ],
+    distractors: [
+      { phase: 'Takeoff Roll',        why: 'Takeoff roll is a departure step — not part of the approach and landing sequence.' },
+      { phase: 'Trim for Vy',         why: 'Vy trim is set during initial climb after takeoff, not on approach.' },
+      { phase: 'Carb Heat — OFF',     why: 'Carb heat goes ON abeam the numbers. Turning it off early removes icing protection during descent.' },
+      { phase: 'Mixture — Lean',      why: 'Lean mixture is a cruise technique. For pattern work at low altitudes, mixture stays full rich.' },
+      { phase: 'Flaps 10° on Base',   why: 'Flaps 10° is the abeam-the-numbers setting. Base calls for the second notch.' },
+      { phase: 'Transponder — ALT',   why: 'Setting transponder to ALT is a departure checklist item, not a landing step.' },
+    ],
   };
 }
 
 // ── PROC STATE ──
 let procRadioState = { built: [], words: [] };
+let procMode = 'steps'; // 'steps' | 'recall'
+
+const procSeqState = {
+  procId: null, pool: [], totalReal: 0,
+  nextSlot: 0, ok: 0, miss: 0,
+  elapsed: 0, done: false, _timer: null,
+  shakingIdx: -1, lastDistractorMsg: ''
+};
+
+function setProcMode(mode, btn) {
+  document.querySelectorAll('#proc-mode-toggle .cl-mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  procMode = mode;
+}
+
+function launchProc(procId) {
+  procMode === 'recall' ? startProcSeqRecall(procId) : startProcedure(procId);
+}
 
 function startProcedure(procId) {
   const ap = procState.airport;
@@ -1002,6 +1028,7 @@ function startProcedure(procId) {
   procState.answered = false;
   document.getElementById('proc-step-title').textContent = procState.currentProc.title;
   document.getElementById('proc-airport-tag').textContent = ap.icao || '';
+  document.querySelector('.proc-progress').style.display = '';
   showProcScreen('proc-screen-steps');
   renderProcStep();
 }
@@ -1078,7 +1105,15 @@ function buildNormalTakeoff(ap) {
         feedback: 'Positive rate — maintain Vy (74 KIAS), full power to 500+ ft AGL, carb heat off. Track runway centerline extended, begin crosswind turn at pattern altitude.',
         tip: { title: '500 ft AGL', text: 'Below 500 ft AGL, options for handling problems are severely limited. Keep full power and maintain Vy until you have altitude to work with. Resist the urge to reduce power early.' }
       },
-    ]
+    ],
+    distractors: [
+      { phase: 'Downwind — Radio',    why: 'Downwind radio calls are a pattern leg step — not part of the takeoff sequence.' },
+      { phase: 'Entry Configuration', why: 'Entry configuration belongs to stall and slow-flight maneuvers, not a normal takeoff.' },
+      { phase: 'Flare & Touchdown',   why: 'Flare and touchdown are landing steps — the takeoff sequence ends at initial climb.' },
+      { phase: 'Carb Heat — ON',      why: 'Carb heat is OFF for takeoff. It reduces power — only applied when reducing power on approach.' },
+      { phase: 'Maneuvering Speed',   why: 'Maneuvering speed awareness is a slow-flight drill item, not a takeoff step.' },
+      { phase: 'Rollout',             why: 'Rollout is a landing step. The takeoff sequence ends when you establish the initial climb.' },
+    ],
   };
 }
 
@@ -1154,7 +1189,15 @@ function buildSlowFlight(ap) {
         feedback: 'Recovery: full power → carb heat off → retract flaps incrementally as speed builds → cruise power when at normal airspeed. Hold altitude throughout.',
         tip: { title: 'Common mistake', text: 'Don\'t retract flaps before you have enough speed — especially going from 30° to 20° to 10°. Each retraction step removes lift. If you retract too fast you\'ll sink or stall. Speed first, then flaps.' }
       },
-    ]
+    ],
+    distractors: [
+      { phase: 'Takeoff Roll',        why: 'Takeoff roll is a departure step — not part of the slow flight maneuver sequence.' },
+      { phase: 'Base Turn',           why: 'Base turn is a traffic pattern leg, not a step in the slow flight maneuver.' },
+      { phase: 'Rollout',             why: 'Rollout is a landing step — the slow flight sequence ends with Recovery.' },
+      { phase: 'GUMPS Check',         why: 'GUMPS is a pre-landing flow run in the traffic pattern, not during slow flight.' },
+      { phase: 'Flare & Touchdown',   why: 'Flare and touchdown are landing steps — the slow flight sequence ends at Recovery.' },
+      { phase: 'Stall Recognition',   why: 'Stall recognition is a step in the stall drills, not the slow flight maneuver.' },
+    ],
   };
 }
 
@@ -1217,7 +1260,15 @@ function buildPowerOffStall(ap) {
         feedback: 'Recovery: simultaneously lower nose slightly + full power. Once flying (60+ KIAS), retract flaps incrementally. Hold heading. Climb to entry altitude.',
         tip: { title: 'ACS standard', text: 'ACS requires recovery at first indication (don\'t wait for full break if possible), with minimum altitude loss. Typical power-off stall recovery uses 50–150 ft if done promptly. Delay costs 300+ ft.' }
       },
-    ]
+    ],
+    distractors: [
+      { phase: 'Takeoff Roll',        why: 'Takeoff roll is a takeoff step — not part of the power-off stall sequence.' },
+      { phase: 'Turn in Slow Flight', why: 'Slow flight turns are a separate maneuver. The power-off stall goes straight to stall entry.' },
+      { phase: 'Rollout',             why: 'Rollout is a landing step. The stall sequence ends at Recovery.' },
+      { phase: 'Downwind — GUMPS',    why: 'GUMPS is a traffic pattern item. The stall drill doesn\'t include it.' },
+      { phase: 'Initial Climb',       why: 'Initial climb is a takeoff step. After stall recovery you return to cruise, not "initial climb."' },
+      { phase: 'Base Turn',           why: 'Base turn is a pattern leg, not part of the stall drill sequence.' },
+    ],
   };
 }
 
@@ -1280,8 +1331,181 @@ function buildPowerOnStall(ap) {
         feedback: 'Recovery sequence: right rudder to stop yaw → slight nose down to break stall → wings level with coordinated aileron → climb at Vy. Full power maintained throughout.',
         tip: { title: 'Spin awareness', text: 'An uncoordinated stall break — ball to the left, left wing dropping — is a spin entry. Right rudder prevents this. If a wing drops at the break and you apply opposite aileron before rudder, you can worsen the roll. Rudder first, always.' }
       },
-    ]
+    ],
+    distractors: [
+      { phase: 'Lineup',              why: 'Lineup is the first step of a normal takeoff, not a step in the stall drill.' },
+      { phase: 'Flare & Touchdown',   why: 'Flare and touchdown are landing steps. The stall sequence ends at Recovery.' },
+      { phase: 'Turn in Slow Flight', why: 'Slow flight turns are a separate maneuver. The power-on stall goes straight to stall entry.' },
+      { phase: 'Rollout',             why: 'Rollout is a landing step. The stall sequence ends at Recovery.' },
+      { phase: 'Downwind — GUMPS',    why: 'GUMPS is a traffic pattern item. The stall drill doesn\'t include it.' },
+      { phase: 'Base Turn',           why: 'Base turn is a pattern leg, not part of the stall drill sequence.' },
+    ],
   };
+}
+
+// ── PROC SEQUENCE RECALL ──
+
+function startProcSeqRecall(procId) {
+  const ap = procState.airport;
+  if (!ap.tpa) { ap.elev = ap.elev || 0; ap.tpa = ap.elev + 1000; ap.name = ap.name || 'Your Field'; }
+
+  const builders = {
+    pattern_landing: buildPatternLanding,
+    normal_takeoff:  buildNormalTakeoff,
+    slow_flight:     buildSlowFlight,
+    power_off_stall: buildPowerOffStall,
+    power_on_stall:  buildPowerOnStall,
+  };
+  if (!builders[procId]) return;
+
+  const proc = builders[procId](ap);
+  const steps = proc.steps;
+  const allDistractors = proc.distractors || [];
+
+  // pick 2 or 3 random distractors
+  const shuffledD = [...allDistractors].sort(() => Math.random() - 0.5);
+  const picked = shuffledD.slice(0, Math.random() < 0.5 ? 2 : 3);
+
+  // build pool: real steps + picked distractors, then shuffle
+  const pool = [
+    ...steps.map((s, i) => ({ phase: s.phase, origIdx: i, isDistractor: false, why: '' })),
+    ...picked.map(d => ({ phase: d.phase, origIdx: -1, isDistractor: true, why: d.why })),
+  ].sort(() => Math.random() - 0.5);
+
+  if (procSeqState._timer) clearInterval(procSeqState._timer);
+  procSeqState.procId = procId;
+  procSeqState.pool = pool;
+  procSeqState.totalReal = steps.length;
+  procSeqState.nextSlot = 0;
+  procSeqState.ok = 0;
+  procSeqState.miss = 0;
+  procSeqState.elapsed = 0;
+  procSeqState.done = false;
+  procSeqState.shakingIdx = -1;
+  procSeqState.lastDistractorMsg = '';
+  procSeqState._timer = setInterval(() => {
+    if (!procSeqState.done) { procSeqState.elapsed++; renderProcSeqRecall(); }
+  }, 1000);
+
+  document.getElementById('proc-step-title').textContent = proc.title + ' · Recall';
+  document.getElementById('proc-airport-tag').textContent = ap.icao || '';
+  document.querySelector('.proc-progress').style.display = 'none';
+  showProcScreen('proc-screen-steps');
+  renderProcSeqRecall();
+}
+
+function tapProcSeqChip(idx) {
+  const s = procSeqState;
+  if (s.done) return;
+  const item = s.pool[idx];
+  if (!item || item._placed) return;
+
+  if (item.isDistractor) {
+    s.miss++;
+    s.lastDistractorMsg = item.why;
+    s.shakingIdx = idx;
+    renderProcSeqRecall();
+    setTimeout(() => { s.shakingIdx = -1; renderProcSeqRecall(); }, 600);
+  } else if (item.origIdx === s.nextSlot) {
+    s.ok++;
+    s.nextSlot++;
+    s.lastDistractorMsg = '';
+    item._placed = true;
+    if (s.nextSlot === s.totalReal) {
+      s.done = true;
+      clearInterval(s._timer);
+      setTimeout(() => renderProcSeqRecall(), 200);
+    } else {
+      renderProcSeqRecall();
+    }
+  } else {
+    s.miss++;
+    s.lastDistractorMsg = '';
+    s.shakingIdx = idx;
+    renderProcSeqRecall();
+    setTimeout(() => { s.shakingIdx = -1; renderProcSeqRecall(); }, 600);
+  }
+}
+
+function renderProcSeqRecall() {
+  const s = procSeqState;
+  const ok = s.ok, miss = s.miss;
+  const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
+  const pct = s.totalReal > 0 ? Math.round((s.nextSlot / s.totalReal) * 100) : 0;
+
+  const slotsHtml = Array.from({ length: s.totalReal }, (_, i) => {
+    const filled = i < s.nextSlot;
+    const isNext = i === s.nextSlot && !s.done;
+    const label = filled ? s.pool.find(p => !p.isDistractor && p.origIdx === i)?.phase || '' : '';
+    return `<div class="seq-slot-row${isNext ? ' seq-slot-row--next' : ''}">
+      <span class="seq-row-idx">${String(i + 1).padStart(2, '0')}</span>
+      <div class="seq-row-check${filled ? ' seq-row-check--done' : ''}">
+        ${filled ? '<svg width="14" height="14" viewBox="0 0 14 14"><polyline points="2,7 5.5,11 12,3" fill="none" stroke="#00e887" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+      </div>
+      <div>${filled ? `<div class="seq-row-filled"><span class="seq-row-name">${label}</span></div>`
+        : isNext ? `<span class="seq-row-next-hint">→ WHAT'S NEXT?</span>`
+        : `<span class="seq-row-placeholder"></span>`}</div>
+    </div>`;
+  }).join('');
+
+  const chipsHtml = s.pool.map((item, idx) => {
+    if (item._placed) return '';
+    const shaking = s.shakingIdx === idx;
+    return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}" onclick="tapProcSeqChip(${idx})">${item.phase}</button>`;
+  }).join('');
+
+  const remaining = s.pool.filter(p => !p._placed).length;
+  const distractorHtml = s.lastDistractorMsg
+    ? `<div class="proc-seq-distractor-msg">⚠ That step doesn't belong here — ${s.lastDistractorMsg}</div>`
+    : '';
+
+  const doneHtml = s.done ? `
+    <div class="seq-done-banner">
+      <div class="seq-done-disc">✓</div>
+      <div>
+        <div class="seq-done-title">Nailed it.</div>
+        <div class="seq-done-sub">${s.totalReal} / ${s.totalReal} in ${fmtSeqTime(s.elapsed)} · ${accuracy}% accuracy</div>
+      </div>
+      <button onclick="startProcSeqRecall(procSeqState.procId)">Try again</button>
+    </div>` : '';
+
+  document.getElementById('proc-step-content').innerHTML = `
+    <div class="seq-page-header">
+      <div>
+        <div class="seq-page-eyebrow">↳ SEQUENCE RECALL · TAP IN ORDER</div>
+        <div class="seq-page-title">Build the procedure from memory</div>
+      </div>
+      <div class="seq-hud">
+        <div class="seq-hud-stat"><div class="seq-hud-label">TIME</div><div class="seq-hud-val" id="proc-seq-timer">${fmtSeqTime(s.elapsed)}</div></div>
+        <div class="seq-hud-stat"><div class="seq-hud-label">OK</div><div class="seq-hud-val${ok > 0 ? ' seq-hud-val--ok' : ''}">${ok}</div></div>
+        <div class="seq-hud-stat"><div class="seq-hud-label">MISS</div><div class="seq-hud-val${miss > 0 ? ' seq-hud-val--miss' : ''}">${miss}</div></div>
+        <div class="seq-hud-stat"><div class="seq-hud-label">ACC</div><div class="seq-hud-val">${accuracy}%</div></div>
+      </div>
+    </div>
+    <div class="seq-progress-row">
+      <div class="seq-progress-bar"><div class="seq-progress-fill" style="width:${pct}%"></div></div>
+      <span class="seq-progress-count">${s.nextSlot} / ${s.totalReal}</span>
+    </div>
+    ${doneHtml}
+    <div class="seq-grid">
+      <div class="seq-slot-col">
+        <div class="seq-col-eyebrow">↓ THE PROCEDURE · IN ORDER</div>
+        <div class="seq-slot-list">${slotsHtml}</div>
+      </div>
+      <div class="seq-pool-col">
+        <div class="seq-pool-card">
+          <div class="seq-pool-card-header">
+            <span class="seq-pool-eyebrow">↓ TAP THE NEXT STEP</span>
+            <span class="seq-pool-left-count">${remaining} LEFT</span>
+          </div>
+          <div class="seq-chips">${chipsHtml}</div>
+          ${distractorHtml}
+          <div class="seq-pool-footer">
+            <span class="seq-pool-hint">Tap steps in correct order · distractor steps are traps</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
 }
 
 function renderProcStep() {

@@ -2132,6 +2132,18 @@
 
     .seq-pool-actions { margin-top: 12px; display: flex; gap: 8px; }
 
+    .proc-seq-distractor-msg {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #2a1a00;
+      border: 1px solid #ff7a3d;
+      border-radius: 6px;
+      color: #ffb870;
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+    .proc-seq-distractor-msg:empty { display: none; }
+
     .seq-done-msg {
       padding: 16px 20px;
       background: var(--paper-2);
