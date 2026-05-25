@@ -9,11 +9,46 @@ let state = {
   emergency: { current: 0, answered: false, correct: 0, total: 0 }
 };
 
-let currentView = 'checklist';
+let currentView = 'drills-hub';
+let currentBottomTab = 'drills';
+let currentDrill = null; // 'checklist'|'radio'|'procedures'|'emergency'
 let currentClMode = 'reference';
 let currentRadioMode = 'chips';
 let currentProcScreen = 'proc-screen-setup';
 let _restoringNav = false;
+
+// ── DAY / NIGHT MODE ─────────────────────────────────────────────────────────
+// data-mode is set on <html> by the inline boot script in <head>.
+// Once the user manually toggles, matchMedia changes are ignored.
+
+let _modeManual = !!localStorage.getItem('cf_mode');
+
+(function _initModeListener() {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener('change', function (e) {
+    if (_modeManual) return;
+    _applyMode(e.matches ? 'night' : 'day', false);
+  });
+})();
+
+function _applyMode(mode, persist) {
+  document.documentElement.dataset.mode = mode;
+  const btn = document.getElementById('cf-mode-toggle');
+  if (btn) {
+    btn.setAttribute('aria-label', mode === 'night' ? 'Switch to day mode' : 'Switch to night mode');
+    btn.setAttribute('aria-pressed', mode === 'night' ? 'true' : 'false');
+  }
+  if (persist) {
+    localStorage.setItem('cf_mode', mode);
+    _modeManual = true;
+  }
+}
+
+function toggleMode() {
+  const current = document.documentElement.dataset.mode || 'day';
+  _applyMode(current === 'day' ? 'night' : 'day', true);
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function updateHash() {
   if (_restoringNav) return;
@@ -45,12 +80,18 @@ function switchAircraft(key, btn) {
   CHECKLISTS = ac.checklists;
   EMERGENCIES = ac.emergencies;
 
-  // Update aircraft buttons
-  document.querySelectorAll('.aircraft-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  // Update all aircraft buttons (sidebar + aircraft hub)
+  document.querySelectorAll('[data-aircraft]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`[data-aircraft="${key}"]`).forEach(b => b.classList.add('active'));
 
-  // Update section label
-  document.getElementById('cl-section-label').textContent = `// ${ac.name} Checklist Trainer`;
+  // Update drills hub context line and aircraft hub current card
+  const ctx = document.getElementById('drills-hub-context');
+  if (ctx) ctx.textContent = `${ac.label || ac.name}`;
+  const currentCard = document.getElementById('aircraft-hub-current');
+  if (currentCard) currentCard.querySelector('.cf-aircraft-current-name').textContent = ac.name;
+
+  // Update page eyebrow
+  document.getElementById('cl-section-label').textContent = `↳ REFERENCE · ${ac.name.toUpperCase()} · POH-DERIVED`;
 
   // Reset and reinitialize all tabs
   state.checklist = { phase: Object.keys(CHECKLISTS)[0], completed: {} };
@@ -70,13 +111,42 @@ function switchAircraft(key, btn) {
   updateHash();
 }
 
-function switchView(name, btn) {
+function _switchViewOnly(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
-  btn.classList.add('active');
+  const el = document.getElementById('view-' + name);
+  if (el) el.classList.add('active');
   currentView = name;
+}
+
+function _setActiveDrill(type) {
+  document.querySelectorAll('[data-drill]').forEach(b => {
+    b.classList.toggle('active', b.dataset.drill === type);
+  });
+  currentDrill = type;
+}
+
+function _setBottomTabActive(tabName) {
+  document.querySelectorAll('.cf-bottom-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tabName);
+  });
+  currentBottomTab = tabName;
+}
+
+function switchDrill(type) {
+  _setActiveDrill(type);
+  _setBottomTabActive('drills');
+  if (type === 'checklist')        _switchViewOnly('checklist');
+  else if (type === 'radio')       _switchViewOnly('radio');
+  else if (type === 'procedures')  _switchViewOnly('procedures');
+  else if (type === 'emergency')   _switchViewOnly('emergency');
   updateHash();
+}
+
+function switchBottomTab(tabName) {
+  _setBottomTabActive(tabName);
+  if (tabName === 'drills')        _switchViewOnly('drills-hub');
+  else if (tabName === 'aircraft') _switchViewOnly('aircraft-hub');
+  else if (tabName === 'more')     _switchViewOnly('more-hub');
 }
 
 // ── CHECKLIST ──
@@ -95,6 +165,7 @@ function selectPhase(phase) {
   });
   document.getElementById('complete-banner').classList.remove('show');
   renderChecklist();
+  if (currentClMode === 'recall') initSeqRecall();
   updateHash();
 }
 
@@ -107,31 +178,39 @@ function renderChecklist() {
   document.getElementById('cl-title').textContent = list.label;
   document.getElementById('cl-progress').textContent = `${doneCount} / ${total}`;
   document.getElementById('cl-progress-fill').style.width = `${(doneCount / total) * 100}%`;
-  const currentIdx = list.items.findIndex((_, i) => !completed.has(i));
+
+  // Render items with new kneeboard row layout (4-column grid)
   const ul = document.getElementById('checklist-items');
   ul.innerHTML = list.items.map((item, i) => {
     const done = completed.has(i);
-    const current = i === currentIdx;
-    return `<li class="checklist-item ${done ? 'done' : ''} ${current ? 'current' : ''}">
-      <div class="item-check" onclick="toggleItem(${i})">
-        <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="#00e887" stroke-width="2" stroke-linecap="round"/></svg>
+    return `<li class="cl-item${done ? ' cl-item--done' : ''}" onclick="toggleItem(${i})">
+      <span class="cl-item-idx">${String(i + 1).padStart(2, '0')}</span>
+      <div class="cl-item-chk${done ? ' cl-item-chk--done' : ''}">
+        ${done ? '<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
       </div>
-      <div class="item-content" onclick="toggleItem(${i})">
-        <div class="item-action">${item.action}</div>
-        <div class="item-value">${item.value}</div>
-        ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
+      <div class="cl-item-body">
+        <div class="cl-item-name-row">
+          <span class="cl-item-name${done ? ' cl-item-name--done' : ''}">${item.action}</span>
+          ${item.value ? `<span class="cl-item-call"><span class="cl-item-dot"></span>${item.value}</span>` : ''}
+        </div>
+        ${item.why ? `<div class="cl-item-why">${item.why}</div>` : ''}
       </div>
-      <button class="item-info-btn" data-phase="${phase}" data-idx="${i}" title="Why & Show Me">ⓘ</button>
+      <button class="cl-item-info" onclick="event.stopPropagation();openInfo('${phase}',${i})" title="Why &amp; Show Me">ⓘ</button>
     </li>`;
   }).join('');
 
-  // Wire info buttons
-  ul.querySelectorAll('.item-info-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      openInfo(btn.dataset.phase, parseInt(btn.dataset.idx));
-    });
-  });
+  // Update sidebar memory hook from first item with a phrase acronym tip
+  const hookCard = document.getElementById('cl-memory-hook');
+  const hookBody = document.getElementById('cl-hook-body');
+  if (hookCard && hookBody) {
+    const acronymItem = list.items.find(it => it.tipType === 'acronym' && it.acronym);
+    if (acronymItem) {
+      hookBody.innerHTML = `<div class="cl-hook-acronym">${acronymItem.acronym}</div><div class="cl-hook-def">${acronymItem.acronymDef}</div>`;
+      hookCard.style.display = '';
+    } else {
+      hookCard.style.display = 'none';
+    }
+  }
 }
 
 function toggleItem(idx) {
@@ -284,6 +363,7 @@ function renderRadioScenario() {
     }
     updateRadioOutput();
   };
+  renderRadioScenarioList();
 }
 
 function openGloss(key) {
@@ -326,7 +406,7 @@ function updateRadioOutput() {
   const out = document.getElementById('radio-output');
   out.innerHTML = state.radio.builtCall.length === 0
     ? '<span class="placeholder">Tap words below to build your radio call...</span>'
-    : state.radio.builtCall.join(', ') + '.';
+    : `<span class="rd-quote">“</span>${state.radio.builtCall.join(', ')}.<span class="rd-quote">”</span>`;
 }
 
 function clearRadioCall() {
@@ -373,8 +453,8 @@ function checkRadioCall() {
         usedDistractors.map(d => `• "${d.text}" — ${d.why}`).join('<br>') + '<br><br>';
     }
     noteHtml += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-      <button class="btn btn-sm" onclick="retryRadioCall()">↩ Try Again</button>
-      <button class="btn btn-sm" onclick="revealRadioCall()">Show Ideal Call</button>
+      <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryRadioCall()">↩ Try Again</button>
+      <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="revealRadioCall()">Show Ideal Call</button>
     </div>`;
     document.getElementById('feedback-note').innerHTML = noteHtml;
   }
@@ -405,6 +485,22 @@ function newRadioScenario() {
   renderRadioScenario();
 }
 
+function renderRadioScenarioList() {
+  const list = document.getElementById('rd-scenario-list');
+  if (!list) return;
+  list.innerHTML = RADIO_SCENARIOS.map((s, i) => `
+    <div class="rd-scenario-item${i === state.radio.scenarioIdx ? ' active' : ''}" onclick="selectScenario(${i})">
+      <span class="rd-scenario-num">${String(i + 1).padStart(2, '0')}</span>
+      <span>${s.type}</span>
+    </div>`).join('');
+}
+
+function selectScenario(idx) {
+  state.radio.scenarioIdx = idx;
+  renderRadioScenario();
+}
+
+
 // ── EMERGENCY ──
 function initEmergency() {
   state.emergency.current = Math.floor(Math.random() * EMERGENCIES.length);
@@ -426,6 +522,7 @@ function renderEmergency() {
   ).join('');
   document.getElementById('em-correct').textContent = state.emergency.correct;
   document.getElementById('em-total').textContent = state.emergency.total;
+  renderEmergencyCards();
 }
 
 function answerEmergency(optionIdx, el) {
@@ -457,6 +554,35 @@ function newEmergency() {
   let next;
   do { next = Math.floor(Math.random() * EMERGENCIES.length); } while (next === prev && EMERGENCIES.length > 1);
   state.emergency.current = next;
+  renderEmergency();
+}
+
+function renderEmergencyCards() {
+  const grid = document.getElementById('em-cards-grid');
+  if (!grid) return;
+  grid.innerHTML = EMERGENCIES.map((em, i) => {
+    const sev = em.severity || 'high';
+    const sevColor = sev === 'critical' ? 'var(--hazard)' : 'var(--kb-accent)';
+    const sevLabel = sev.toUpperCase();
+    const pipCount = Math.min(Math.max(em.options.length, 4), 6);
+    const pips = Array.from({ length: pipCount }, () => '<div class="em-card-pip"></div>').join('');
+    return `
+    <div class="em-card${i === state.emergency.current ? ' active' : ''}" onclick="selectEmergency(${i})">
+      <div class="em-card-badge">● ACTIVE</div>
+      <div class="em-card-severity-row">
+        <div class="em-card-severity-dot" style="background:${sevColor}"></div>
+        <span class="em-card-severity-label mono" style="color:${sevColor}">${sevLabel}</span>
+      </div>
+      <div class="em-card-title">${em.title}</div>
+      <div class="em-card-pips">${pips}</div>
+      <div class="em-card-footer mono">${em.options.length} options · first action</div>
+    </div>`;
+  }).join('');
+}
+
+function selectEmergency(idx) {
+  state.emergency.current = idx;
+  state.emergency.answered = false;
   renderEmergency();
 }
 
@@ -1172,8 +1298,8 @@ function renderProcStep() {
         <div class="proc-complete-icon">🛬</div>
         <div class="proc-complete-title">Procedure Complete</div>
         <div class="proc-complete-sub">Pattern Entry &amp; Landing · ${procState.airport.name || 'Your Field'}</div>
-        <button class="btn btn-primary" onclick="startProcedure(procState._lastProcId)">Fly Again</button>
-        <button class="btn" style="margin-top:8px" onclick="procBack()">Change Procedure</button>
+        <button class="cf-btn cf-btn--primary" onclick="startProcedure(procState._lastProcId)">Fly Again</button>
+        <button class="cf-btn cf-btn--ghost" style="margin-top:8px" onclick="procBack()">Change Procedure</button>
       </div>`;
     return;
   }
@@ -1344,10 +1470,11 @@ function checkConfigStep() {
       const row = document.getElementById('row-' + ctrl.id);
       if (row.classList.contains('wrong')) result.textContent = '✗ Not quite';
     });
-    fb.innerHTML = `✗ One or more controls need adjustment.<br><br>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-        <button class="btn btn-sm" onclick="retryConfigStep()">↩ Try Again</button>
-        <button class="btn btn-sm" onclick="revealConfigAnswers()">Show Answers</button>
+    fb.innerHTML = `
+      <div class="proc-feedback-hd">✗ One or more controls need adjustment.</div>
+      <div class="proc-feedback-bd" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryConfigStep()">↩ Try Again</button>
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="revealConfigAnswers()">Show Answers</button>
       </div>`;
   }
 }
@@ -1394,7 +1521,7 @@ function revealConfigAnswers() {
 
   const fb = document.getElementById('proc-feedback');
   fb.className = 'proc-feedback show wrong';
-  fb.textContent = '✗ ' + step.feedback;
+  fb.innerHTML = `<div class="proc-feedback-hd">✗ ${step.feedback}</div>`;
   document.getElementById('proc-next-btn').classList.add('show');
 }
 
@@ -1435,8 +1562,8 @@ function renderRadioStep(step) {
       <div class="speak-hint">Say the full radio call out loud — speak clearly and at normal radio pace</div>
     </div>
     <div class="proc-radio-actions">
-      <button class="btn btn-primary btn-sm" onclick="checkProcRadioActive()">Check Call</button>
-      <button class="btn btn-sm" onclick="clearProcRadioActive()">Clear</button>
+      <button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkProcRadioActive()">Check Call</button>
+      <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="clearProcRadioActive()">Clear</button>
     </div>`;
 }
 
@@ -1530,13 +1657,15 @@ function checkProcSpeech() {
 
   const fb = document.getElementById('proc-feedback');
   fb.className = `proc-feedback show ${isGood ? 'correct' : 'wrong'}`;
-  fb.innerHTML = `
-    <div style="font-weight:600;margin-bottom:8px">
-      ${isGood ? `✓ Good call — ${pct}% match` : `✗ ${pct}% match — review below`}
-    </div>
-    <div style="margin-bottom:6px;font-size:11px;color:#9ab8d0">Word match:</div>
+  const speechBody = `
+    <div style="margin-bottom:6px;font-size:11px;color:var(--ink-3)">Word match:</div>
     <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:${isGood ? '0' : '4px'}">${wordHtml}</div>
     ${buttonsHtml}`;
+  if (isGood) {
+    fb.innerHTML = `<div style="font-weight:600;margin-bottom:8px">✓ Good call — ${pct}% match</div>${speechBody}`;
+  } else {
+    fb.innerHTML = `<div class="proc-feedback-hd">✗ ${pct}% match — review below</div><div class="proc-feedback-bd">${speechBody}</div>`;
+  }
 
   if (isGood) document.getElementById('proc-next-btn').classList.add('show');
 }
@@ -1561,16 +1690,15 @@ function checkProcRadio() {
     document.getElementById('proc-next-btn').classList.add('show');
   } else {
     fb.className = 'proc-feedback show wrong';
-    let msg = '✗ Not quite.';
-    if (usedDistractors.length > 0) {
-      msg += '\n\n⚠️ Trap chips you included:\n' +
-        usedDistractors.map(d => `• "${d.text}" — ${d.why}`).join('\n');
-    }
-    fb.innerHTML = msg.replace(/\n/g, '<br>') +
-      `<br><br><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-        <button class="btn btn-sm" onclick="clearProcRadio()">↩ Try Again</button>
-        <button class="btn btn-sm" onclick="revealProcRadio()">Show Ideal Call</button>
-      </div>`;
+    const detail = usedDistractors.length > 0
+      ? `<div style="font-size:13px;color:var(--ink-3);margin-bottom:10px">⚠️ Trap chips you included:<br>${usedDistractors.map(d => `• "${d.text}" — ${d.why}`).join('<br>')}</div>`
+      : '';
+    fb.innerHTML = `
+      <div class="proc-feedback-hd">✗ Not quite.</div>
+      <div class="proc-feedback-bd">${detail}<div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="clearProcRadio()">↩ Try Again</button>
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="revealProcRadio()">Show Ideal Call</button>
+      </div></div>`;
   }
 }
 
@@ -1578,7 +1706,7 @@ function revealProcRadio() {
   const step = procState.currentProc.steps[procState.currentStep];
   const fb = document.getElementById('proc-feedback');
   fb.className = 'proc-feedback show wrong';
-  fb.innerHTML = `✗ ${step.feedback}<br><br><strong>Ideal:</strong> ${step.ideal}`;
+  fb.innerHTML = `<div class="proc-feedback-hd">✗ ${step.feedback}</div><div class="proc-feedback-bd"><strong>Ideal:</strong> ${step.ideal}</div>`;
   document.getElementById('proc-next-btn').classList.add('show');
 }
 
@@ -1607,7 +1735,11 @@ function answerProcStep(btn) {
   }
   const fb = document.getElementById('proc-feedback');
   fb.className = 'proc-feedback show ' + (isCorrect ? 'correct' : 'wrong');
-  fb.textContent = (isCorrect ? '✓ ' : '✗ ') + step.feedback;
+  if (isCorrect) {
+    fb.textContent = '✓ ' + step.feedback;
+  } else {
+    fb.innerHTML = `<div class="proc-feedback-hd">✗ ${step.feedback}</div>`;
+  }
   document.getElementById('proc-next-btn').classList.add('show');
 }
 
@@ -1630,9 +1762,17 @@ function showProcScreen(id) {
 let seqState = {
   phase: 'preflight',
   shuffled: [],   // all items shuffled, each has origIdx
-  order: [],      // current user ordering (array of origIdx, -1 = empty slot)
+  order: [],      // legacy drag-and-drop ordering (kept for compat)
   checked: false,
   dragSrc: null,  // { type: 'pool'|'slot', idx }
+  // tap-in-order state
+  nextSlot: 0,    // next slot index to fill
+  ok: 0,          // correct taps
+  miss: 0,        // wrong taps
+  elapsed: 0,     // seconds since drill start
+  _timer: null,   // setInterval handle
+  done: false,    // completion flag
+  shakingIdx: null, // origIdx of chip currently animating shake
 };
 
 function setClMode(mode, btn) {
@@ -1646,6 +1786,7 @@ function setClMode(mode, btn) {
 }
 
 function initSeqRecall() {
+  if (seqState._timer) clearInterval(seqState._timer);
   const phase = state.checklist.phase || 'preflight';
   const list = CHECKLISTS[phase];
   seqState.phase = phase;
@@ -1657,90 +1798,162 @@ function initSeqRecall() {
   seqState.dragSrc = null;
   seqState._selectedPool = null;
   seqState._selectedSlot = null;
+  seqState.nextSlot = 0;
+  seqState.ok = 0;
+  seqState.miss = 0;
+  seqState.elapsed = 0;
+  seqState.done = false;
+  seqState.shakingIdx = null;
+  seqState._timer = setInterval(() => {
+    if (!seqState.done) {
+      seqState.elapsed++;
+      const el = document.getElementById('seq-timer');
+      if (el) el.textContent = fmtSeqTime(seqState.elapsed);
+    }
+  }, 1000);
   renderSeqRecall();
+}
+
+function fmtSeqTime(s) {
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function tapChip(origIdx) {
+  if (seqState.done) return;
+  if (origIdx === seqState.nextSlot) {
+    // Correct tap — advance the slot
+    seqState.ok++;
+    seqState.nextSlot++;
+    const total = CHECKLISTS[seqState.phase].items.length;
+    if (seqState.nextSlot === total) {
+      seqState.done = true;
+      clearInterval(seqState._timer);
+      setTimeout(renderSeqRecall, 600);
+    } else {
+      renderSeqRecall();
+    }
+  } else {
+    // Wrong tap — shake that chip
+    seqState.miss++;
+    seqState.shakingIdx = origIdx;
+    renderSeqRecall();
+    setTimeout(() => {
+      seqState.shakingIdx = null;
+      const chip = document.querySelector('.seq-chip--shake');
+      if (chip) chip.classList.remove('seq-chip--shake');
+    }, 600);
+  }
 }
 
 function renderSeqRecall() {
   const phase = seqState.phase;
   const list = CHECKLISTS[phase];
   const total = list.items.length;
-  const placed = seqState.order.filter(x => x !== -1).length;
+  const nextSlot = seqState.nextSlot;
+  const ok = seqState.ok;
+  const miss = seqState.miss;
+  const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
+  const pct = Math.round((nextSlot / total) * 100);
 
-  if (seqState.checked) {
-    renderSeqResults(list, total);
-    return;
-  }
+  // Slot rows
+  const slotsHtml = list.items.map((item, i) => {
+    const filled = i < nextSlot;
+    const isNext = i === nextSlot && !seqState.done;
+    return `<div class="seq-slot-row${isNext ? ' seq-slot-row--next' : ''}">
+      <span class="seq-row-idx">${String(i + 1).padStart(2, '0')}</span>
+      <div class="seq-row-check${filled ? ' seq-row-check--done' : ''}">
+        ${filled ? '<svg width="11" height="9" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
+      </div>
+      <div>
+        ${filled
+          ? `<div class="seq-row-filled">
+               <span class="seq-row-name">${item.action}</span>
+               ${item.value ? `<span class="seq-row-call">· ${item.value}</span>` : ''}
+             </div>`
+          : isNext
+          ? `<span class="seq-row-next-hint">→ WHAT'S NEXT?</span>`
+          : `<span class="seq-row-placeholder"></span>`}
+      </div>
+      <div></div>
+    </div>`;
+  }).join('');
 
-  // Which origIdxs are already in a slot
-  const inSlots = new Set(seqState.order.filter(x => x !== -1));
+  // Completion banner
+  const doneBanner = seqState.done ? `
+    <div class="seq-done-banner">
+      <div class="seq-done-disc">✓</div>
+      <div style="flex:1">
+        <div class="seq-done-title">Nailed it.</div>
+        <div class="seq-done-sub">${nextSlot} / ${total} in ${fmtSeqTime(seqState.elapsed)} · ${accuracy}% accuracy. Logged to your record.</div>
+      </div>
+      <button class="cf-btn cf-btn--solid cf-btn--sm" onclick="initSeqRecall()">Try again</button>
+    </div>` : '';
 
-  let html = `
-    <div class="seq-header">
-      <div class="seq-phase-label">${list.label}</div>
-      <div class="seq-score">${placed} / ${total}</div>
-    </div>
-    <div class="seq-prompt">
-      Tap an item to select it, then tap a slot to place it.<br>
-      Or drag directly into position. Tap a placed item to remove it.
-    </div>
-    <div class="seq-slot-area">
-      <div class="seq-slot-label">// Your sequence — drag to reorder</div>
-      <div class="seq-slots" id="seq-slots">
-        ${seqState.order.map((origIdx, i) => {
-          const item = origIdx !== -1 ? seqState.shuffled.find(s => s.origIdx === origIdx) : null;
-          return `<div class="seq-slot ${item ? 'filled' : 'empty'}"
-                       data-slot="${i}"
-                       ondragover="seqDragOver(event,${i})"
-                       ondrop="seqDrop(event,${i})"
-                       ondragleave="seqDragLeave(event)"
-                       onclick="seqSlotClick(${i})">
-            <div class="seq-slot-num">${i + 1}</div>
-            <div class="seq-slot-content">
-              ${item
-                ? `<span class="seq-slot-item"
-                         draggable="true"
-                         data-slot="${i}"
-                         ondragstart="seqDragStartSlot(event,${i})"
-                         ondragend="seqDragEnd(event)"
-                         ontouchstart="seqTouchStart(event,'slot',${i})"
-                         ontouchmove="seqTouchMove(event)"
-                         ontouchend="seqTouchEnd(event)"
-                         onclick="event.stopPropagation();seqSlotClick(${i})"
-                         ><span class="seq-slot-item-text">${item.action}</span><span class="seq-slot-value">${item.value}</span></span>`
-                : `<span class="seq-empty-label">drop here</span>`}
-            </div>
-          </div>`;
-        }).join('')}
+  // Chip pool
+  const remaining = seqState.shuffled.filter(it => it.origIdx >= nextSlot).length;
+  const poolHtml = seqState.done
+    ? ``
+    : `<div class="seq-pool-card">
+        <div class="seq-pool-card-header">
+          <span class="seq-pool-eyebrow">↓ TAP THE NEXT ITEM</span>
+          <span class="seq-pool-left-count">${remaining} LEFT</span>
+        </div>
+        <div class="seq-chips">
+          ${seqState.shuffled.map(it => {
+            const placed = it.origIdx < nextSlot;
+            const shaking = seqState.shakingIdx === it.origIdx;
+            return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}"
+                      onclick="tapChip(${it.origIdx})"
+                      ${placed ? 'disabled' : ''}>${it.action}</button>`;
+          }).join('')}
+        </div>
+        <div class="seq-pool-footer">
+          <span class="seq-pool-hint">Tap chips in the correct order to fill each slot.</span>
+        </div>
+      </div>`;
+
+  document.getElementById('seq-content').innerHTML = `
+    <div class="seq-page-header">
+      <div>
+        <div class="seq-page-eyebrow">↳ DRILL · TAP IN ORDER · ${list.label.toUpperCase()}</div>
+        <h2 class="seq-page-title">Build the checklist <span>from memory</span>.</h2>
+      </div>
+      <div class="seq-hud">
+        <div class="seq-hud-stat">
+          <div class="seq-hud-label">TIME</div>
+          <div class="seq-hud-val" id="seq-timer">${fmtSeqTime(seqState.elapsed)}</div>
+        </div>
+        <div class="seq-hud-stat">
+          <div class="seq-hud-label">OK</div>
+          <div class="seq-hud-val${ok > 0 ? ' seq-hud-val--ok' : ''}">${ok}</div>
+        </div>
+        <div class="seq-hud-stat">
+          <div class="seq-hud-label">MISS</div>
+          <div class="seq-hud-val${miss > 0 ? ' seq-hud-val--miss' : ''}">${miss}</div>
+        </div>
+        <div class="seq-hud-stat">
+          <div class="seq-hud-label">ACC</div>
+          <div class="seq-hud-val">${accuracy}%</div>
+        </div>
       </div>
     </div>
-    <div class="seq-pool-label seq-slot-label">// Item pool — drag or tap to place</div>
-    <div class="seq-pool" id="seq-pool"
-         ondragover="seqPoolDragOver(event)"
-         ondrop="seqPoolDrop(event)"
-         ondragleave="seqDragLeave(event)">
-      ${seqState.shuffled.map((item, i) => {
-        const placed = inSlots.has(item.origIdx);
-        const selected = seqState._selectedPool === i;
-        return `<div class="seq-item ${placed ? 'placed' : ''} ${selected ? 'sel' : ''}"
-                     data-pool="${i}"
-                     draggable="${!placed}"
-                     ondragstart="seqDragStartPool(event,${i})"
-                     ondragend="seqDragEnd(event)"
-                     ontouchstart="seqTouchStart(event,'pool',${i})"
-                     ontouchmove="seqTouchMove(event)"
-                     ontouchend="seqTouchEnd(event)"
-                     onclick="seqPoolClick(${i})">
-          <div class="seq-item-action">${item.action}</div>
-          <div class="seq-item-value">${item.value}</div>
-        </div>`;
-      }).join('')}
+    <div class="seq-progress-row">
+      <div class="seq-progress-bar"><div class="seq-progress-fill" style="width:${pct}%"></div></div>
+      <span class="seq-progress-count">${nextSlot} / ${total}</span>
     </div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn btn-primary" style="flex:1" onclick="seqCheck()" ${placed < total ? 'disabled style="opacity:0.4;cursor:default;flex:1"' : 'style="flex:1"'}>Check Sequence</button>
-      <button class="btn" onclick="initSeqRecall()">Restart</button>
+    <div class="seq-grid">
+      <div class="seq-slot-col">
+        <div class="seq-col-eyebrow">↓ THE CHECKLIST · IN ORDER</div>
+        <div class="seq-slot-list">${slotsHtml}</div>
+        ${doneBanner}
+      </div>
+      <aside class="seq-pool-col">
+        ${poolHtml}
+        <div class="seq-pool-actions">
+          <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="initSeqRecall()">Restart</button>
+        </div>
+      </aside>
     </div>`;
-
-  document.getElementById('seq-content').innerHTML = html;
 }
 
 function renderSeqResults(list, total) {
@@ -1778,8 +1991,8 @@ function renderSeqResults(list, total) {
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="initSeqRecall()">Try Again</button>
-      <button class="btn" onclick="seqNextPhase()">Next Phase</button>
+      <button class="cf-btn cf-btn--primary" onclick="initSeqRecall()">Try Again</button>
+      <button class="cf-btn cf-btn--ghost" onclick="seqNextPhase()">Next Phase</button>
     </div>`;
 
   document.getElementById('seq-content').innerHTML = html;
@@ -2152,8 +2365,8 @@ function checkSpeechCall() {
   hdr.textContent = isGood ? `✓ Good call — ${pct}% match` : `✗ ${pct}% match — review below`;
 
   document.getElementById('feedback-ideal').innerHTML =
-    `<div style="margin-bottom:8px;font-size:11px;color:#9ab8d0">Ideal call — word match:</div>
-     <div class="speech-score" style="padding:0;background:none;border:none;flex-wrap:wrap;gap:4px">${wordHtml}</div>`;
+    `<div class="speech-match-label">Ideal call — word match:</div>
+     <div class="speech-score">${wordHtml}</div>`;
 
   document.getElementById('feedback-note').innerHTML = s.note + buttonsHtml;
 }
@@ -2166,8 +2379,8 @@ function buildSpeechResultHTML(result, retryFn, revealFn) {
   ).join(' ');
   const buttonsHtml = !isGood
     ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-        <button class="btn btn-sm" onclick="${retryFn}">↩ Try Again</button>
-        <button class="btn btn-sm" onclick="${revealFn}">Show Ideal Call</button>
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="${retryFn}">↩ Try Again</button>
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="${revealFn}">Show Ideal Call</button>
       </div>`
     : '';
   return { isGood, pct, wordHtml, buttonsHtml };
@@ -2364,7 +2577,7 @@ function playATIS() {
     atisState.playing = false;
     document.getElementById('atis-play-btn').textContent = '▶ Play Again';
     document.getElementById('atis-transcript').innerHTML =
-      `<span style="color:#9ab8d0;font-size:11px">ATIS read — fill in what you heard. You can play again if needed.</span>`;
+      `<span class="atis-trans-label">ATIS read — fill in what you heard. You can play again if needed.</span>`;
   };
 
   utt.onerror = () => {
@@ -2449,7 +2662,7 @@ function checkATIS() {
       <div class="atis-score-big ${cls}">${msg}</div>
       <div class="atis-score-sub">${correct} of ${d.fields.length} correct · ${pct}%</div>
     </div>
-    <div style="background:#111f30;border:1px solid #2a4060;border-radius:4px;padding:14px;margin-bottom:14px">
+    <div class="atis-results-detail">
       ${results.map(r => `
         <div class="atis-result-row">
           <div class="atis-result-label">${r.label}</div>
@@ -2458,13 +2671,13 @@ function checkATIS() {
         </div>
       `).join('')}
     </div>
-    <div style="background:#0a1828;border:1px solid #2a4060;border-radius:4px;padding:12px;margin-bottom:14px;font-family:var(--mono);font-size:12px;color:#c8d8e8;line-height:1.8">
-      <div style="font-size:9px;letter-spacing:3px;color:#9ab8d0;margin-bottom:8px">// FULL ATIS TEXT</div>
+    <div class="atis-transcript-reveal">
+      <div class="cf-eyebrow" style="margin-bottom:8px">// Full ATIS text</div>
       ${d.script}
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="newATIS()">New ATIS</button>
-      <button class="btn" onclick="playATISAgain()">▶ Play Again</button>
+      <button class="cf-btn cf-btn--primary" onclick="newATIS()">New ATIS</button>
+      <button class="cf-btn cf-btn--ghost" onclick="playATISAgain()">&#9654; Play Again</button>
     </div>`;
 }
 
@@ -2483,26 +2696,56 @@ function playATISAgain() {
   playATIS();
 }
 
+// ── TODAY SCREEN ──────────────────────────────────────────────────────────
+
+function navigateDrill(target) {
+  if (target === 'recall') {
+    switchDrill('checklist');
+    const recallBtn = document.querySelector('#view-checklist .cl-mode-btn:nth-child(2)');
+    if (recallBtn) setClMode('recall', recallBtn);
+    return;
+  }
+  if (target === 'reference' || target === 'checklist') { switchDrill('checklist'); return; }
+  if (target === 'radio' || target === 'procedures' || target === 'emergency') {
+    switchDrill(target);
+    return;
+  }
+  _switchViewOnly(target);
+  updateHash();
+}
+
 // Hash scheme: #[aircraft/]view[/sub1[/sub2]]
 // Examples: #radio/atis  #checklist/recall/runup  #cherokee140/emergency
 function restoreNav() {
   const raw = location.hash.slice(1);
   _restoringNav = true;
 
-  const parts = raw ? raw.split('/') : [];
+  // Default: mobile shows drills hub, desktop jumps straight to checklist
+  if (!raw) {
+    if (window.innerWidth < 768) {
+      _switchViewOnly('drills-hub');
+      _setBottomTabActive('drills');
+    } else {
+      switchDrill('checklist');
+    }
+    _restoringNav = false;
+    updateHash();
+    return;
+  }
+
+  const parts = raw.split('/');
   let i = 0;
 
   // Optional aircraft prefix
   if (parts[i] === 'c172' || parts[i] === 'cherokee140') {
     const aircraft = parts[i++];
     if (aircraft !== currentAircraft) {
-      const btn = [...document.querySelectorAll('.aircraft-btn')]
-        .find(b => b.getAttribute('onclick').includes(`'${aircraft}'`));
-      if (btn) switchAircraft(aircraft, btn);
+      const acBtn = document.querySelector(`[data-aircraft="${aircraft}"]`);
+      if (acBtn) switchAircraft(aircraft, acBtn);
     }
   }
 
-  const view = parts[i++] || 'checklist';
+  const view = parts[i++] || 'drills-hub';
 
   if (view === 'checklist') {
     const clMode  = parts[i]     || 'reference';
@@ -2538,18 +2781,20 @@ function restoreNav() {
     }
   }
 
-  // Switch tab last so the right panel is visible
-  if (view !== 'checklist') {
-    const btn = [...document.querySelectorAll('.nav-btn')]
-      .find(b => b.getAttribute('onclick').includes(`'${view}'`));
-    if (btn) switchView(view, btn);
-  }
+  // Switch view and sync nav indicators
+  _switchViewOnly(view);
+  if (view === 'checklist') { _setActiveDrill('checklist'); _setBottomTabActive('drills'); }
+  else if (view === 'radio') { _setActiveDrill('radio'); _setBottomTabActive('drills'); }
+  else if (view === 'procedures') { _setActiveDrill('procedures'); _setBottomTabActive('drills'); }
+  else if (view === 'emergency') { _setActiveDrill('emergency'); _setBottomTabActive('drills'); }
 
   _restoringNav = false;
   updateHash(); // canonicalize URL
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Sync mode toggle button state with boot-time mode
+  _applyMode(document.documentElement.dataset.mode || 'day', false);
   initChecklist();
   initRadio();
   initEmergency();

@@ -85,6 +85,7 @@ const ALL_AIRCRAFT = {
     emergencies: [
   {
     icon: '🔥',
+    severity: 'critical',
     title: 'Engine Fire — Starting',
     situation: 'During engine start, flames appear from the engine cowling. What is your FIRST action?',
     correct: 1,
@@ -99,6 +100,7 @@ const ALL_AIRCRAFT = {
   },
   {
     icon: '⚠️️',
+    severity: 'critical',
     title: 'Engine Failure — Low Altitude',
     situation: 'Engine fails immediately after liftoff at 200 ft AGL. Runway behind you. First action?',
     correct: 0,
@@ -113,6 +115,7 @@ const ALL_AIRCRAFT = {
   },
   {
     icon: '📊',
+    severity: 'critical',
     title: 'Engine Failure — Cruise',
     situation: 'At 4,500 ft MSL, engine quits suddenly. Correct memory item sequence?',
     correct: 2,
@@ -127,6 +130,7 @@ const ALL_AIRCRAFT = {
   },
   {
     icon: '🌡️',
+    severity: 'high',
     title: 'Carburetor Ice',
     situation: 'Cruise at 3,000 ft, humid 50°F day. Gradual unexplained RPM drop, no roughness. First action?',
     correct: 1,
@@ -141,6 +145,7 @@ const ALL_AIRCRAFT = {
   },
   {
     icon: '⚡',
+    severity: 'high',
     title: 'Electrical Failure',
     situation: 'Ammeter shows discharge. Alternator light illuminates. First action?',
     correct: 3,
@@ -240,6 +245,7 @@ const ALL_AIRCRAFT = {
     emergencies: [
   {
     icon: '🔥',
+    severity: 'critical',
     title: 'Engine Fire — Starting',
     situation: 'During engine start, flames appear from the cowling. First action?',
     correct: 0,
@@ -254,6 +260,7 @@ const ALL_AIRCRAFT = {
   },
   {
     icon: '⚠️️',
+    severity: 'critical',
     title: 'Engine Failure — Low Altitude',
     situation: 'Engine fails immediately after liftoff at 200 ft AGL. Runway behind you. First action?',
     correct: 0,
@@ -268,6 +275,7 @@ const ALL_AIRCRAFT = {
   },
   {
     icon: '⛽',
+    severity: 'critical',
     title: 'Engine Failure — Cruise',
     situation: 'Engine quits at cruise. Correct first action sequence?',
     correct: 1,
@@ -282,6 +290,7 @@ const ALL_AIRCRAFT = {
   },
   {
     icon: '🌡️',
+    severity: 'high',
     title: 'Carburetor Ice',
     situation: 'Gradual RPM loss, humid conditions, 50°F. No roughness. First action?',
     correct: 1,
@@ -296,6 +305,7 @@ const ALL_AIRCRAFT = {
   },
   {
     icon: '⛽',
+    severity: 'high',
     title: 'Fuel Pump Failure',
     situation: 'Fuel pressure drops in cruise. Fuel pump circuit breaker is in. First action?',
     correct: 2,

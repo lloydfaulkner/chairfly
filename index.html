@@ -7,401 +7,560 @@
   <meta name="theme-color" content="#00c8ff" />
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    // Set data-mode before first paint to prevent flash
+    (function () {
+      var stored = localStorage.getItem('cf_mode');
+      var mode = (stored === 'day' || stored === 'night')
+        ? stored
+        : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day');
+      document.documentElement.dataset.mode = mode;
+    })();
+  </script>
 </head>
 <body>
-<div id="app">
-  <header>
-    <div class="logo">Chair<span>Fly</span></div>
-    <div class="status-dot"></div>
+<div class="cf-layout">
+
+  <header class="cf-topbar">
+    <div class="cf-wordmark">
+      <svg class="cf-logo" width="22" height="14" viewBox="0 0 22 14" fill="none" aria-hidden="true">
+        <path d="M1 7 L6 5 L15 1 L17 3 L11 7 L21 6 L21 8 L11 7 L17 11 L15 13 L6 9 Z" fill="var(--kb-accent)"/>
+      </svg>
+      <span class="cf-wordmark-text"><span class="cf-wm-chair">chair</span><span class="cf-wm-fly">fly</span></span>
+    </div>
+    <div class="cf-avatar mono" aria-hidden="true">LL</div>
+    <button class="cf-mode-toggle" id="cf-mode-toggle" onclick="toggleMode()" aria-label="Switch to night mode" aria-pressed="false">
+      <!-- sun icon (shown in night mode, click to day) -->
+      <svg class="cf-mode-icon cf-mode-icon--sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <!-- moon icon (shown in day mode, click to night) -->
+      <svg class="cf-mode-icon cf-mode-icon--moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
   </header>
 
-  <div class="aircraft-bar">
-    <button class="aircraft-btn active" onclick="switchAircraft('c172', this)">C172 Skyhawk</button>
-    <button class="aircraft-btn" onclick="switchAircraft('cherokee140', this)">Cherokee 140</button>
-  </div>
+  <!-- SIDEBAR (desktop only, hidden on mobile via CSS) -->
+  <aside class="cf-sidebar" id="cf-sidebar">
+    <div class="cf-sidebar-category">Drills</div>
+    <button class="cf-sidebar-btn" data-drill="checklist" onclick="switchDrill('checklist')">Checklist</button>
+    <button class="cf-sidebar-btn" data-drill="radio" onclick="switchDrill('radio')">Radio Calls</button>
+    <button class="cf-sidebar-btn" data-drill="procedures" onclick="switchDrill('procedures')">Procedures</button>
+    <button class="cf-sidebar-btn" data-drill="emergency" onclick="switchDrill('emergency')">Emergency Procs</button>
 
-  <nav class="nav">
-    <button class="nav-btn active" onclick="switchView('checklist', this)">Checklist</button>
-    <button class="nav-btn" onclick="switchView('radio', this)">Radio</button>
-    <button class="nav-btn" onclick="switchView('procedures', this)">Procedures</button>
-    <button class="nav-btn" onclick="switchView('emergency', this)">Emergency</button>
+    <div class="cf-sidebar-category">Aircraft</div>
+    <button class="cf-sidebar-btn active" data-aircraft="c172" onclick="switchAircraft('c172', this)">C172 Skyhawk</button>
+    <button class="cf-sidebar-btn" data-aircraft="cherokee140" onclick="switchAircraft('cherokee140', this)">PA-28 Cherokee</button>
+
+    <div class="cf-sidebar-category">Account</div>
+    <button class="cf-sidebar-btn">Settings</button>
+    <button class="cf-sidebar-btn">Sign Out</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="cf-main" id="app">
+
+    <!-- DRILLS HUB (mobile landing view) -->
+    <div class="view" id="view-drills-hub">
+      <div class="cf-hub">
+        <div class="cf-hub-context mono" id="drills-hub-context">C172 · Skyhawk</div>
+        <button class="cf-hub-btn" data-drill="checklist" onclick="switchDrill('checklist')">Checklist</button>
+        <button class="cf-hub-btn" data-drill="radio" onclick="switchDrill('radio')">Radio Calls</button>
+        <button class="cf-hub-btn" data-drill="procedures" onclick="switchDrill('procedures')">Procedures</button>
+        <button class="cf-hub-btn" data-drill="emergency" onclick="switchDrill('emergency')">Emergency Procs</button>
+      </div>
+    </div>
+
+    <!-- AIRCRAFT HUB (mobile Aircraft tab) -->
+    <div class="view" id="view-aircraft-hub">
+      <div class="cf-hub">
+        <div class="cf-hub-section-label">Current Aircraft</div>
+        <div class="cf-aircraft-current" id="aircraft-hub-current">
+          <div class="cf-aircraft-current-name">C172 Skyhawk</div>
+        </div>
+        <div class="cf-hub-section-label" style="margin-top:16px">Switch Aircraft</div>
+        <button class="cf-hub-btn" data-aircraft="c172" onclick="switchAircraft('c172', this)">C172 Skyhawk</button>
+        <button class="cf-hub-btn" data-aircraft="cherokee140" onclick="switchAircraft('cherokee140', this)">PA-28 Cherokee</button>
+      </div>
+    </div>
+
+    <!-- MORE HUB (mobile More tab) -->
+    <div class="view" id="view-more-hub">
+      <div class="cf-hub">
+        <button class="cf-more-btn">Settings</button>
+        <button class="cf-more-btn">Help &amp; Docs</button>
+        <button class="cf-more-btn">Feedback</button>
+        <button class="cf-more-btn">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="view" id="view-checklist">
+      <div class="cl-page-header">
+        <div>
+          <div class="cf-eyebrow" id="cl-section-label">&#8618; REFERENCE &middot; C172 SKYHAWK &middot; POH-DERIVED</div>
+          <h1 class="cl-page-title" id="cl-page-title">Normal procedures checklist</h1>
+        </div>
+        <div class="cl-mode-toggle">
+          <button class="cl-mode-btn active" onclick="setClMode('reference', this)">Reference</button>
+          <button class="cl-mode-btn" onclick="setClMode('recall', this)">Recall Drill</button>
+        </div>
+      </div>
+
+      <div class="cl-phase-scroller" id="phase-selector"></div>
+
+      <div id="cl-reference-mode">
+        <div class="cl-complete-banner" id="complete-banner">
+          <span class="cl-complete-icon">&#10003;</span>
+          <span id="complete-time">Checklist complete</span>
+        </div>
+        <div class="cl-reference-grid">
+          <div class="cl-reference-main">
+            <div class="cl-phase-header">
+              <span class="cl-phase-title" id="cl-title">Preflight</span>
+              <span class="cl-phase-count" id="cl-progress">0 / 0</span>
+            </div>
+            <div class="cl-ref-progress"><div class="cl-ref-progress-fill" id="cl-progress-fill" style="width:0%"></div></div>
+            <ul class="cl-items" id="checklist-items"></ul>
+            <div class="cl-ref-footer">
+              <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="resetChecklist()">Reset</button>
+              <button class="cf-btn cf-btn--solid cf-btn--sm" onclick="nextPhase()">Next phase &#8594;</button>
+            </div>
+          </div>
+          <aside class="cl-sidebar">
+            <div class="cl-memory-hook" id="cl-memory-hook" style="display:none">
+              <div class="cf-eyebrow">&#9650; MEMORY HOOK</div>
+              <div id="cl-hook-body"></div>
+            </div>
+            <div class="cl-sidebar-cta">
+              <div class="cl-cta-eyebrow">SWITCH TO RECALL</div>
+              <div class="cl-cta-text">Reviewed this phase? Try it from memory &mdash; tap items in sequence.</div>
+              <button class="cl-cta-btn" onclick="setClMode('recall', document.querySelectorAll('.cl-mode-btn')[1])">Start drill &#8594;</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div id="cl-recall-mode" style="display:none">
+        <div id="seq-content"></div>
+      </div>
+    </div>
+
+    <!-- RADIO -->
+    <div class="view" id="view-radio">
+      <div class="rd-page-header">
+        <div>
+          <div class="cf-eyebrow">&#8618; RADIO &middot; PHRASEOLOGY DRILLS</div>
+          <h1 class="rd-page-title">Read back like you mean it.</h1>
+        </div>
+        <div class="cl-mode-toggle rd-tab-toggle">
+          <button class="cl-mode-btn active" onclick="setRadioMode('chips', this)">Radio Calls</button>
+          <button class="cl-mode-btn" onclick="setRadioMode('atis', this)">ATIS Decoder</button>
+        </div>
+      </div>
+
+      <div id="radio-calls-mode">
+        <div class="rd-layout">
+          <aside class="rd-sidebar">
+            <div class="cf-eyebrow rd-sidebar-eyebrow">&#8595; SCENARIOS</div>
+            <div id="rd-scenario-list"></div>
+          </aside>
+
+          <div class="rd-dialog-col">
+            <div class="rd-dialog-header">
+              <h2 class="rd-dialog-title" id="scenario-type"></h2>
+            </div>
+
+            <div class="rd-dialog-card">
+              <div class="rd-turn rd-turn--context">
+                <div class="rd-turn-role">
+                  <span class="rd-role-lbl">SITUATION</span>
+                  <span class="rd-turn-num">#1</span>
+                </div>
+                <div class="rd-turn-body">
+                  <p class="rd-situation" id="scenario-text"></p>
+                  <div class="rd-data-strip" id="scenario-data"></div>
+                </div>
+                <div></div>
+              </div>
+
+              <div class="rd-turn rd-turn--you">
+                <div class="rd-turn-role">
+                  <span class="rd-role-lbl rd-role-you">YOU &middot; 21G</span>
+                  <span class="rd-turn-num">#2</span>
+                </div>
+                <div class="rd-turn-body">
+                  <div class="radio-input-toggle">
+                    <button class="radio-input-btn active" id="rbtn-chips" onclick="setRadioInputMode('chips')">Word Chips</button>
+                    <button class="radio-input-btn" id="rbtn-speak" onclick="setRadioInputMode('speak')">🎙 Speak It</button>
+                  </div>
+                  <div id="radio-chip-area">
+                    <div class="radio-output" id="radio-output"><span class="placeholder">Tap words below to build your radio call...</span></div>
+                    <div class="word-bank" id="word-bank"></div>
+                    <div class="word-bank-hint">tap a word to add &middot; tap again to remove</div>
+                  </div>
+
+                  <div id="radio-speak-area" style="display:none">
+                    <div class="radio-output" id="radio-speak-output"><span class="placeholder">Tap the mic and say your call...</span></div>
+                    <div class="speak-mic-wrap">
+                      <button class="mic-btn" id="mic-btn" onclick="toggleSpeech()">
+                        <span class="mic-icon">&#127897;</span>
+                        <span class="mic-label" id="mic-label">Tap to speak</span>
+                      </button>
+                      <div class="mic-status" id="mic-status"></div>
+                    </div>
+                    <div class="speak-hint">Say the full radio call out loud &mdash; speak clearly and at normal radio pace</div>
+                  </div>
+
+                  <div class="rd-build-actions">
+                    <button class="cf-btn cf-btn--primary cf-btn--sm" id="radio-check-btn" onclick="checkRadioCallActive()">Check Call</button>
+                    <button class="cf-btn cf-btn--ghost cf-btn--sm" id="radio-clear-btn" onclick="clearRadioCallActive()">Clear</button>
+                    <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="newRadioScenario()">New Scenario</button>
+                  </div>
+                </div>
+                <div></div>
+              </div>
+            </div>
+
+            <div class="rd-rule-row" id="scenario-rule"></div>
+
+            <div class="feedback-panel" id="radio-feedback">
+              <div class="feedback-header" id="feedback-header"></div>
+              <div class="feedback-body">
+                <div class="feedback-ideal" id="feedback-ideal"></div>
+                <div class="feedback-note" id="feedback-note"></div>
+              </div>
+            </div>
+
+            <div class="rd-phrasebook">
+              <div class="cf-eyebrow" style="margin-bottom:12px">&#8618; PHRASEOLOGY &middot; WHO YOU ARE</div>
+              <p class="rd-phrase-formula">
+                <span class="rd-phrase-slot">[WHO YOU CALL]</span>, <span class="rd-phrase-you">Skyhawk seven-three-eight-two-Kilo</span>, <span class="rd-phrase-slot">[WHERE YOU ARE]</span>, <span class="rd-phrase-slot">[WHAT YOU WANT]</span>.
+              </p>
+              <p class="rd-phrase-readback">
+                Read back what&rsquo;s clearance: <span class="rd-phrase-key">runway, headings, frequency, altitude</span>, hold-shorts. End with your callsign.
+              </p>
+            </div>
+
+            <div id="radio-builder-header" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="radio-atis-mode" style="display:none">
+        <div class="atis-card" id="atis-card">
+          <div class="atis-header">
+            <div>
+              <div class="atis-airport" id="atis-airport">KRDU INFORMATION ALPHA</div>
+              <div class="atis-time" id="atis-time">0200Z</div>
+            </div>
+            <button class="cf-btn cf-btn--primary cf-btn--sm" onclick="playATIS()" id="atis-play-btn">&#9654; Play</button>
+          </div>
+          <div class="atis-transcript" id="atis-transcript">
+            <span class="atis-trans-label">Tap Play to hear the ATIS</span>
+          </div>
+        </div>
+
+        <div class="atis-form" id="atis-form">
+          <div class="atis-form-label">// Extract these values</div>
+          <div class="atis-fields" id="atis-fields"></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="cf-btn cf-btn--primary" style="flex:1" onclick="checkATIS()">Check</button>
+            <button class="cf-btn cf-btn--ghost" onclick="newATIS()">New ATIS</button>
+          </div>
+        </div>
+
+        <div class="atis-results" id="atis-results" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- INFO SHEET (position:fixed overlay) -->
+    <div class="info-overlay" id="info-overlay" onclick="closeInfo()"></div>
+    <div class="info-sheet" id="info-sheet">
+      <div class="info-handle"></div>
+      <div class="info-header">
+        <div>
+          <div class="info-action" id="info-action"></div>
+          <div class="info-value-badge" id="info-value-badge"></div>
+        </div>
+        <button class="info-close" onclick="closeInfo()">&#10005;</button>
+      </div>
+      <div class="info-section">
+        <div class="info-section-label">// Why this step</div>
+        <div class="info-text" id="info-why"></div>
+      </div>
+      <div class="info-section" id="info-tip-section">
+        <div class="info-section-label">// Memory tip</div>
+        <div id="info-tip-content"></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-label">// Show me &mdash; C172 panel</div>
+        <div class="panel-diagram-wrap">
+          <svg class="panel-svg" viewBox="0 0 440 240" xmlns="http://www.w3.org/2000/svg" id="panel-svg">
+            <rect width="440" height="240" fill="#1a1f2e" rx="4"/>
+            <rect x="0" y="0" width="440" height="18" fill="#111520"/>
+            <text x="220" y="13" font-family="monospace" font-size="8" fill="#2a3a52" text-anchor="middle">CESSNA 172 &mdash; INSTRUMENT PANEL</text>
+            <circle cx="62" cy="72" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
+            <text x="62" y="76" font-family="monospace" font-size="6.5" fill="#4a6278" text-anchor="middle">AIRSPEED</text>
+            <circle cx="130" cy="72" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
+            <text x="130" y="76" font-family="monospace" font-size="6.5" fill="#4a6278" text-anchor="middle">ATTITUDE</text>
+            <circle cx="198" cy="72" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
+            <text x="198" y="76" font-family="monospace" font-size="6.5" fill="#4a6278" text-anchor="middle">ALTIMETER</text>
+            <circle cx="62" cy="138" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
+            <text x="62" y="142" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">TURN COORD</text>
+            <circle cx="130" cy="138" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
+            <text x="130" y="142" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">HEADING IND</text>
+            <circle cx="198" cy="138" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
+            <text x="198" y="142" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">VERT SPEED</text>
+            <rect x="236" y="28" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="276" y="39" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">COM 1</text>
+            <rect x="236" y="47" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="276" y="58" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">COM 2 / NAV</text>
+            <rect x="236" y="66" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="276" y="77" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">AUDIO PANEL</text>
+            <rect x="236" y="85" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="276" y="96" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">TRANSPONDER</text>
+            <rect x="236" y="104" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="276" y="115" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">GPS / NAV</text>
+            <rect x="236" y="20" width="80" height="6" fill="#0d1220" stroke="#2a3a52" stroke-width="0.5" rx="1"/>
+            <text x="276" y="26" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">AVIONICS MASTER</text>
+            <rect x="332" y="25" width="36" height="22" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="350" y="35" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">MASTER</text>
+            <text x="350" y="44" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">ALT / BAT</text>
+            <rect x="380" y="25" width="36" height="22" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="398" y="35" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">BEACON</text>
+            <text x="398" y="44" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">LIGHTS</text>
+            <circle cx="348" cy="80" r="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
+            <text x="348" y="78" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">IGNITION</text>
+            <text x="348" y="87" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">KEY</text>
+            <circle cx="398" cy="80" r="12" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
+            <text x="398" y="78" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">PRIMER</text>
+            <text x="398" y="87" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">PUSH/LOCK</text>
+            <rect x="332" y="104" width="88" height="28" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="376" y="114" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">CIRCUIT BREAKERS</text>
+            <circle cx="342" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
+            <circle cx="352" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
+            <circle cx="362" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
+            <circle cx="372" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
+            <circle cx="382" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
+            <circle cx="392" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
+            <circle cx="402" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
+            <circle cx="412" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
+            <rect x="236" y="155" width="22" height="60" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="3"/>
+            <rect x="240" y="160" width="14" height="8" fill="#111" stroke="#333" stroke-width="1" rx="2"/>
+            <text x="247" y="225" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">THR</text>
+            <rect x="266" y="155" width="22" height="60" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="3"/>
+            <rect x="270" y="160" width="14" height="8" fill="#2a0808" stroke="#5a1010" stroke-width="1" rx="2"/>
+            <text x="277" y="225" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">MIX</text>
+            <rect x="296" y="155" width="22" height="60" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="3"/>
+            <rect x="300" y="160" width="14" height="8" fill="#111" stroke="#333" stroke-width="1" rx="2"/>
+            <text x="307" y="225" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">CARB</text>
+            <rect x="326" y="168" width="30" height="40" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="341" y="182" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">FLAPS</text>
+            <rect x="333" y="188" width="16" height="12" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8" rx="1"/>
+            <ellipse cx="390" cy="190" rx="18" ry="22" fill="#0e1520" stroke="#2a3a52" stroke-width="1"/>
+            <text x="390" y="188" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">TRIM</text>
+            <text x="390" y="197" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">WHEEL</text>
+            <rect x="138" y="188" width="44" height="32" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
+            <text x="160" y="201" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">FUEL</text>
+            <text x="160" y="210" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">SELECTOR</text>
+            <text x="160" y="217" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">BOTH/L/R/OFF</text>
+            <text x="30" y="185" font-family="monospace" font-size="5.5" fill="#3a5268" text-anchor="middle">PITOT</text>
+            <text x="30" y="193" font-family="monospace" font-size="5.5" fill="#3a5268" text-anchor="middle">TUBE</text>
+            <line x1="30" y1="180" x2="30" y2="172" stroke="#2a3a52" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="50" y="210" font-family="monospace" font-size="5.5" fill="#3a5268" text-anchor="middle">ENGINE</text>
+            <text x="50" y="218" font-family="monospace" font-size="5.5" fill="#3a5268" text-anchor="middle">OIL / COWL</text>
+            <rect id="zone-sixpack" class="panel-zone" x="30" y="38" width="200" height="114" rx="4"/>
+            <rect id="zone-avionics" class="panel-zone" x="232" y="18" width="88" height="108" rx="4"/>
+            <rect id="zone-master" class="panel-zone" x="328" y="20" width="44" height="30" rx="4"/>
+            <rect id="zone-beacon" class="panel-zone" x="374" y="20" width="44" height="30" rx="4"/>
+            <circle id="zone-ignition" class="panel-zone" cx="348" cy="80" r="22"/>
+            <circle id="zone-primer" class="panel-zone" cx="398" cy="80" r="18"/>
+            <rect id="zone-cb" class="panel-zone" x="328" y="100" width="96" height="36" rx="4"/>
+            <rect id="zone-throttle" class="panel-zone" x="232" y="150" width="28" height="70" rx="4"/>
+            <rect id="zone-mixture" class="panel-zone" x="262" y="150" width="28" height="70" rx="4"/>
+            <rect id="zone-carbheat" class="panel-zone" x="292" y="150" width="28" height="70" rx="4"/>
+            <rect id="zone-flaps" class="panel-zone" x="322" y="162" width="38" height="52" rx="4"/>
+            <ellipse id="zone-trim" class="panel-zone" cx="390" cy="190" rx="24" ry="28"/>
+            <rect id="zone-fuel" class="panel-zone" x="132" y="183" width="56" height="42" rx="4"/>
+            <rect id="zone-pitot" class="panel-zone" x="14" y="155" width="32" height="40" rx="4"/>
+            <rect id="zone-oil" class="panel-zone" x="20" y="195" width="62" height="30" rx="4"/>
+            <rect id="zone-static" class="panel-zone" x="30" y="38" width="200" height="114" rx="4"/>
+            <rect id="zone-controls" class="panel-zone" x="30" y="38" width="200" height="114" rx="4"/>
+            <rect id="zone-seats" class="panel-zone" x="0" y="0" width="440" height="240"/>
+            <rect id="zone-tires" class="panel-zone" x="0" y="0" width="440" height="240"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- GLOSS SHEET (position:fixed overlay) -->
+    <div class="gloss-overlay" id="gloss-overlay" onclick="closeGloss()"></div>
+    <div class="gloss-sheet" id="gloss-sheet">
+      <div class="gloss-handle"></div>
+      <button class="gloss-close" onclick="closeGloss()">&#10005;</button>
+      <div class="gloss-term" id="gloss-term"></div>
+      <div class="gloss-value" id="gloss-value"></div>
+      <div class="gloss-def" id="gloss-def"></div>
+    </div>
+
+    <!-- PROCEDURES -->
+    <div class="view" id="view-procedures">
+
+      <div class="proc-screen active" id="proc-screen-setup">
+        <div class="cf-eyebrow" style="margin-bottom: 14px;">Procedure Briefing</div>
+        <div class="proc-setup">
+
+          <div class="proc-field-group">
+            <div class="proc-field-label">Home Airport</div>
+            <div class="proc-field-row">
+              <input class="proc-input" id="proc-icao" maxlength="4" placeholder="e.g. KRDU" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')lookupAirport()" value="KUZA"/>
+              <button class="proc-lookup-btn" id="proc-lookup-btn" onclick="lookupAirport()">Look Up</button>
+            </div>
+            <div id="proc-airport-result"></div>
+            <div id="proc-manual-fields" style="display:none">
+              <span class="proc-mini-label">Enter values manually</span>
+              <div class="proc-manual-row">
+                <div style="flex:1">
+                  <span class="proc-mini-label">Field Elev (ft MSL)</span>
+                  <input class="proc-mini-input" id="proc-elev" type="number" placeholder="435" oninput="updateManualValues()"/>
+                </div>
+                <div style="flex:1">
+                  <span class="proc-mini-label">Pattern Alt (ft AGL)</span>
+                  <input class="proc-mini-input" id="proc-tpa" type="number" placeholder="1000" oninput="updateManualValues()"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cf-eyebrow" style="margin-bottom: 8px;">Select Procedure</div>
+          <div class="proc-select-list">
+            <div class="proc-select-card" onclick="startProcedure('normal_takeoff')">
+              <div>
+                <div class="proc-select-card-title">Normal Takeoff</div>
+                <div class="proc-select-card-sub">Lineup &#8594; Rotation &#8594; Climb &middot; C172</div>
+              </div>
+              <div class="proc-select-arrow">&#8250;</div>
+            </div>
+            <div class="proc-select-card" onclick="startProcedure('pattern_landing')">
+              <div>
+                <div class="proc-select-card-title">Pattern Entry &amp; Landing</div>
+                <div class="proc-select-card-sub">Downwind &#8594; Base &#8594; Final &#8594; Rollout &middot; C172</div>
+              </div>
+              <div class="proc-select-arrow">&#8250;</div>
+            </div>
+            <div class="proc-select-card" onclick="startProcedure('slow_flight')">
+              <div>
+                <div class="proc-select-card-title">Slow Flight</div>
+                <div class="proc-select-card-sub">Entry &#8594; Maneuvering &#8594; Recovery &middot; C172</div>
+              </div>
+              <div class="proc-select-arrow">&#8250;</div>
+            </div>
+            <div class="proc-select-card" onclick="startProcedure('power_off_stall')">
+              <div>
+                <div class="proc-select-card-title">Power Off Stall</div>
+                <div class="proc-select-card-sub">Landing config &middot; Recognition &middot; Recovery &middot; C172</div>
+              </div>
+              <div class="proc-select-arrow">&#8250;</div>
+            </div>
+            <div class="proc-select-card" onclick="startProcedure('power_on_stall')">
+              <div>
+                <div class="proc-select-card-title">Power On Stall</div>
+                <div class="proc-select-card-sub">Takeoff config &middot; Recognition &middot; Recovery &middot; C172</div>
+              </div>
+              <div class="proc-select-arrow">&#8250;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="proc-screen" id="proc-screen-steps">
+        <div class="proc-header">
+          <button class="proc-back-btn" onclick="procBack()">&#8249;</button>
+          <div class="proc-title" id="proc-step-title"></div>
+          <div class="proc-airport-tag" id="proc-airport-tag"></div>
+        </div>
+        <div class="proc-progress"><div class="proc-progress-fill" id="proc-progress-fill"></div></div>
+        <div id="proc-step-content"></div>
+      </div>
+
+    </div>
+
+    <!-- EMERGENCY -->
+    <div class="view" id="view-emergency">
+
+      <div class="em-page-header">
+        <div class="cf-eyebrow em-page-eyebrow">&#9889; EMERGENCY PROCEDURES &middot; C172 SKYHAWK</div>
+        <h1 class="em-page-title serif">Emergency memory items &mdash; <em class="em-title-em">know cold</em>.</h1>
+      </div>
+
+      <div class="em-cards-grid" id="em-cards-grid"></div>
+
+      <div class="em-deepdive">
+        <div class="em-deepdive-left">
+          <div class="em-deepdive-hdr">
+            <span class="em-deepdive-icon" id="em-icon">&#9889;</span>
+            <div class="em-deepdive-title serif" id="em-title">Select a scenario above</div>
+          </div>
+          <div class="em-recall-label mono">// FIRST ACTION &mdash; SELECT FROM MEMORY</div>
+          <ul class="recall-items" id="recall-items"></ul>
+        </div>
+
+        <div class="em-deepdive-right">
+          <div class="em-score-row">
+            <div class="em-score-stat">
+              <div class="em-score-val mono" id="em-correct">0</div>
+              <div class="em-score-lbl mono">CORRECT</div>
+            </div>
+            <div class="em-score-div"></div>
+            <div class="em-score-stat">
+              <div class="em-score-val mono" id="em-total">0</div>
+              <div class="em-score-lbl mono">DRILLED</div>
+            </div>
+          </div>
+
+          <div class="em-scenario-card">
+            <div class="cf-eyebrow em-scenario-eyebrow">&#9889; SCENARIO</div>
+            <div class="em-situation-text" id="em-situation">Select a scenario from the grid above to begin drilling.</div>
+          </div>
+
+          <div class="feedback-panel em-feedback-kb" id="em-feedback">
+            <div class="feedback-header" id="em-feedback-header"></div>
+            <div class="feedback-body">
+              <div class="feedback-ideal" id="em-feedback-ideal"></div>
+              <div class="feedback-note" id="em-feedback-note"></div>
+            </div>
+          </div>
+
+          <div class="em-actions">
+            <button class="cf-btn cf-btn--solid cf-btn--sm" onclick="newEmergency()">New Scenario</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAV (mobile only, shown via CSS) -->
+  <nav class="cf-bottom-nav" id="cf-bottom-nav">
+    <button class="cf-bottom-tab active" data-tab="drills" onclick="switchBottomTab('drills')">Drills</button>
+    <button class="cf-bottom-tab" data-tab="aircraft" onclick="switchBottomTab('aircraft')">Aircraft</button>
+    <button class="cf-bottom-tab" data-tab="more" onclick="switchBottomTab('more')">More</button>
   </nav>
 
-  <!-- CHECKLIST -->
-  <div class="view active" id="view-checklist">
-    <div class="section-label" id="cl-section-label">// C172 Checklist Trainer</div>
-
-    <div class="cl-mode-toggle">
-      <button class="cl-mode-btn active" onclick="setClMode('reference', this)">Reference</button>
-      <button class="cl-mode-btn" onclick="setClMode('recall', this)">Sequence Recall</button>
-    </div>
-
-    <!-- Reference mode -->
-    <div id="cl-reference-mode">
-      <div class="checklist-selector" id="phase-selector"></div>
-      <div class="complete-banner" id="complete-banner">
-        <div class="big">✓ CHECKLIST COMPLETE</div>
-        <div class="sub" id="complete-time"></div>
-      </div>
-      <div class="checklist-card">
-        <div class="checklist-header">
-          <div class="checklist-title" id="cl-title">Preflight</div>
-          <div class="progress-label" id="cl-progress">0 / 0</div>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" id="cl-progress-fill" style="width:0%"></div></div>
-        <ul class="checklist-items" id="checklist-items"></ul>
-        <div class="checklist-footer">
-          <button class="btn btn-primary" onclick="resetChecklist()">Reset</button>
-          <button class="btn" onclick="nextPhase()">Next Phase →</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sequence recall mode -->
-    <div id="cl-recall-mode" style="display:none">
-      <div id="seq-content"></div>
-    </div>
-  </div>
-
-  <!-- RADIO -->
-  <div class="view" id="view-radio">
-
-    <!-- Radio sub-mode toggle -->
-    <div class="cl-mode-toggle" style="margin-bottom:14px">
-      <button class="cl-mode-btn active" onclick="setRadioMode('chips', this)">Radio Calls</button>
-      <button class="cl-mode-btn" onclick="setRadioMode('atis', this)">ATIS Decoder</button>
-    </div>
-
-    <!-- RADIO CALLS MODE -->
-    <div id="radio-calls-mode">
-      <div class="section-label">// Radio Call Builder</div>
-      <div class="scenario-card">
-        <div class="scenario-type" id="scenario-type"></div>
-        <div class="scenario-text" id="scenario-text"></div>
-        <div class="scenario-rule" id="scenario-rule"></div>
-        <div class="scenario-data" id="scenario-data"></div>
-      </div>
-      <div class="radio-builder">
-        <div class="radio-builder-header" id="radio-builder-header">Build your call — tap words in order</div>
-
-        <!-- Input mode toggle -->
-        <div class="radio-input-toggle">
-          <button class="radio-input-btn active" id="rbtn-chips" onclick="setRadioInputMode('chips')">Word Chips</button>
-          <button class="radio-input-btn" id="rbtn-speak" onclick="setRadioInputMode('speak')">🎙 Speak It</button>
-        </div>
-
-        <!-- Word chip mode -->
-        <div id="radio-chip-area">
-          <div class="radio-output" id="radio-output"><span class="placeholder">Tap words below to build your radio call...</span></div>
-          <div class="word-bank" id="word-bank"></div>
-          <div class="word-bank-hint">tap a word to add · tap again to remove</div>
-        </div>
-
-        <!-- Speech mode -->
-        <div id="radio-speak-area" style="display:none">
-          <div class="radio-output" id="radio-speak-output"><span class="placeholder">Tap the mic and say your call...</span></div>
-          <div class="speak-mic-wrap">
-            <button class="mic-btn" id="mic-btn" onclick="toggleSpeech()">
-              <span class="mic-icon">🎙</span>
-              <span class="mic-label" id="mic-label">Tap to speak</span>
-            </button>
-            <div class="mic-status" id="mic-status"></div>
-          </div>
-          <div class="speak-hint">Say the full radio call out loud — speak clearly and at normal radio pace</div>
-        </div>
-
-        <div class="radio-actions">
-          <button class="btn btn-primary btn-sm" id="radio-check-btn" onclick="checkRadioCallActive()">Check Call</button>
-          <button class="btn btn-sm" id="radio-clear-btn" onclick="clearRadioCallActive()">Clear</button>
-          <button class="btn btn-sm" onclick="newRadioScenario()">New Scenario</button>
-        </div>
-      </div>
-      <div class="feedback-panel" id="radio-feedback">
-        <div class="feedback-header" id="feedback-header"></div>
-        <div class="feedback-body">
-          <div class="feedback-ideal" id="feedback-ideal"></div>
-          <div class="feedback-note" id="feedback-note"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ATIS DECODER MODE -->
-    <div id="radio-atis-mode" style="display:none">
-      <div class="section-label">// ATIS Decoder</div>
-      <div class="atis-card" id="atis-card">
-        <div class="atis-header">
-          <div>
-            <div class="atis-airport" id="atis-airport">KRDU INFORMATION ALPHA</div>
-            <div class="atis-time" id="atis-time">0200Z</div>
-          </div>
-          <button class="btn btn-sm btn-primary" onclick="playATIS()" id="atis-play-btn">▶ Play</button>
-        </div>
-        <div class="atis-transcript" id="atis-transcript">
-          <span class="atis-trans-label">Tap Play to hear the ATIS</span>
-        </div>
-      </div>
-
-      <div class="atis-form" id="atis-form">
-        <div class="atis-form-label">// Extract these values</div>
-        <div class="atis-fields" id="atis-fields"></div>
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn btn-primary" style="flex:1" onclick="checkATIS()">Check</button>
-          <button class="btn" onclick="newATIS()">New ATIS</button>
-        </div>
-      </div>
-
-      <div class="atis-results" id="atis-results" style="display:none"></div>
-    </div>
-
-  </div>
-
-  <!-- INFO SHEET -->
-  <div class="info-overlay" id="info-overlay" onclick="closeInfo()"></div>
-  <div class="info-sheet" id="info-sheet">
-    <div class="info-handle"></div>
-    <div class="info-header">
-      <div>
-        <div class="info-action" id="info-action"></div>
-        <div class="info-value-badge" id="info-value-badge"></div>
-      </div>
-      <button class="info-close" onclick="closeInfo()">✕</button>
-    </div>
-    <div class="info-section">
-      <div class="info-section-label">// Why this step</div>
-      <div class="info-text" id="info-why"></div>
-    </div>
-    <div class="info-section" id="info-tip-section">
-      <div class="info-section-label">// Memory tip</div>
-      <div id="info-tip-content"></div>
-    </div>
-    <div class="info-section">
-      <div class="info-section-label">// Show me — C172 panel</div>
-      <div class="panel-diagram-wrap">
-        <svg class="panel-svg" viewBox="0 0 440 240" xmlns="http://www.w3.org/2000/svg" id="panel-svg">
-          <rect width="440" height="240" fill="#1a1f2e" rx="4"/>
-          <rect x="0" y="0" width="440" height="18" fill="#111520"/>
-          <text x="220" y="13" font-family="monospace" font-size="8" fill="#2a3a52" text-anchor="middle">CESSNA 172 — INSTRUMENT PANEL</text>
-          <!-- Six-pack Row 1 -->
-          <circle cx="62" cy="72" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
-          <text x="62" y="76" font-family="monospace" font-size="6.5" fill="#4a6278" text-anchor="middle">AIRSPEED</text>
-          <circle cx="130" cy="72" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
-          <text x="130" y="76" font-family="monospace" font-size="6.5" fill="#4a6278" text-anchor="middle">ATTITUDE</text>
-          <circle cx="198" cy="72" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
-          <text x="198" y="76" font-family="monospace" font-size="6.5" fill="#4a6278" text-anchor="middle">ALTIMETER</text>
-          <!-- Six-pack Row 2 -->
-          <circle cx="62" cy="138" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
-          <text x="62" y="142" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">TURN COORD</text>
-          <circle cx="130" cy="138" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
-          <text x="130" y="142" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">HEADING IND</text>
-          <circle cx="198" cy="138" r="26" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
-          <text x="198" y="142" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">VERT SPEED</text>
-          <!-- Radio stack -->
-          <rect x="236" y="28" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="276" y="39" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">COM 1</text>
-          <rect x="236" y="47" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="276" y="58" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">COM 2 / NAV</text>
-          <rect x="236" y="66" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="276" y="77" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">AUDIO PANEL</text>
-          <rect x="236" y="85" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="276" y="96" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">TRANSPONDER</text>
-          <rect x="236" y="104" width="80" height="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="276" y="115" font-family="monospace" font-size="6" fill="#4a6278" text-anchor="middle">GPS / NAV</text>
-          <rect x="236" y="20" width="80" height="6" fill="#0d1220" stroke="#2a3a52" stroke-width="0.5" rx="1"/>
-          <text x="276" y="26" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">AVIONICS MASTER</text>
-          <!-- Right side switches -->
-          <rect x="332" y="25" width="36" height="22" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="350" y="35" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">MASTER</text>
-          <text x="350" y="44" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">ALT / BAT</text>
-          <rect x="380" y="25" width="36" height="22" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="398" y="35" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">BEACON</text>
-          <text x="398" y="44" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">LIGHTS</text>
-          <circle cx="348" cy="80" r="16" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
-          <text x="348" y="78" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">IGNITION</text>
-          <text x="348" y="87" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">KEY</text>
-          <circle cx="398" cy="80" r="12" fill="#0e1520" stroke="#2a3a52" stroke-width="1.5"/>
-          <text x="398" y="78" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">PRIMER</text>
-          <text x="398" y="87" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">PUSH/LOCK</text>
-          <rect x="332" y="104" width="88" height="28" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="376" y="114" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">CIRCUIT BREAKERS</text>
-          <circle cx="342" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
-          <circle cx="352" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
-          <circle cx="362" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
-          <circle cx="372" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
-          <circle cx="382" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
-          <circle cx="392" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
-          <circle cx="402" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
-          <circle cx="412" cy="123" r="3" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8"/>
-          <!-- Throttle quadrant -->
-          <rect x="236" y="155" width="22" height="60" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="3"/>
-          <rect x="240" y="160" width="14" height="8" fill="#111" stroke="#333" stroke-width="1" rx="2"/>
-          <text x="247" y="225" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">THR</text>
-          <rect x="266" y="155" width="22" height="60" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="3"/>
-          <rect x="270" y="160" width="14" height="8" fill="#2a0808" stroke="#5a1010" stroke-width="1" rx="2"/>
-          <text x="277" y="225" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">MIX</text>
-          <rect x="296" y="155" width="22" height="60" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="3"/>
-          <rect x="300" y="160" width="14" height="8" fill="#111" stroke="#333" stroke-width="1" rx="2"/>
-          <text x="307" y="225" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">CARB</text>
-          <rect x="326" y="168" width="30" height="40" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="341" y="182" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">FLAPS</text>
-          <rect x="333" y="188" width="16" height="12" fill="#1a2535" stroke="#2a3a52" stroke-width="0.8" rx="1"/>
-          <ellipse cx="390" cy="190" rx="18" ry="22" fill="#0e1520" stroke="#2a3a52" stroke-width="1"/>
-          <text x="390" y="188" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">TRIM</text>
-          <text x="390" y="197" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">WHEEL</text>
-          <rect x="138" y="188" width="44" height="32" fill="#0e1520" stroke="#2a3a52" stroke-width="1" rx="2"/>
-          <text x="160" y="201" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">FUEL</text>
-          <text x="160" y="210" font-family="monospace" font-size="5.5" fill="#4a6278" text-anchor="middle">SELECTOR</text>
-          <text x="160" y="217" font-family="monospace" font-size="5" fill="#3a5268" text-anchor="middle">BOTH/L/R/OFF</text>
-          <text x="30" y="185" font-family="monospace" font-size="5.5" fill="#3a5268" text-anchor="middle">PITOT</text>
-          <text x="30" y="193" font-family="monospace" font-size="5.5" fill="#3a5268" text-anchor="middle">TUBE</text>
-          <line x1="30" y1="180" x2="30" y2="172" stroke="#2a3a52" stroke-width="1" stroke-dasharray="2,2"/>
-          <text x="50" y="210" font-family="monospace" font-size="5.5" fill="#3a5268" text-anchor="middle">ENGINE</text>
-          <text x="50" y="218" font-family="monospace" font-size="5.5" fill="#3a5268" text-anchor="middle">OIL / COWL</text>
-          <!-- Highlight zones -->
-          <rect id="zone-sixpack" class="panel-zone" x="30" y="38" width="200" height="114" rx="4"/>
-          <rect id="zone-avionics" class="panel-zone" x="232" y="18" width="88" height="108" rx="4"/>
-          <rect id="zone-master" class="panel-zone" x="328" y="20" width="44" height="30" rx="4"/>
-          <rect id="zone-beacon" class="panel-zone" x="374" y="20" width="44" height="30" rx="4"/>
-          <circle id="zone-ignition" class="panel-zone" cx="348" cy="80" r="22"/>
-          <circle id="zone-primer" class="panel-zone" cx="398" cy="80" r="18"/>
-          <rect id="zone-cb" class="panel-zone" x="328" y="100" width="96" height="36" rx="4"/>
-          <rect id="zone-throttle" class="panel-zone" x="232" y="150" width="28" height="70" rx="4"/>
-          <rect id="zone-mixture" class="panel-zone" x="262" y="150" width="28" height="70" rx="4"/>
-          <rect id="zone-carbheat" class="panel-zone" x="292" y="150" width="28" height="70" rx="4"/>
-          <rect id="zone-flaps" class="panel-zone" x="322" y="162" width="38" height="52" rx="4"/>
-          <ellipse id="zone-trim" class="panel-zone" cx="390" cy="190" rx="24" ry="28"/>
-          <rect id="zone-fuel" class="panel-zone" x="132" y="183" width="56" height="42" rx="4"/>
-          <rect id="zone-pitot" class="panel-zone" x="14" y="155" width="32" height="40" rx="4"/>
-          <rect id="zone-oil" class="panel-zone" x="20" y="195" width="62" height="30" rx="4"/>
-          <rect id="zone-static" class="panel-zone" x="30" y="38" width="200" height="114" rx="4"/>
-          <rect id="zone-controls" class="panel-zone" x="30" y="38" width="200" height="114" rx="4"/>
-          <rect id="zone-seats" class="panel-zone" x="0" y="0" width="440" height="240"/>
-          <rect id="zone-tires" class="panel-zone" x="0" y="0" width="440" height="240"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-
-  <!-- GLOSS SHEET -->
-  <div class="gloss-overlay" id="gloss-overlay" onclick="closeGloss()"></div>
-  <div class="gloss-sheet" id="gloss-sheet">
-    <div class="gloss-handle"></div>
-    <button class="gloss-close" onclick="closeGloss()">✕</button>
-    <div class="gloss-term" id="gloss-term"></div>
-    <div class="gloss-value" id="gloss-value"></div>
-    <div class="gloss-def" id="gloss-def"></div>
-  </div>
-
-  <!-- PROCEDURES -->
-  <div class="view" id="view-procedures">
-
-    <div class="proc-screen active" id="proc-screen-setup">
-      <div class="section-label">// Procedure Briefing</div>
-      <div class="proc-setup">
-
-        <div class="proc-field-group">
-          <div class="proc-field-label">Home Airport</div>
-          <div class="proc-field-row">
-            <input class="proc-input" id="proc-icao" maxlength="4" placeholder="e.g. KRDU" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')lookupAirport()" value="KUZA"/>
-            <button class="proc-lookup-btn" id="proc-lookup-btn" onclick="lookupAirport()">Look Up</button>
-          </div>
-          <div id="proc-airport-result"></div>
-          <div id="proc-manual-fields" style="display:none">
-            <span class="proc-mini-label">Enter values manually</span>
-            <div class="proc-manual-row">
-              <div style="flex:1">
-                <span class="proc-mini-label">Field Elev (ft MSL)</span>
-                <input class="proc-mini-input" id="proc-elev" type="number" placeholder="435" oninput="updateManualValues()"/>
-              </div>
-              <div style="flex:1">
-                <span class="proc-mini-label">Pattern Alt (ft AGL)</span>
-                <input class="proc-mini-input" id="proc-tpa" type="number" placeholder="1000" oninput="updateManualValues()"/>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section-label" style="margin-bottom:8px">// Select Procedure</div>
-        <div class="proc-select-list">
-          <div class="proc-select-card" onclick="startProcedure('normal_takeoff')">
-            <div>
-              <div class="proc-select-card-title">Normal Takeoff</div>
-              <div class="proc-select-card-sub">Lineup → Rotation → Climb · C172</div>
-            </div>
-            <div class="proc-select-arrow">›</div>
-          </div>
-          <div class="proc-select-card" onclick="startProcedure('pattern_landing')">
-            <div>
-              <div class="proc-select-card-title">Pattern Entry &amp; Landing</div>
-              <div class="proc-select-card-sub">Downwind → Base → Final → Rollout · C172</div>
-            </div>
-            <div class="proc-select-arrow">›</div>
-          </div>
-          <div class="proc-select-card" onclick="startProcedure('slow_flight')">
-            <div>
-              <div class="proc-select-card-title">Slow Flight</div>
-              <div class="proc-select-card-sub">Entry → Maneuvering → Recovery · C172</div>
-            </div>
-            <div class="proc-select-arrow">›</div>
-          </div>
-          <div class="proc-select-card" onclick="startProcedure('power_off_stall')">
-            <div>
-              <div class="proc-select-card-title">Power Off Stall</div>
-              <div class="proc-select-card-sub">Landing config · Recognition · Recovery · C172</div>
-            </div>
-            <div class="proc-select-arrow">›</div>
-          </div>
-          <div class="proc-select-card" onclick="startProcedure('power_on_stall')">
-            <div>
-              <div class="proc-select-card-title">Power On Stall</div>
-              <div class="proc-select-card-sub">Takeoff config · Recognition · Recovery · C172</div>
-            </div>
-            <div class="proc-select-arrow">›</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="proc-screen" id="proc-screen-steps">
-      <div class="proc-header">
-        <button class="proc-back-btn" onclick="procBack()">‹</button>
-        <div class="proc-title" id="proc-step-title"></div>
-        <div class="proc-airport-tag" id="proc-airport-tag"></div>
-      </div>
-      <div class="proc-progress"><div class="proc-progress-fill" id="proc-progress-fill"></div></div>
-      <div id="proc-step-content"></div>
-    </div>
-
-  </div>
-
-  <!-- EMERGENCY -->
-  <div class="view" id="view-emergency">
-    <div class="section-label">// Emergency Procedures</div>
-    <div class="score-display">
-      <div class="score-box"><div class="score-num" id="em-correct">0</div><div class="score-lbl">Correct</div></div>
-      <div class="score-box"><div class="score-num" id="em-total">0</div><div class="score-lbl">Drilled</div></div>
-    </div>
-    <div class="emergency-card">
-      <div class="emergency-header">
-        <span class="emergency-icon" id="em-icon">⚠️</span>
-        <div class="emergency-title" id="em-title"></div>
-      </div>
-      <div class="emergency-situation" id="em-situation"></div>
-      <div class="recall-area">
-        <div class="recall-label">// First action — select from memory</div>
-        <ul class="recall-items" id="recall-items"></ul>
-      </div>
-    </div>
-    <div class="feedback-panel" id="em-feedback">
-      <div class="feedback-header" id="em-feedback-header"></div>
-      <div class="feedback-body">
-        <div class="feedback-ideal" id="em-feedback-ideal"></div>
-        <div class="feedback-note" id="em-feedback-note"></div>
-      </div>
-    </div>
-    <button class="btn btn-primary" onclick="newEmergency()" style="margin-top:8px">New Scenario</button>
-  </div>
 </div>
 
 <script src="js/data.js"></script>
