@@ -1441,9 +1441,9 @@ function renderProcSeqRecall() {
         <div class="seq-done-title">Nailed it.</div>
         <div class="seq-done-sub">${s.totalReal} / ${s.totalReal} in ${fmtSeqTime(s.elapsed)} · ${accuracy}% accuracy</div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="_initProcRecall(procState.currentProc);renderProcSeqRecall()">Try again</button>
+      <div>
         <button class="cf-btn cf-btn--primary cf-btn--sm" onclick="procAdvanceFromRecall()">Begin Procedure &#8594;</button>
+        <div style="margin-top:8px"><a href="#" onclick="_initProcRecall(procState.currentProc);renderProcSeqRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Try again</a></div>
       </div>
     </div>` : '';
 
