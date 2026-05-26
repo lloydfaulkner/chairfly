@@ -4,6 +4,8 @@ const PRECACHE = [
   '/index.html',
   '/css/styles.css',
   '/js/data.js',
+  '/js/speech-grader.js',
+  '/js/utils.js',
   '/js/app.js',
   '/manifest.json',
 ];

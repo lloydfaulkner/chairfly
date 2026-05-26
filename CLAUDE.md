@@ -29,6 +29,8 @@ chairfly/
 ├── js/
 │   ├── data.js         # All static data (checklists, procedures,
 │   │                   # radio scenarios, emergencies, airports)
+│   ├── speech-grader.js # normalizeSpoken, scoreSpeechCall (exported, unit tested)
+│   ├── utils.js        # calcTPA, radioCallMatches, _firstSentence (exported, unit tested)
 │   └── app.js          # All application logic
 ├── manifest.json       # PWA manifest
 ├── sw.js               # Service worker (offline caching)
