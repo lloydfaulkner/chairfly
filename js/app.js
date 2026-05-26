@@ -80,6 +80,7 @@ function switchAircraft(key, btn) {
   const ac = ALL_AIRCRAFT[key];
   CHECKLISTS = ac.checklists;
   EMERGENCIES = ac.emergencies;
+  _quizAllPool = null; // invalidate cross-phase distractor cache
 
   // Update all aircraft buttons (sidebar + aircraft hub)
   document.querySelectorAll('[data-aircraft]').forEach(b => b.classList.remove('active'));
@@ -171,21 +172,174 @@ function selectPhase(phase) {
   updateHash();
 }
 
+// ── INLINE WHY? QUIZ (Before Start phase) ──────────────────────────────────
+// clQuizState[phase][idx] = { status: 'idle'|'open'|'correct'|'wrong', choices: [] }
+let clQuizState = {};
+
+function _firstSentence(s) {
+  const clean = s.replace(/\s+/g, ' ').trim();
+  const m = clean.match(/^.+?[.?!](?:\s|$)/);
+  return m ? m[0].trim() : clean;
+}
+
+let _quizAllPool = null;
+function _getQuizPool() {
+  if (!_quizAllPool) {
+    _quizAllPool = Object.values(CHECKLISTS).flatMap(cl => cl.items).filter(it => it.why && it.why.trim());
+  }
+  return _quizAllPool;
+}
+
+function _pickAnswerText(item) {
+  if (item.answerVariants && item.answerVariants.length > 0) {
+    return item.answerVariants[Math.floor(Math.random() * item.answerVariants.length)];
+  }
+  return _firstSentence(item.why);
+}
+
+function _pregenItem(phase, idx) {
+  const item = CHECKLISTS[phase].items[idx];
+  if (!item || !item.why) return;
+  const correctText = _pickAnswerText(item);
+  let distractors;
+  if (item.distractors && item.distractors.length >= 3) {
+    distractors = item.distractors
+      .slice().sort(() => Math.random() - 0.5).slice(0, 3)
+      .map(text => ({ text, isCorrect: false }));
+  } else {
+    distractors = _getQuizPool()
+      .slice().sort(() => Math.random() - 0.5)
+      .filter(it => it !== item && _firstSentence(it.why) !== correctText)
+      .slice(0, 3)
+      .map(it => ({ text: _firstSentence(it.why), isCorrect: false }));
+  }
+  const question = item.seqQuestion && Math.random() < 0.5
+    ? item.seqQuestion
+    : 'Why is this on the checklist?';
+  clQuizState[phase]._pregen[idx] = {
+    question,
+    choices: [{ text: correctText, isCorrect: true }, ...distractors].sort(() => Math.random() - 0.5),
+  };
+}
+
+function _pregenPhaseChoices(phase) {
+  clQuizState[phase]._pregen = {};
+  CHECKLISTS[phase].items.forEach((item, idx) => {
+    if (item.why && item.why.trim()) _pregenItem(phase, idx);
+  });
+}
+
+function openItemQuiz(phase, idx) {
+  if (!clQuizState[phase]) clQuizState[phase] = {};
+  const cur = clQuizState[phase][idx] || { status: 'idle' };
+  if (cur.status !== 'idle' && cur.status !== 'skipped') return;
+  if (!clQuizState[phase]._pregen) _pregenPhaseChoices(phase);
+  // Regenerate fresh choices when coming back to a skipped item
+  if (!clQuizState[phase]._pregen[idx] || cur.status === 'skipped') _pregenItem(phase, idx);
+  const pre = clQuizState[phase]._pregen[idx];
+  if (!pre) return;
+  clQuizState[phase][idx] = { status: 'open', question: pre.question, choices: pre.choices };
+  renderChecklist();
+}
+
+function closeItemQuiz(phase, idx) {
+  if (!clQuizState[phase] || !clQuizState[phase][idx] || clQuizState[phase][idx].status !== 'open') return;
+  clQuizState[phase][idx] = { status: 'idle' };
+  // Regenerate this item's pregen so next open gets a fresh question and choices
+  if (clQuizState[phase]._pregen) _pregenItem(phase, idx);
+  renderChecklist();
+}
+
+function answerItemQuiz(phase, idx, isCorrect) {
+  if (!clQuizState[phase] || !clQuizState[phase][idx]) return;
+  clQuizState[phase][idx].status = isCorrect ? 'correct' : 'wrong';
+  renderChecklist();
+}
+
+function skipItemQuiz(phase, idx) {
+  if (!clQuizState[phase]) clQuizState[phase] = {};
+  clQuizState[phase][idx] = { status: 'skipped' };
+  renderChecklist();
+}
+
+function _renderQuizItem(phase, item, idx) {
+  const qs = (clQuizState[phase] && clQuizState[phase][idx]) || { status: 'idle' };
+  const { status } = qs;
+
+  const dotSvg = '<svg width="11" height="9" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const dotHtml = status === 'correct'  ? `<div class="cl-qitem-dot cl-qitem-dot--correct">${dotSvg}</div>`
+                : status === 'wrong'    ? `<div class="cl-qitem-dot cl-qitem-dot--wrong">✗</div>`
+                : status === 'skipped'  ? `<div class="cl-qitem-dot cl-qitem-dot--skipped">—</div>`
+                : status === 'open'     ? `<div class="cl-qitem-dot cl-qitem-dot--open"></div>`
+                :                         `<div class="cl-qitem-dot cl-qitem-dot--idle">?</div>`;
+
+  let bodyExtra = '';
+  if (status === 'open') {
+    const choices = qs.choices || [];
+    bodyExtra = `
+      <div class="cl-qitem-panel">
+        <div class="cl-qitem-panel-top">
+          <div class="cl-qitem-question">${qs.question || 'Why is this on the checklist?'}</div>
+          <button class="cl-qitem-collapse" onclick="event.stopPropagation();closeItemQuiz('${phase}',${idx})" title="Collapse">✕</button>
+        </div>
+        <div class="cl-qitem-choices">
+          ${choices.map((c, ci) => `<button class="cl-qitem-choice" onclick="event.stopPropagation();answerItemQuiz('${phase}',${idx},${c.isCorrect})">${c.text}</button>`).join('')}
+        </div>
+        <button class="cl-qitem-skip" onclick="event.stopPropagation();skipItemQuiz('${phase}',${idx})">Skip</button>
+      </div>`;
+  } else if (status === 'correct' || status === 'wrong') {
+    const correctText = qs.choices ? qs.choices.find(c => c.isCorrect).text : '';
+    const wrongNote = status === 'wrong' ? `<div class="cl-qitem-correct-note">Correct answer: ${correctText}</div>` : '';
+    bodyExtra = `<div class="cl-qitem-result-panel">${wrongNote}<div class="cl-qitem-why">${item.why}</div></div>`;
+  }
+
+  const clickable = status === 'idle' || status === 'skipped';
+  return `<li class="cl-item cl-item--quiz cl-item--quiz-${status}"${clickable ? ` onclick="openItemQuiz('${phase}',${idx})"` : ''}>
+    <span class="cl-item-idx">${String(idx + 1).padStart(2, '0')}</span>
+    ${dotHtml}
+    <div class="cl-item-body">
+      <div class="cl-item-name-row">
+        <span class="cl-item-name">${item.action}</span>
+        ${item.value ? `<span class="cl-item-call"><span class="cl-item-dot"></span>${item.value}</span>` : ''}
+      </div>
+      ${bodyExtra}
+    </div>
+    <button class="cl-item-info" onclick="event.stopPropagation();openInfo('${phase}',${idx})" title="Why &amp; Show Me">ⓘ</button>
+  </li>`;
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+
 function renderChecklist() {
   const phase = state.checklist.phase;
   const list = CHECKLISTS[phase];
-  const completed = state.checklist.completed[phase] || new Set();
-  const doneCount = completed.size;
+  const quizPhase = phase !== 'preflight';
+
+  let doneCount;
   const total = list.items.length;
+  if (quizPhase) {
+    const qs = clQuizState[phase] || {};
+    doneCount = Object.values(qs).filter(s => s.status === 'correct' || s.status === 'wrong' || s.status === 'skipped').length;
+  } else {
+    const completed = state.checklist.completed[phase] || new Set();
+    doneCount = completed.size;
+  }
+
   document.getElementById('cl-title').textContent = list.label;
   document.getElementById('cl-progress').textContent = `${doneCount} / ${total}`;
   document.getElementById('cl-progress-fill').style.width = `${(doneCount / total) * 100}%`;
 
-  // Render items with new kneeboard row layout (4-column grid)
   const ul = document.getElementById('checklist-items');
-  ul.innerHTML = list.items.map((item, i) => {
-    const done = completed.has(i);
-    return `<li class="cl-item${done ? ' cl-item--done' : ''}" onclick="toggleItem(${i})">
+  const preflightNote = document.getElementById('cl-preflight-note');
+  if (preflightNote) preflightNote.style.display = phase === 'preflight' ? '' : 'none';
+
+  if (quizPhase) {
+    ul.innerHTML = list.items.map((item, i) => _renderQuizItem(phase, item, i)).join('');
+  } else {
+    const completed = state.checklist.completed[phase] || new Set();
+    ul.innerHTML = list.items.map((item, i) => {
+      const done = completed.has(i);
+      return `<li class="cl-item${done ? ' cl-item--done' : ''}" onclick="toggleItem(${i})">
       <span class="cl-item-idx">${String(i + 1).padStart(2, '0')}</span>
       <div class="cl-item-chk${done ? ' cl-item-chk--done' : ''}">
         ${done ? '<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
@@ -199,7 +353,8 @@ function renderChecklist() {
       </div>
       <button class="cl-item-info" onclick="event.stopPropagation();openInfo('${phase}',${i})" title="Why &amp; Show Me">ⓘ</button>
     </li>`;
-  }).join('');
+    }).join('');
+  }
 
   // Update sidebar memory hook from first item with a phrase acronym tip
   const hookCard = document.getElementById('cl-memory-hook');
@@ -232,7 +387,10 @@ function toggleItem(idx) {
 }
 
 function resetChecklist() {
-  state.checklist.completed[state.checklist.phase] = new Set();
+  const phase = state.checklist.phase;
+  state.checklist.completed[phase] = new Set();
+  delete clQuizState[phase];
+  _quizAllPool = null;
   document.getElementById('complete-banner').classList.remove('show');
   renderChecklist();
 }

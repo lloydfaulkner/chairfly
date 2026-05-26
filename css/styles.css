@@ -1229,7 +1229,79 @@
     .seq-result-big.needs-work { color: var(--accent2); }
     .seq-result-sub { font-family: var(--font-sans); font-size: 11px; color: #7a9ab8; }
 
-    /* â”€â”€ RADIO INPUT MODE TOGGLE â”€â”€ */
+    /* ── INLINE WHY? QUIZ ── */
+    .cl-item--quiz { cursor: pointer; }
+    .cl-item--quiz-open,
+    .cl-item--quiz-correct,
+    .cl-item--quiz-wrong { cursor: default; }
+    .cl-item--quiz-skipped { cursor: pointer; }
+
+    /* Status dot replacing the checkbox */
+    .cl-qitem-dot {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; margin-top: 1px;
+    }
+    .cl-qitem-dot--idle    { border: 1.5px dashed var(--rule-strong); color: var(--ink-3); }
+    .cl-qitem-dot--open    { border: 1.5px solid var(--kb-accent); background: var(--kb-accent-soft); color: var(--kb-accent-ink); }
+    .cl-qitem-dot--correct { background: var(--terrain); border: 1.5px solid var(--terrain); color: white; }
+    .cl-qitem-dot--wrong   { background: var(--hazard-soft); border: 1.5px solid var(--hazard); color: var(--hazard); }
+    .cl-qitem-dot--skipped { border: 1.5px solid var(--rule); color: var(--ink-4); }
+
+    /* Quiz expansion panel */
+    .cl-qitem-panel {
+      margin: 10px 0 0;
+      background: var(--paper-3); border: 1px solid var(--rule-strong);
+      border-radius: var(--radius-s); padding: 12px 12px 10px;
+    }
+    .cl-qitem-panel-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 8px; margin-bottom: 10px;
+    }
+    .cl-qitem-question {
+      font-size: 11px; color: var(--kb-accent-ink); font-family: var(--font-mono);
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .cl-qitem-collapse {
+      background: none; border: none; color: var(--ink-3); font-size: 13px;
+      cursor: pointer; padding: 0 2px; line-height: 1; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cl-qitem-collapse:hover { color: var(--ink); }
+    .cl-qitem-choices { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+    .cl-qitem-choice {
+      background: var(--paper-2); border: 1px solid var(--rule-strong);
+      border-radius: var(--radius-s); color: var(--ink); font-size: 13px;
+      padding: 11px 13px; text-align: left; cursor: pointer; line-height: 1.45;
+      font-family: var(--font-sans); -webkit-tap-highlight-color: transparent;
+    }
+    .cl-qitem-choice:hover { border-color: var(--kb-accent); background: var(--kb-accent-soft); }
+    .cl-qitem-skip {
+      background: none; border: none; color: var(--ink-3); font-size: 11px;
+      cursor: pointer; padding: 2px 0; text-decoration: underline;
+      font-family: var(--font-sans); -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Post-answer reveal panel */
+    .cl-qitem-result-panel {
+      margin: 10px 0 0; border-radius: var(--radius-s); padding: 11px 12px 10px;
+    }
+    .cl-item--quiz-correct .cl-qitem-result-panel {
+      background: var(--terrain-soft); border: 1px solid var(--terrain);
+    }
+    .cl-item--quiz-wrong .cl-qitem-result-panel {
+      background: var(--hazard-soft); border: 1px solid var(--hazard);
+    }
+    .cl-qitem-correct-note {
+      font-size: 11px; color: var(--hazard); margin-bottom: 8px;
+      font-family: var(--font-mono); letter-spacing: 0.5px;
+    }
+    .cl-qitem-why { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+    .cl-item--quiz-correct .cl-item-name { color: var(--terrain); }
+    .cl-item--quiz-wrong   .cl-item-name { color: var(--hazard); }
+    .cl-item--quiz-skipped .cl-item-name { color: var(--ink-3); }
+
+    /* ── RADIO INPUT MODE TOGGLE ── */
     .radio-input-toggle {
       display: flex;
       gap: 4px;
@@ -1742,6 +1814,17 @@
       transition: all 0.12s;
     }
     .cl-item-info:hover { border-color: var(--ink-3); color: var(--ink); }
+
+    /* ── Preflight note ───────────────────────────────────────────────── */
+    .cl-preflight-note {
+      background: var(--sky-soft); border: 1px solid var(--sky);
+      border-radius: var(--radius-s); padding: 12px 14px; margin-bottom: 14px;
+    }
+    .cl-preflight-note p {
+      font-size: 13px; color: var(--ink-2); line-height: 1.6; margin-bottom: 8px;
+    }
+    .cl-preflight-note p:last-child { margin-bottom: 0; }
+    .cl-preflight-note strong { color: var(--ink); font-weight: 600; }
 
     /* ── Footer ───────────────────────────────────────────────────────── */
     .cl-ref-footer {
