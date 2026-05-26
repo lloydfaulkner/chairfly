@@ -77,11 +77,21 @@
     <div class="view" id="view-drills-hub">
       <div class="hub-hero">
         <div class="hub-hero-tag" id="drills-hub-context">C172 · Skyhawk</div>
-        <h1 class="hub-hero-title">Train between<br>flights.</h1>
+        <h1 class="hub-hero-title">Train between flights.</h1>
       </div>
       <div class="hub-grid">
         <button class="hub-card hub-card--green" data-drill="checklist" onclick="switchDrill('checklist')">
-          <div class="hub-card-icon">✅</div>
+          <div class="hub-card-icon">
+            <svg viewBox="0 0 64 64" fill="none" stroke="#1f8a5b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="10" y="10" width="44" height="44" rx="8" fill="white"/>
+              <path d="M 14 20 L 17 23 L 21 18"/>
+              <line x1="23" y1="20" x2="46" y2="20"/>
+              <circle cx="17" cy="32" r="2" fill="#1f8a5b"/>
+              <line x1="23" y1="32" x2="46" y2="32"/>
+              <circle cx="17" cy="44" r="2" fill="#1f8a5b"/>
+              <line x1="23" y1="44" x2="46" y2="44"/>
+            </svg>
+          </div>
           <div class="hub-card-text">
             <div class="hub-card-name">Checklist</div>
             <div class="hub-card-desc">Know what to do before you touch anything</div>
@@ -89,7 +99,17 @@
           <span class="hub-card-arrow">›</span>
         </button>
         <button class="hub-card hub-card--blue" data-drill="radio" onclick="switchDrill('radio')">
-          <div class="hub-card-icon">📡</div>
+          <div class="hub-card-icon">
+            <svg viewBox="0 0 64 64" fill="#0066cc" stroke="none" aria-hidden="true">
+              <rect x="10" y="10" width="44" height="44" rx="8" fill="white" stroke="#0066cc" stroke-width="2"/>
+              <rect x="20" y="16" width="24" height="22" rx="6" ry="6" fill="#0066cc"/>
+              <rect x="22" y="21" width="20" height="2" rx="1" fill="white"/>
+              <rect x="22" y="27" width="20" height="2" rx="1" fill="white"/>
+              <rect x="22" y="33" width="20" height="2" rx="1" fill="white"/>
+              <rect x="30" y="38" width="4" height="8" rx="2" fill="#0066cc"/>
+              <rect x="20" y="46" width="24" height="4" rx="2" fill="#0066cc"/>
+            </svg>
+          </div>
           <div class="hub-card-text">
             <div class="hub-card-name">Radio Calls</div>
             <div class="hub-card-desc">Sound like you belong up there</div>
@@ -97,7 +117,17 @@
           <span class="hub-card-arrow">›</span>
         </button>
         <button class="hub-card hub-card--orange" data-drill="procedures" onclick="switchDrill('procedures')">
-          <div class="hub-card-icon">✈️</div>
+          <div class="hub-card-icon">
+            <svg viewBox="0 0 64 64" fill="none" stroke="#b8601c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="10" y="10" width="44" height="44" rx="8" fill="white"/>
+              <circle cx="32" cy="32" r="18"/>
+              <line x1="32" y1="14" x2="32" y2="20"/>
+              <line x1="32" y1="44" x2="32" y2="50"/>
+              <line x1="14" y1="32" x2="20" y2="32"/>
+              <line x1="44" y1="32" x2="50" y2="32"/>
+              <polygon points="32,14 28,24 36,24" fill="#b8601c"/>
+            </svg>
+          </div>
           <div class="hub-card-text">
             <div class="hub-card-name">Procedures</div>
             <div class="hub-card-desc">Fly the full pattern from memory</div>
@@ -105,7 +135,13 @@
           <span class="hub-card-arrow">›</span>
         </button>
         <button class="hub-card hub-card--red" data-drill="emergency" onclick="switchDrill('emergency')">
-          <div class="hub-card-icon">⚡</div>
+          <div class="hub-card-icon">
+            <svg viewBox="0 0 64 64" fill="none" stroke="#c1483f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="10" y="10" width="44" height="44" rx="8" fill="white"/>
+              <path d="M 10 32 L 20 32 L 24 20 L 28 44 L 32 32 L 54 32"/>
+              <circle cx="32" cy="32" r="1.5" fill="#c1483f"/>
+            </svg>
+          </div>
           <div class="hub-card-text">
             <div class="hub-card-name">Emergency Procs</div>
             <div class="hub-card-desc">Be ready when seconds matter</div>

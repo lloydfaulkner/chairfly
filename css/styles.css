@@ -3857,34 +3857,28 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 14px 14px 14px;
+  padding: 16px;
   border-radius: var(--radius-l);
   background: var(--paper-2);
   border: 1px solid var(--rule);
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, filter 0.12s;
   -webkit-tap-highlight-color: transparent;
   box-shadow: var(--shadow-1);
 }
-.hub-card:active { background: var(--paper-3); }
+.hub-card:active { filter: brightness(0.93); }
 
 .hub-card-icon {
-  font-size: 22px;
-  line-height: 1;
   flex-shrink: 0;
-  width: 46px;
-  height: 46px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-m);
 }
-.hub-card--green  .hub-card-icon { background: var(--terrain-soft); }
-.hub-card--blue   .hub-card-icon { background: var(--sky-soft); }
-.hub-card--orange .hub-card-icon { background: var(--kb-accent-soft); }
-.hub-card--red    .hub-card-icon { background: var(--hazard-soft); }
+.hub-card-icon svg { width: 100%; height: 100%; display: block; }
 
 .hub-card-text { flex: 1; min-width: 0; }
 .hub-card-name {
@@ -3896,7 +3890,7 @@
 }
 .hub-card-desc {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ink-3);
   line-height: 1.4;
 }
