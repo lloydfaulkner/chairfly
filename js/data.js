@@ -1024,7 +1024,7 @@ const AIRPORTS = {
 
   // ── NC TRIANGLE / PIEDMONT ──
   KRDU: ['Raleigh-Durham Intl', 435, 'Class C'],
-  Kigx: ['Horace Williams / Chapel Hill', 521, ''],
+  KIGX: ['Horace Williams / Chapel Hill', 521, ''],
   KLHZ: ['Triangle North / Franklin County', 587, ''],
   KTTA: ['Sanford-Lee County Regional', 480, ''],
   KHNZ: ['Henderson-Oxford', 526, ''],
@@ -1061,7 +1061,7 @@ const AIRPORTS = {
   KMGE: ['Dobbins ARB / Marietta', 1068, ''],
   KSAV: ['Savannah/Hilton Head Intl', 50, 'Class C'],
   KAGS: ['Augusta Regional', 144, ''],
-  KMACON: ['Middle Georgia Regional', 354, ''],
+  KMCN: ['Middle Georgia Regional', 354, ''],
   KMCN: ['Middle Georgia Regional', 354, ''],
   KCSV: ['Crossville Memorial', 1881, ''],
 
@@ -1338,3 +1338,5 @@ const ATIS_AIRPORTS = [
 const ATIS_INFO_CODES = ['Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel'];
 const RUNWAYS = ['4','9','14','18','22','27','32','36'];
 const APPROACHES = ['ILS','VOR','RNAV GPS','Visual'];
+
+if (typeof module !== 'undefined') module.exports = { ALL_AIRCRAFT, RADIO_SCENARIOS, AIRPORTS };

@@ -26,6 +26,9 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
 
+      - name: Run tests
+        run: node --test "tests/*.test.js"
+
       - name: Stamp cache version
         run: sed -i "s/COMMIT_SHA/${GITHUB_SHA:0:8}/" sw.js
 
@@ -38,7 +41,9 @@ jobs:
             --exclude ".claude/*" \
             --exclude "CLAUDE.md" \
             --exclude "README.md" \
-            --exclude "chairfly-preview.html"
+            --exclude "chairfly-preview.html" \
+            --exclude "tests/*" \
+            --exclude "package.json"
 
       - name: Invalidate CloudFront cache
         run: |
