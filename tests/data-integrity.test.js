@@ -10,19 +10,18 @@ const KNOWN_ZONES = new Set([
 ]);
 
 const AIRCRAFT_IDS = ['c172', 'cherokee140'];
-const CHECKLIST_PHASES = ['preflight','beforestart','enginestart','runup','beforelanding'];
 
 // ── ALL_AIRCRAFT ─────────────────────────────────────────────────────────────
 
-describe('ALL_AIRCRAFT — top-level structure', () => {
-  test('contains c172 and cherokee140', () => {
+describe('ALL_AIRCRAFT', () => {
+  test('BothAircraftIds_ArePresent', () => {
     for (const id of AIRCRAFT_IDS) {
       assert.ok(ALL_AIRCRAFT[id], `missing aircraft: ${id}`);
     }
   });
 
   for (const id of AIRCRAFT_IDS) {
-    test(`${id} has required keys`, () => {
+    test(`${id}_RequiredTopLevelKeys_AreAllPresent`, () => {
       const ac = ALL_AIRCRAFT[id];
       assert.ok(ac.name,       `${id}.name missing`);
       assert.ok(ac.label,      `${id}.label missing`);
@@ -31,7 +30,7 @@ describe('ALL_AIRCRAFT — top-level structure', () => {
       assert.ok(Array.isArray(ac.emergencies), `${id}.emergencies must be array`);
     });
 
-    test(`${id} speeds has required keys`, () => {
+    test(`${id}Speeds_RequiredKeys_AreAllNumeric`, () => {
       const s = ALL_AIRCRAFT[id].speeds;
       for (const key of ['vr','vx','vy','approach','shortFinal']) {
         assert.ok(typeof s[key] === 'number', `${id}.speeds.${key} must be a number`);
@@ -40,11 +39,11 @@ describe('ALL_AIRCRAFT — top-level structure', () => {
   }
 });
 
-describe('ALL_AIRCRAFT — checklist items', () => {
+describe('ALL_AIRCRAFT_ChecklistItems', () => {
   for (const id of AIRCRAFT_IDS) {
     const ac = ALL_AIRCRAFT[id];
     for (const [phaseId, phase] of Object.entries(ac.checklists)) {
-      test(`${id}/${phaseId} — every item has action and value`, () => {
+      test(`${id}_${phaseId}Items_HaveActionAndValue`, () => {
         assert.ok(Array.isArray(phase.items), `${id}/${phaseId}.items must be array`);
         for (const item of phase.items) {
           assert.ok(item.action, `${id}/${phaseId} item missing action: ${JSON.stringify(item)}`);
@@ -52,7 +51,7 @@ describe('ALL_AIRCRAFT — checklist items', () => {
         }
       });
 
-      test(`${id}/${phaseId} — every zone value is in KNOWN_ZONES`, () => {
+      test(`${id}_${phaseId}Items_UseOnlyValidZones`, () => {
         for (const item of phase.items) {
           if (item.zone) {
             assert.ok(
@@ -66,9 +65,9 @@ describe('ALL_AIRCRAFT — checklist items', () => {
   }
 });
 
-describe('ALL_AIRCRAFT — emergencies', () => {
+describe('ALL_AIRCRAFT_Emergencies', () => {
   for (const id of AIRCRAFT_IDS) {
-    test(`${id} emergencies — every item has required fields`, () => {
+    test(`${id}Emergencies_AllHaveRequiredFields`, () => {
       const emergencies = ALL_AIRCRAFT[id].emergencies;
       assert.ok(emergencies.length > 0, `${id} has no emergencies`);
       for (const e of emergencies) {
@@ -85,40 +84,70 @@ describe('ALL_AIRCRAFT — emergencies', () => {
   }
 });
 
+// ── ALL_AIRCRAFT speed ordering ──────────────────────────────────────────────
+
+describe('ALL_AIRCRAFT_Speeds', () => {
+  for (const id of AIRCRAFT_IDS) {
+    const s = ALL_AIRCRAFT[id].speeds;
+
+    test(`${id}Speeds_VrLessThanVx_IsAerodynamicallyOrdered`, () =>
+      assert.ok(s.vr < s.vx, `${id}: Vr(${s.vr}) must be < Vx(${s.vx})`));
+
+    test(`${id}Speeds_VxLessThanVy_IsAerodynamicallyOrdered`, () =>
+      assert.ok(s.vx < s.vy, `${id}: Vx(${s.vx}) must be < Vy(${s.vy})`));
+
+    test(`${id}Speeds_ShortFinalLessThanApproach_IsCorrect`, () =>
+      assert.ok(s.shortFinal < s.approach, `${id}: shortFinal(${s.shortFinal}) must be < approach(${s.approach})`));
+
+    test(`${id}Speeds_ApproachAtOrBelowVfe_IsWithinFlapsLimit`, () =>
+      assert.ok(s.approach <= s.vfe, `${id}: approach(${s.approach}) must be <= Vfe(${s.vfe})`));
+  }
+});
+
 // ── RADIO_SCENARIOS ──────────────────────────────────────────────────────────
 
-describe('RADIO_SCENARIOS — structure', () => {
-  test('is a non-empty array', () => {
+describe('RADIO_SCENARIOS', () => {
+  test('RadioScenarios_IsNonEmptyArray', () => {
     assert.ok(Array.isArray(RADIO_SCENARIOS));
     assert.ok(RADIO_SCENARIOS.length > 0);
   });
 
   for (let i = 0; i < RADIO_SCENARIOS.length; i++) {
     const s = RADIO_SCENARIOS[i];
-    const label = `scenario[${i}] "${s.type || '?'}"`;
+    const type = s.type || 'unknown';
 
-    test(`${label} — required fields present`, () => {
-      assert.ok(s.type,             `${label} missing type`);
-      assert.ok(s.ideal,            `${label} missing ideal`);
-      assert.ok(Array.isArray(s.words) && s.words.length > 0, `${label} missing words`);
-      assert.ok(Array.isArray(s.distractors),                 `${label} missing distractors`);
-      assert.ok(s.rule && typeof s.rule.repeats === 'boolean', `${label} missing rule.repeats`);
-      assert.ok(s.rule.why,         `${label} missing rule.why`);
-      assert.ok(s.note,             `${label} missing note`);
+    test(`Scenario${i}_${type}_RequiredFields_AreAllPresent`, () => {
+      assert.ok(s.type,             `scenario[${i}] missing type`);
+      assert.ok(s.ideal,            `scenario[${i}] missing ideal`);
+      assert.ok(Array.isArray(s.words) && s.words.length > 0, `scenario[${i}] missing words`);
+      assert.ok(Array.isArray(s.distractors),                 `scenario[${i}] missing distractors`);
+      assert.ok(s.rule && typeof s.rule.repeats === 'boolean', `scenario[${i}] missing rule.repeats`);
+      assert.ok(s.rule.why,         `scenario[${i}] missing rule.why`);
+      assert.ok(s.note,             `scenario[${i}] missing note`);
     });
 
-    test(`${label} — every distractor has text and why`, () => {
+    test(`Scenario${i}_${type}Distractors_HaveTextAndWhy`, () => {
       for (const d of s.distractors) {
-        assert.ok(d.text, `${label} distractor missing text`);
-        assert.ok(d.why,  `${label} distractor missing why`);
+        assert.ok(d.text, `scenario[${i}] distractor missing text`);
+        assert.ok(d.why,  `scenario[${i}] distractor missing why`);
+      }
+    });
+
+    test(`Scenario${i}_${type}Distractors_DoNotMatchAnyWordChip`, () => {
+      const wordSet = new Set(s.words);
+      for (const d of s.distractors) {
+        assert.ok(
+          !wordSet.has(d.text),
+          `scenario[${i}] distractor "${d.text}" is also a correct word chip — trap chip would be correct`,
+        );
       }
     });
 
     if (s.speechOptional) {
-      test(`${label} — speechOptional is array of strings`, () => {
+      test(`Scenario${i}_${type}SpeechOptional_IsStringArray`, () => {
         assert.ok(Array.isArray(s.speechOptional));
         for (const w of s.speechOptional) {
-          assert.equal(typeof w, 'string', `${label} speechOptional entry must be string`);
+          assert.equal(typeof w, 'string', `scenario[${i}] speechOptional entry must be string`);
         }
       });
     }
@@ -127,17 +156,16 @@ describe('RADIO_SCENARIOS — structure', () => {
 
 // ── AIRPORTS ─────────────────────────────────────────────────────────────────
 
-describe('AIRPORTS — structure', () => {
-  test('is a non-empty object', () => {
+describe('AIRPORTS', () => {
+  test('Airports_IsNonEmptyObject', () => {
     assert.ok(typeof AIRPORTS === 'object');
     assert.ok(Object.keys(AIRPORTS).length > 0);
   });
 
-  test('KUZA is present (default airport)', () => {
-    assert.ok(AIRPORTS['KUZA'], 'KUZA must be in the airport database');
-  });
+  test('KuzaAirport_IsPresent', () =>
+    assert.ok(AIRPORTS['KUZA'], 'KUZA must be in the airport database'));
 
-  test('every entry is [name, elevation_ft, notes]', () => {
+  test('AllEntries_HaveNameElevationNotesStructure', () => {
     for (const [icao, entry] of Object.entries(AIRPORTS)) {
       assert.ok(Array.isArray(entry),          `${icao}: entry must be array`);
       assert.equal(entry.length, 3,            `${icao}: entry must have 3 elements`);
@@ -147,7 +175,7 @@ describe('AIRPORTS — structure', () => {
     }
   });
 
-  test('ICAO codes are 4 uppercase letters', () => {
+  test('AllIcaoCodes_AreValid4LetterFormat', () => {
     for (const icao of Object.keys(AIRPORTS)) {
       assert.match(icao, /^[A-Z]{4}$/, `"${icao}" is not a valid 4-letter ICAO code`);
     }

@@ -176,11 +176,6 @@ function selectPhase(phase) {
 // clQuizState[phase][idx] = { status: 'idle'|'open'|'correct'|'wrong', choices: [] }
 let clQuizState = {};
 
-function _firstSentence(s) {
-  const clean = s.replace(/\s+/g, ' ').trim();
-  const m = clean.match(/^.+?[.?!](?:\s|$)/);
-  return m ? m[0].trim() : clean;
-}
 
 let _quizAllPool = null;
 function _getQuizPool() {
@@ -577,10 +572,6 @@ function clearRadioCall() {
   document.getElementById('radio-feedback').classList.remove('show');
 }
 
-function radioCallMatches(builtCall, step) {
-  const allAccepted = [step.words, ...(step.acceptedVariants || [])];
-  return allAccepted.some(v => builtCall.join(',') === v.join(','));
-}
 
 function checkRadioCall() {
   const s = RADIO_SCENARIOS[state.radio.scenarioIdx];

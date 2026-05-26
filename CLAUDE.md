@@ -322,3 +322,9 @@ Steps: checkout → configure AWS credentials → replace COMMIT_SHA in sw.js �
 - Run /compact if context gets large
 - The single biggest token waster is regenerating wrong diffs —
   always review the plan before executing
+
+### Test Generation Rules
+* Always write tests in a clean, isolated context.
+* Report exactly what you observe when running the test suite; do not assume a test passes.
+* Do not mark a scenario as passed unless all assertions have been explicitly verified.
+* If testing an E2E or complex flow, ensure mock states reset completely between test cases.
