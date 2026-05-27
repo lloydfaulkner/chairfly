@@ -194,7 +194,14 @@ function _pickAnswerText(item) {
 
 function _pregenItem(phase, idx) {
   const item = CHECKLISTS[phase].items[idx];
-  if (!item || !item.why) return;
+  if (!item) return;
+  if (item.checks) {
+    clQuizState[phase]._pregen[idx] = {
+      checks: item.checks.slice().sort(() => Math.random() - 0.5).map(c => ({ ...c, selected: false })),
+    };
+    return;
+  }
+  if (!item.why) return;
   const correctText = _pickAnswerText(item);
   let distractors;
   if (item.distractors && item.distractors.length >= 3) {
@@ -233,7 +240,12 @@ function openItemQuiz(phase, idx) {
   if (!clQuizState[phase]._pregen[idx] || cur.status === 'skipped') _pregenItem(phase, idx);
   const pre = clQuizState[phase]._pregen[idx];
   if (!pre) return;
-  clQuizState[phase][idx] = { status: 'open', question: pre.question, choices: pre.choices };
+  const item = CHECKLISTS[phase].items[idx];
+  if (item.checks) {
+    clQuizState[phase][idx] = { status: 'open', checks: pre.checks };
+  } else {
+    clQuizState[phase][idx] = { status: 'open', question: pre.question, choices: pre.choices };
+  }
   renderChecklist();
 }
 
@@ -248,6 +260,14 @@ function closeItemQuiz(phase, idx) {
 function answerItemQuiz(phase, idx, isCorrect) {
   if (!clQuizState[phase] || !clQuizState[phase][idx]) return;
   clQuizState[phase][idx].status = isCorrect ? 'correct' : 'wrong';
+  clQuizState[phase][idx].collapsed = false;
+  renderChecklist();
+}
+
+function toggleQuizResult(phase, idx) {
+  const qs = clQuizState[phase] && clQuizState[phase][idx];
+  if (!qs || (qs.status !== 'correct' && qs.status !== 'wrong')) return;
+  qs.collapsed = !qs.collapsed;
   renderChecklist();
 }
 
@@ -257,7 +277,89 @@ function skipItemQuiz(phase, idx) {
   renderChecklist();
 }
 
+function togglePreflightCheck(phase, idx, ci) {
+  const qs = clQuizState[phase] && clQuizState[phase][idx];
+  if (!qs || qs.status !== 'open') return;
+  qs.checks[ci].selected = !qs.checks[ci].selected;
+  renderChecklist();
+}
+
+function submitPreflightQuiz(phase, idx) {
+  const qs = clQuizState[phase] && clQuizState[phase][idx];
+  if (!qs || qs.status !== 'open') return;
+  const allCorrectSelected = qs.checks.filter(c => c.correct).every(c => c.selected);
+  const noWrongSelected = qs.checks.filter(c => !c.correct).every(c => !c.selected);
+  qs.status = (allCorrectSelected && noWrongSelected) ? 'correct' : 'wrong';
+  qs.collapsed = false;
+  renderChecklist();
+}
+
+function _renderPreflightQuizItem(phase, item, idx) {
+  const qs = (clQuizState[phase] && clQuizState[phase][idx]) || { status: 'idle' };
+  const { status } = qs;
+
+  const dotSvg = '<svg width="11" height="9" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const dotHtml = status === 'correct'  ? `<div class="cl-qitem-dot cl-qitem-dot--correct">${dotSvg}</div>`
+                : status === 'wrong'    ? `<div class="cl-qitem-dot cl-qitem-dot--wrong">✗</div>`
+                : status === 'skipped'  ? `<div class="cl-qitem-dot cl-qitem-dot--skipped">—</div>`
+                : status === 'open'     ? `<div class="cl-qitem-dot cl-qitem-dot--open"></div>`
+                :                         `<div class="cl-qitem-dot cl-qitem-dot--idle">?</div>`;
+
+  let bodyExtra = '';
+  if (status === 'open') {
+    const checks = qs.checks || [];
+    const anySelected = checks.some(c => c.selected);
+    bodyExtra = `
+      <div class="cl-qitem-panel">
+        <div class="cl-qitem-panel-top">
+          <div class="cl-qitem-question">Select all that apply:</div>
+          <button class="cl-qitem-collapse" onclick="event.stopPropagation();closeItemQuiz('${phase}',${idx})" title="Collapse">✕</button>
+        </div>
+        <div class="cl-qitem-checks">
+          ${checks.map((c, ci) => `<button class="cl-qitem-check-btn${c.selected ? ' cl-qitem-check-btn--sel' : ''}" onclick="event.stopPropagation();togglePreflightCheck('${phase}',${idx},${ci})"><div class="cl-qitem-check-mark">${c.selected ? dotSvg : ''}</div><span>${c.text}</span></button>`).join('')}
+        </div>
+        <div class="cl-qitem-check-actions">
+          <button class="cl-qitem-submit"${anySelected ? '' : ' disabled'} onclick="event.stopPropagation();submitPreflightQuiz('${phase}',${idx})">Check</button>
+          <button class="cl-qitem-skip" onclick="event.stopPropagation();skipItemQuiz('${phase}',${idx})">Skip</button>
+        </div>
+      </div>`;
+  } else if (status === 'correct' || status === 'wrong') {
+    if (!qs.collapsed) {
+      const checks = qs.checks || [];
+      const correctCount = checks.filter(c => c.correct).length;
+      const hitCount = checks.filter(c => c.correct && c.selected).length;
+      const wrongCount = checks.filter(c => !c.correct && c.selected).length;
+      const verdict = status === 'correct'
+        ? `<div class="cl-qitem-verdict cl-qitem-verdict--correct">All ${correctCount} inspection points identified</div>`
+        : `<div class="cl-qitem-verdict cl-qitem-verdict--wrong">${hitCount} of ${correctCount} found${wrongCount ? `, ${wrongCount} incorrect` : ''}</div>`;
+      const rows = checks.map(c => {
+        if (c.correct && c.selected)  return `<div class="cl-qitem-check-result cl-qitem-check-result--hit">✓ ${c.text}</div>`;
+        if (c.correct && !c.selected) return `<div class="cl-qitem-check-result cl-qitem-check-result--miss">○ ${c.text}</div>`;
+        if (!c.correct && c.selected) return `<div class="cl-qitem-check-result cl-qitem-check-result--wrong">✗ ${c.text}</div>`;
+        return '';
+      }).filter(Boolean).join('');
+      bodyExtra = `<div class="cl-qitem-result-panel">${verdict}${rows ? `<div class="cl-qitem-check-results">${rows}</div>` : ''}<div class="cl-qitem-why">${item.why}</div></div>`;
+    }
+  }
+
+  const clickable = status === 'idle' || status === 'skipped';
+  const answered = status === 'correct' || status === 'wrong';
+  const onclickAttr = clickable ? ` onclick="openItemQuiz('${phase}',${idx})"` : status === 'open' ? ` onclick="closeItemQuiz('${phase}',${idx})"` : answered ? ` onclick="toggleQuizResult('${phase}',${idx})"` : '';
+  return `<li class="cl-item cl-item--quiz cl-item--quiz-${status}"${onclickAttr}>
+    <span class="cl-item-idx">${String(idx + 1).padStart(2, '0')}</span>
+    ${dotHtml}
+    <div class="cl-item-body">
+      <div class="cl-item-name-row">
+        <span class="cl-item-name">${item.action}</span>
+      </div>
+      ${bodyExtra}
+    </div>
+    <button class="cl-item-info" onclick="event.stopPropagation();openInfo('${phase}',${idx})" title="Why &amp; Show Me">ⓘ</button>
+  </li>`;
+}
+
 function _renderQuizItem(phase, item, idx) {
+  if (item.checks) return _renderPreflightQuizItem(phase, item, idx);
   const qs = (clQuizState[phase] && clQuizState[phase][idx]) || { status: 'idle' };
   const { status } = qs;
 
@@ -283,19 +385,22 @@ function _renderQuizItem(phase, item, idx) {
         <button class="cl-qitem-skip" onclick="event.stopPropagation();skipItemQuiz('${phase}',${idx})">Skip</button>
       </div>`;
   } else if (status === 'correct' || status === 'wrong') {
-    const correctText = qs.choices ? qs.choices.find(c => c.isCorrect).text : '';
-    const wrongNote = status === 'wrong' ? `<div class="cl-qitem-correct-note">Correct answer: ${correctText}</div>` : '';
-    bodyExtra = `<div class="cl-qitem-result-panel">${wrongNote}<div class="cl-qitem-why">${item.why}</div></div>`;
+    if (!qs.collapsed) {
+      const correctText = qs.choices ? qs.choices.find(c => c.isCorrect).text : '';
+      const wrongNote = status === 'wrong' ? `<div class="cl-qitem-correct-note">Correct answer: ${correctText}</div>` : '';
+      bodyExtra = `<div class="cl-qitem-result-panel">${wrongNote}<div class="cl-qitem-why">${item.why}</div></div>`;
+    }
   }
 
   const clickable = status === 'idle' || status === 'skipped';
-  return `<li class="cl-item cl-item--quiz cl-item--quiz-${status}"${clickable ? ` onclick="openItemQuiz('${phase}',${idx})"` : ''}>
+  const answered = status === 'correct' || status === 'wrong';
+  const onclickAttr = clickable ? ` onclick="openItemQuiz('${phase}',${idx})"` : status === 'open' ? ` onclick="closeItemQuiz('${phase}',${idx})"` : answered ? ` onclick="toggleQuizResult('${phase}',${idx})"` : '';
+  return `<li class="cl-item cl-item--quiz cl-item--quiz-${status}"${onclickAttr}>
     <span class="cl-item-idx">${String(idx + 1).padStart(2, '0')}</span>
     ${dotHtml}
     <div class="cl-item-body">
       <div class="cl-item-name-row">
         <span class="cl-item-name">${item.action}</span>
-        ${item.value ? `<span class="cl-item-call"><span class="cl-item-dot"></span>${item.value}</span>` : ''}
       </div>
       ${bodyExtra}
     </div>
@@ -308,7 +413,7 @@ function _renderQuizItem(phase, item, idx) {
 function renderChecklist() {
   const phase = state.checklist.phase;
   const list = CHECKLISTS[phase];
-  const quizPhase = phase !== 'preflight';
+  const quizPhase = true;
 
   let doneCount;
   const total = list.items.length;
@@ -327,7 +432,6 @@ function renderChecklist() {
   const ul = document.getElementById('checklist-items');
   const preflightNote = document.getElementById('cl-preflight-note');
   if (preflightNote) preflightNote.style.display = phase === 'preflight' ? '' : 'none';
-
   if (quizPhase) {
     ul.innerHTML = list.items.map((item, i) => _renderQuizItem(phase, item, i)).join('');
   } else {

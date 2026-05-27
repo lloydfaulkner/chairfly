@@ -1231,9 +1231,13 @@
 
     /* ── INLINE WHY? QUIZ ── */
     .cl-item--quiz { cursor: pointer; }
-    .cl-item--quiz-open,
+    .cl-item--quiz-open { cursor: pointer; }
     .cl-item--quiz-correct,
-    .cl-item--quiz-wrong { cursor: default; }
+    .cl-item--quiz-wrong { cursor: pointer; }
+    .cl-quiz-hint {
+      font-family: var(--font-sans); font-size: 12px; color: var(--ink-3);
+      line-height: 1.5; margin-bottom: 10px;
+    }
     .cl-item--quiz-skipped { cursor: pointer; }
 
     /* Status dot replacing the checkbox */
@@ -1248,11 +1252,11 @@
     .cl-qitem-dot--wrong   { background: var(--hazard-soft); border: 1.5px solid var(--hazard); color: var(--hazard); }
     .cl-qitem-dot--skipped { border: 1.5px solid var(--rule); color: var(--ink-4); }
 
-    /* Quiz expansion panel */
+    /* Quiz expansion panel — spans full li content width */
     .cl-qitem-panel {
-      margin: 10px 0 0;
+      margin: 16px -44px 0 -78px;
       background: var(--paper-3); border: 1px solid var(--rule-strong);
-      border-radius: var(--radius-s); padding: 12px 12px 10px;
+      border-radius: var(--radius-s); padding: 12px 14px 10px;
     }
     .cl-qitem-panel-top {
       display: flex; align-items: flex-start; justify-content: space-between;
@@ -1282,9 +1286,55 @@
       font-family: var(--font-sans); -webkit-tap-highlight-color: transparent;
     }
 
-    /* Post-answer reveal panel */
+    /* ── Multi-select preflight quiz ── */
+    .cl-qitem-checks { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+    .cl-qitem-check-btn {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--paper-2); border: 1px solid var(--rule-strong);
+      border-radius: var(--radius-s); padding: 10px 12px; text-align: left;
+      cursor: pointer; font-size: 13px; line-height: 1.45; color: var(--ink);
+      font-family: var(--font-sans); -webkit-tap-highlight-color: transparent;
+    }
+    .cl-qitem-check-btn:hover { border-color: var(--sky); background: var(--sky-soft); }
+    .cl-qitem-check-btn--sel { background: var(--sky-soft); border-color: var(--sky); }
+    .cl-qitem-check-mark {
+      width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0;
+      border: 1.5px solid var(--rule-strong); margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cl-qitem-check-btn--sel .cl-qitem-check-mark {
+      background: var(--sky); border-color: var(--sky); color: white;
+    }
+    .cl-qitem-check-actions { display: flex; align-items: center; gap: 14px; margin-top: 2px; }
+    .cl-qitem-submit {
+      background: var(--kb-accent); color: white; border: none;
+      border-radius: var(--radius-s); padding: 7px 16px; font-size: 11px;
+      font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .cl-qitem-submit:disabled { opacity: 0.32; cursor: not-allowed; }
+    .cl-qitem-submit:not(:disabled):hover { opacity: 0.85; }
+    /* Post-submit result rows */
+    .cl-qitem-verdict {
+      font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.05em; margin-bottom: 8px;
+    }
+    .cl-qitem-verdict--correct { color: var(--terrain); }
+    .cl-qitem-verdict--wrong   { color: var(--hazard); }
+    .cl-qitem-check-results { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+    .cl-qitem-check-result {
+      font-size: 12px; line-height: 1.45; padding: 5px 8px 5px 10px;
+      border-radius: var(--radius-s); border-left: 3px solid transparent;
+    }
+    .cl-qitem-check-result--hit  { color: var(--terrain); border-left-color: var(--terrain); background: var(--terrain-soft); }
+    .cl-qitem-check-result--miss { color: oklch(48% 0.18 65); border-left-color: oklch(65% 0.16 65); background: oklch(95% 0.06 70); }
+    .cl-qitem-check-result--wrong { color: var(--hazard); border-left-color: var(--hazard); background: var(--hazard-soft); }
+    [data-mode="night"] .cl-qitem-check-result--miss {
+      color: oklch(72% 0.16 65); border-left-color: oklch(60% 0.14 65); background: oklch(22% 0.08 65);
+    }
+
+    /* Post-answer reveal panel — spans full li content width */
     .cl-qitem-result-panel {
-      margin: 10px 0 0; border-radius: var(--radius-s); padding: 11px 12px 10px;
+      margin: 16px -44px 0 -78px; border-radius: var(--radius-s); padding: 11px 14px 10px;
     }
     .cl-item--quiz-correct .cl-qitem-result-panel {
       background: var(--terrain-soft); border: 1px solid var(--terrain);
@@ -1817,14 +1867,9 @@
 
     /* ── Preflight note ───────────────────────────────────────────────── */
     .cl-preflight-note {
-      background: var(--sky-soft); border: 1px solid var(--sky);
-      border-radius: var(--radius-s); padding: 12px 14px; margin-bottom: 14px;
+      font-family: var(--font-sans); font-size: 12px; color: var(--ink-3);
+      line-height: 1.5; margin-bottom: 14px;
     }
-    .cl-preflight-note p {
-      font-size: 13px; color: var(--ink-2); line-height: 1.6; margin-bottom: 8px;
-    }
-    .cl-preflight-note p:last-child { margin-bottom: 0; }
-    .cl-preflight-note strong { color: var(--ink); font-weight: 600; }
 
     /* ── Footer ───────────────────────────────────────────────────────── */
     .cl-ref-footer {
