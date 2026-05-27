@@ -298,6 +298,10 @@ function _renderPreflightQuizItem(phase, item, idx) {
   const qs = (clQuizState[phase] && clQuizState[phase][idx]) || { status: 'idle' };
   const { status } = qs;
 
+  const phaseItems = CHECKLISTS[phase].items;
+  const isDupe = item.value && phaseItems.filter(it => it.action === item.action).length > 1;
+  const displayAction = isDupe ? `${item.action} — ${item.value}` : item.action;
+
   const dotSvg = '<svg width="11" height="9" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   const dotHtml = status === 'correct'  ? `<div class="cl-qitem-dot cl-qitem-dot--correct">${dotSvg}</div>`
                 : status === 'wrong'    ? `<div class="cl-qitem-dot cl-qitem-dot--wrong">✗</div>`
@@ -350,7 +354,7 @@ function _renderPreflightQuizItem(phase, item, idx) {
     ${dotHtml}
     <div class="cl-item-body">
       <div class="cl-item-name-row">
-        <span class="cl-item-name">${item.action}</span>
+        <span class="cl-item-name">${displayAction}</span>
       </div>
       ${bodyExtra}
     </div>
@@ -362,6 +366,10 @@ function _renderQuizItem(phase, item, idx) {
   if (item.checks) return _renderPreflightQuizItem(phase, item, idx);
   const qs = (clQuizState[phase] && clQuizState[phase][idx]) || { status: 'idle' };
   const { status } = qs;
+
+  const phaseItems = CHECKLISTS[phase].items;
+  const isDupe = item.value && phaseItems.filter(it => it.action === item.action).length > 1;
+  const displayAction = isDupe ? `${item.action} — ${item.value}` : item.action;
 
   const dotSvg = '<svg width="11" height="9" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   const dotHtml = status === 'correct'  ? `<div class="cl-qitem-dot cl-qitem-dot--correct">${dotSvg}</div>`
@@ -400,7 +408,7 @@ function _renderQuizItem(phase, item, idx) {
     ${dotHtml}
     <div class="cl-item-body">
       <div class="cl-item-name-row">
-        <span class="cl-item-name">${item.action}</span>
+        <span class="cl-item-name">${displayAction}</span>
       </div>
       ${bodyExtra}
     </div>
@@ -2457,6 +2465,8 @@ function renderSeqRecall() {
 
   // Chip pool
   const remaining = seqState.shuffled.filter(it => it.origIdx >= nextSlot).length;
+  const seqActionCounts = {};
+  list.items.forEach(li => { seqActionCounts[li.action] = (seqActionCounts[li.action] || 0) + 1; });
   const poolHtml = seqState.done
     ? ``
     : `<div class="seq-pool-card">
@@ -2468,9 +2478,10 @@ function renderSeqRecall() {
           ${seqState.shuffled.map(it => {
             const placed = it.origIdx < nextSlot;
             const shaking = seqState.shakingIdx === it.origIdx;
+            const chipLabel = seqActionCounts[it.action] > 1 && it.value ? `${it.action} — ${it.value}` : it.action;
             return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}"
                       onclick="tapChip(${it.origIdx})"
-                      ${placed ? 'disabled' : ''}>${it.action}</button>`;
+                      ${placed ? 'disabled' : ''}>${chipLabel}</button>`;
           }).join('')}
         </div>
         <div class="seq-pool-footer">
