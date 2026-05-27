@@ -300,7 +300,7 @@ function _renderPreflightQuizItem(phase, item, idx) {
 
   const phaseItems = CHECKLISTS[phase].items;
   const isDupe = item.value && phaseItems.filter(it => it.action === item.action).length > 1;
-  const displayAction = isDupe ? `${item.action} — ${item.value}` : item.action;
+  const displayAction = isDupe ? `${item.action} — ${item.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}` : item.action;
 
   const dotSvg = '<svg width="11" height="9" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   const dotHtml = status === 'correct'  ? `<div class="cl-qitem-dot cl-qitem-dot--correct">${dotSvg}</div>`
@@ -369,7 +369,7 @@ function _renderQuizItem(phase, item, idx) {
 
   const phaseItems = CHECKLISTS[phase].items;
   const isDupe = item.value && phaseItems.filter(it => it.action === item.action).length > 1;
-  const displayAction = isDupe ? `${item.action} — ${item.value}` : item.action;
+  const displayAction = isDupe ? `${item.action} — ${item.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}` : item.action;
 
   const dotSvg = '<svg width="11" height="9" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   const dotHtml = status === 'correct'  ? `<div class="cl-qitem-dot cl-qitem-dot--correct">${dotSvg}</div>`
@@ -2478,7 +2478,7 @@ function renderSeqRecall() {
           ${seqState.shuffled.map(it => {
             const placed = it.origIdx < nextSlot;
             const shaking = seqState.shakingIdx === it.origIdx;
-            const chipLabel = seqActionCounts[it.action] > 1 && it.value ? `${it.action} — ${it.value}` : it.action;
+            const chipLabel = seqActionCounts[it.action] > 1 && it.value ? `${it.action} — ${it.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}` : it.action;
             return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}"
                       onclick="tapChip(${it.origIdx})"
                       ${placed ? 'disabled' : ''}>${chipLabel}</button>`;
