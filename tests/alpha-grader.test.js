@@ -351,4 +351,46 @@ describe('gradeAlphaSequence', () => {
       gradeAlphaSequence('NOVEMBER GOLF', ['November', 'Golf']),
       [true, true]
     ));
+
+  // ── Filler / exclamation words (early-grade contract) ────────────────────────
+  // The early-grade logic fires when gradeAlphaSequence(...).every(Boolean).
+  // These tests verify that fillers don't corrupt the grade AND that a partial
+  // sequence with fillers does NOT appear fully matched.
+
+  test('Filler_Exclamation_BeforeSingleWord_Ignored', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('Oh! november', ['November']),
+      [true]
+    ));
+
+  test('Filler_Umm_BeforeSingleWord_Ignored', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('umm november', ['November']),
+      [true]
+    ));
+
+  test('Filler_MultipleExclamations_BeforeSequence_Ignored', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('Oh! umm like whiskey india november', ['Whiskey', 'India', 'November']),
+      [true, true, true]
+    ));
+
+  test('Filler_BeforeSequence_AllMatchedTriggersEarlyGrade', () => {
+    // Simulates the early-grade check: every() returns true when all words found
+    const results = gradeAlphaSequence('Oh umm alpha bravo', ['Alfa', 'Bravo']);
+    assert.ok(results.every(Boolean), 'all expected words found despite fillers');
+  });
+
+  test('Filler_PlusPartialSequence_DoesNotAppearFullyMatched', () => {
+    // "Oh alpha" for a 2-char sequence: only Alfa matched, early-grade must NOT fire
+    const results = gradeAlphaSequence('Oh alpha', ['Alfa', 'Bravo']);
+    assert.deepEqual(results, [true, false]);
+    assert.equal(results.every(Boolean), false);
+  });
+
+  test('Filler_MidSequence_Ignored', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('alpha oh bravo', ['Alfa', 'Bravo']),
+      [true, true]
+    ));
 });

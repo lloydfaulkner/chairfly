@@ -3122,6 +3122,14 @@ function _startAlphaRecognizer() {
   recog.onresult = (e) => {
     const piece = e.results[0][0].transcript;
     alphaState._transcript = ((alphaState._transcript || '') + ' ' + piece).trim();
+    // Grade immediately once all expected words are matched — fillers/exclamations
+    // are naturally skipped by the sequential grader, so "Oh umm Alpha Bravo" for
+    // a 2-char sequence still waits until both phonetic words are heard.
+    const partialResults = gradeAlphaSequence(alphaState._transcript.trim(), alphaState.expected);
+    if (partialResults.every(Boolean)) {
+      try { recog.stop(); } catch(_) {}
+      gradeAlphaResponse(alphaState._transcript.trim());
+    }
   };
   recog.onerror = () => {
     alphaState._recognition = null;
