@@ -1,7 +1,8 @@
 // node --test tests/data-integrity.test.js   (Node 18+)
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { ALL_AIRCRAFT, RADIO_SCENARIOS, AIRPORTS } = require('../js/data.js');
+const { ALL_AIRCRAFT, RADIO_SCENARIOS } = require('../js/data.js');
+const { AIRPORTS } = require('../js/airports.js');
 
 const KNOWN_ZONES = new Set([
   'sixpack','avionics','master','beacon','ignition','primer','cb',
@@ -162,22 +163,35 @@ describe('AIRPORTS', () => {
     assert.ok(Object.keys(AIRPORTS).length > 0);
   });
 
-  test('KuzaAirport_IsPresent', () =>
-    assert.ok(AIRPORTS['KUZA'], 'KUZA must be in the airport database'));
-
-  test('AllEntries_HaveNameElevationNotesStructure', () => {
+  test('AllEntries_HaveNameElevationNotesMunicipalityStructure', () => {
     for (const [icao, entry] of Object.entries(AIRPORTS)) {
       assert.ok(Array.isArray(entry),          `${icao}: entry must be array`);
-      assert.equal(entry.length, 3,            `${icao}: entry must have 3 elements`);
+      assert.equal(entry.length, 4,            `${icao}: entry must have 4 elements`);
       assert.equal(typeof entry[0], 'string',  `${icao}: name must be string`);
       assert.equal(typeof entry[1], 'number',  `${icao}: elevation must be number`);
       assert.equal(typeof entry[2], 'string',  `${icao}: notes must be string`);
+      assert.equal(typeof entry[3], 'string',  `${icao}: municipality must be string`);
     }
   });
 
-  test('AllIcaoCodes_AreValid4LetterFormat', () => {
+  test('KuzaAirport_HasCorrectElevation', () => {
+    const [, elev] = AIRPORTS['KUZA'];
+    assert.equal(elev, 666, 'KUZA elevation must be 666 ft MSL');
+  });
+
+  test('LocalAirports_AreAllPresent', () => {
+    for (const icao of ['KUZA', 'KJQF', 'KSVH', 'KCLT', 'KRDU']) {
+      assert.ok(AIRPORTS[icao], `${icao} must be in the airport database`);
+    }
+  });
+
+  test('AllIcaoCodes_Are4CharAlphanumericStartingWithKPAPH', () => {
     for (const icao of Object.keys(AIRPORTS)) {
-      assert.match(icao, /^[A-Z]{4}$/, `"${icao}" is not a valid 4-letter ICAO code`);
+      assert.match(icao, /^[A-Z0-9]{4}$/, `"${icao}" is not a valid 4-char ident`);
+      assert.ok(
+        icao.startsWith('K') || icao.startsWith('PA') || icao.startsWith('PH'),
+        `"${icao}" must start with K, PA, or PH`,
+      );
     }
   });
 });

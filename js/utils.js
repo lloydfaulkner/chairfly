@@ -17,4 +17,13 @@ function radioCallMatches(builtCall, step) {
   return allAccepted.some(v => builtCall.join(',') === v.join(','));
 }
 
-if (typeof module !== 'undefined') module.exports = { calcTPA, _firstSentence, radioCallMatches };
+// Returns the spoken airport name used in CTAF calls ("Rock Hill", "Raleigh-Durham", etc.)
+// Prefers the municipality field from OurAirports data; falls back to parsing the full name.
+function airportCallName(name, municipality = '') {
+  if (municipality) return municipality;
+  let n = name.split(' / ')[0].trim();
+  n = n.replace(/\s+(Int['']?l|International|Regional|Municipal|Executive|Memorial|Airport|Field|ARB|NAS|AFB|State)$/i, '').trim();
+  return n || name;
+}
+
+if (typeof module !== 'undefined') module.exports = { calcTPA, _firstSentence, radioCallMatches, airportCallName };

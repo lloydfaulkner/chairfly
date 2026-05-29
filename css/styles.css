@@ -736,7 +736,6 @@
       background: var(--paper-2);
       border: 1px solid var(--rule);
       border-radius: var(--radius-m);
-      overflow: hidden;
     }
     .proc-field-label {
       padding: 12px 16px 0;
@@ -746,7 +745,8 @@
       color: var(--ink-3);
       text-transform: uppercase;
     }
-    .proc-field-row { display: flex; gap: 8px; padding: 10px 16px 14px; align-items: center; }
+    .proc-field-hint { padding: 4px 16px 0; font-family: var(--font-sans); font-size: 12px; color: var(--ink-4); }
+    .proc-field-row { display: flex; gap: 8px; padding: 10px 16px 14px; align-items: center; position: relative; }
     .proc-input {
       flex: 1;
       background: var(--paper);
@@ -776,6 +776,49 @@
       transition: filter 0.15s;
     }
     .proc-lookup-btn:hover { filter: brightness(1.08); }
+
+    .proc-airport-dropdown {
+      position: absolute;
+      top: 100%;
+      left: -16px;
+      right: -16px;
+      z-index: 20;
+      background: var(--paper);
+      border: 1px solid var(--rule-strong);
+      border-top: 2px solid var(--kb-accent);
+      border-radius: 0 0 var(--radius-m) var(--radius-m);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+    }
+    .proc-airport-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper);
+      transition: background 0.1s;
+    }
+    .proc-airport-option:last-child { border-bottom: none; }
+    .proc-airport-option:hover, .proc-airport-option.active { background: var(--kb-accent-soft); }
+    .proc-airport-option-icao {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--kb-accent);
+      letter-spacing: 0.1em;
+      min-width: 44px;
+      flex-shrink: 0;
+    }
+    .proc-airport-option-name {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--ink);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     .proc-airport-result { padding: 0 16px 14px; }
     .proc-airport-name { font-family: var(--font-sans); font-size: 16px; font-weight: 600; color: var(--ink); }

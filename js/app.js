@@ -854,29 +854,108 @@ const procState = {
 // Format: ICAO: [name, elevation_ft_msl, notes]
 // Carolinas/Southeast heavily populated; national GA coverage included
 
-function lookupAirport() {
-  const icao = document.getElementById('proc-icao').value.trim().toUpperCase();
-  if (icao.length < 3) return;
+let _dropdownIdx = -1;
+
+function searchAirports(query) {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const qUp = q.toUpperCase();
+  const results = [];
+  for (const [icao, data] of Object.entries(AIRPORTS)) {
+    const [name, elev, notes, municipality = ''] = data;
+    const icaoMatch = icao.startsWith(qUp);
+    const nameMatch = name.toUpperCase().includes(qUp) || municipality.toUpperCase().includes(qUp);
+    if (icaoMatch || nameMatch) results.push({ icao, name, elev, notes, municipality, icaoMatch });
+  }
+  results.sort((a, b) => b.icaoMatch - a.icaoMatch);
+  return results.slice(0, 8);
+}
+
+function onAirportSearch(query) {
+  _dropdownIdx = -1;
+  const results = searchAirports(query);
+  const dd = document.getElementById('proc-airport-dropdown');
+  const group = document.getElementById('proc-field-group');
+  if (results.length && query.trim().length >= 2) {
+    dd.innerHTML = results.map(r =>
+      `<div class="proc-airport-option" data-icao="${r.icao}" onclick="selectAirport('${r.icao}')">` +
+      `<span class="proc-airport-option-icao">${r.icao}</span>` +
+      `<span class="proc-airport-option-name">${r.name}</span>` +
+      `</div>`
+    ).join('');
+    dd.style.display = '';
+    group.classList.add('dropdown-open');
+  } else {
+    hideAirportDropdown();
+  }
+}
+
+function onAirportSearchKey(event) {
+  const dd = document.getElementById('proc-airport-dropdown');
+  const hidden = dd.style.display === 'none' || !dd.children.length;
+  if (hidden) {
+    if (event.key === 'Enter') lookupAirport();
+    return;
+  }
+  const options = dd.querySelectorAll('.proc-airport-option');
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    _dropdownIdx = Math.min(_dropdownIdx + 1, options.length - 1);
+    options.forEach((o, i) => o.classList.toggle('active', i === _dropdownIdx));
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    _dropdownIdx = Math.max(_dropdownIdx - 1, -1);
+    options.forEach((o, i) => o.classList.toggle('active', i === _dropdownIdx));
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    const active = dd.querySelector('.proc-airport-option.active');
+    if (active) selectAirport(active.dataset.icao);
+    else lookupAirport();
+  } else if (event.key === 'Escape') {
+    hideAirportDropdown();
+  }
+}
+
+function hideAirportDropdown() {
+  const dd = document.getElementById('proc-airport-dropdown');
+  if (!dd) return;
+  dd.style.display = 'none';
+  dd.innerHTML = '';
+  _dropdownIdx = -1;
+  const group = document.getElementById('proc-field-group');
+  if (group) group.classList.remove('dropdown-open');
+}
+
+function selectAirport(icao) {
+  icao = icao.trim().toUpperCase();
   const result = document.getElementById('proc-airport-result');
   const manual = document.getElementById('proc-manual-fields');
+  hideAirportDropdown();
+  document.getElementById('proc-icao').value = icao;
 
   const ap = AIRPORTS[icao];
   if (ap) {
-    const [name, elev, notes] = ap;
+    const [name, elev, notes, municipality] = ap;
     const tpa = Math.round((elev + 1000) / 100) * 100;
-    procState.airport = { icao, name, elev, tpa };
+    const callName = airportCallName(name, municipality);
+    procState.airport = { icao, name, elev, tpa, callName };
     result.innerHTML = `
       <div class="proc-airport-result">
         <div class="proc-airport-name">${name}</div>
         <div class="proc-airport-meta">${icao} · Elev ${elev} ft MSL${notes ? ' · ' + notes : ''}</div>
       </div>`;
     manual.style.display = 'none';
-  } else {
+  } else if (icao.length >= 3) {
     result.innerHTML = `<div class="proc-airport-err">⚠️ "${icao}" not in database — enter values below.</div>`;
     manual.style.display = 'block';
     procState.airport = { icao, name: icao, elev: 0, tpa: 1000 };
     document.getElementById('proc-elev').focus();
   }
+}
+
+function lookupAirport() {
+  const icao = document.getElementById('proc-icao').value.trim().toUpperCase();
+  if (icao.length >= 3) selectAirport(icao);
 }
 
 function updateManualValues() {
@@ -894,11 +973,13 @@ function updateManualValues() {
 //   choice  — multiple choice (knowledge/judgment only)
 //   order   — drag-to-order (coming soon)
 
+
 function buildPatternLanding(ap) {
   const tpa = ap.tpa || (ap.elev + 1000) || 1000;
   const elev = ap.elev || 0;
   const tpaMSL = tpa;
   const icao = ap.icao || 'KXXX';
+  const callName = ap.callName || airportCallName(ap.name || icao);
   const rwy = '27';
 
   // Pull speeds from current aircraft
@@ -962,10 +1043,10 @@ function buildPatternLanding(ap) {
         phase: 'Radio Call',
         prompt: 'Build your downwind position call.',
         context: `Uncontrolled field (CTAF). You're entering left downwind for runway ${rwy}. Announce so other traffic can sequence.`,
-        words: [`${icao} traffic`, 'Skyhawk Four Five Two One Golf', `entering left downwind runway ${rwy}`, icao],
-        ideal: `${icao} traffic, Skyhawk Four Five Two One Golf, entering left downwind runway ${rwy}, ${icao}.`,
+        words: [`${callName} traffic`, 'Skyhawk Four Five Two One Golf', `entering left downwind runway ${rwy}`, callName],
+        ideal: `${callName} traffic, Skyhawk Four Five Two One Golf, entering left downwind runway ${rwy}, ${callName}.`,
         distractors: [
-          { text: `${icao} tower`, why: 'Uncontrolled fields have no tower. Use "traffic" to address all aircraft on the CTAF frequency.' },
+          { text: `${callName} tower`, why: 'Uncontrolled fields have no tower. Use "traffic" to address all aircraft on the CTAF frequency.' },
           { text: 'any traffic please advise', why: 'Non-standard phraseology — discouraged by the FAA. It clutters the frequency without adding useful information.' },
           { text: 'over', why: '"Over" is not used in aviation radio calls. It\'s a civilian/military misconception — just say what you need to say and release the mic.' },
         ],
@@ -1096,7 +1177,7 @@ function buildPatternLanding(ap) {
           },
         ],
         feedback: `Base: flaps ${baseFlaps}, ~${baseSpeed} KIAS. Descending to intercept final. Keep an eye on the runway — if it's moving toward your nose you're overshooting; if moving away you're undershooting.`,
-        tip: { title: 'Base radio call', text: `"${icao} traffic, Skyhawk Four Five Two One Golf, left base runway ${rwy}, ${icao}." Make it before the turn or early in the turn — other pilots on long final need to hear it.` }
+        tip: { title: 'Base radio call', text: `"${callName} traffic, Skyhawk Four Five Two One Golf, left base runway ${rwy}, ${callName}." Make it before the turn or early in the turn — other pilots on long final need to hear it.` }
       },
 
       // ── 7. BASE RADIO — radio
@@ -1105,8 +1186,8 @@ function buildPatternLanding(ap) {
         phase: 'Radio Call',
         prompt: 'Build your base leg position call.',
         context: `You've turned base for runway ${rwy}. Announce before or early in the turn.`,
-        words: [`${icao} traffic`, 'Skyhawk Four Five Two One Golf', `left base runway ${rwy}`, icao],
-        ideal: `${icao} traffic, Skyhawk Four Five Two One Golf, left base runway ${rwy}, ${icao}.`,
+        words: [`${callName} traffic`, 'Skyhawk Four Five Two One Golf', `left base runway ${rwy}`, callName],
+        ideal: `${callName} traffic, Skyhawk Four Five Two One Golf, left base runway ${rwy}, ${callName}.`,
         distractors: [
           { text: 'turning base', why: 'Announce the leg you\'re on, not the maneuver. Say "left base" once established — not "turning base" mid-turn.' },
           { text: `right base runway ${rwy}`, why: 'Left traffic means left base. Right base would be for right-hand traffic pattern, which is non-standard unless published.' },
@@ -1360,6 +1441,8 @@ function procAdvanceFromRecall() {
 
 // ── NORMAL TAKEOFF ──
 function buildNormalTakeoff(ap) {
+  const icao = ap.icao || 'KXXX';
+  const callName = ap.callName || airportCallName(ap.name || icao);
   return {
     title: 'Normal Takeoff',
     steps: [
@@ -1374,17 +1457,17 @@ function buildNormalTakeoff(ap) {
           { id: 'mixture', label: 'Mixture', type: 'chips', options: ['RICH', 'LEAN'], default: 'RICH', correct: 'RICH', correctLabel: 'RICH — full rich at sea level for max power', wrongLabel: 'Full rich for sea level takeoffs. Lean only at high-elevation airports for smooth operation.' },
         ],
         feedback: 'Normal takeoff: 0° flaps, carb heat off, mixture rich. Controls free and correct, transponder ALT, strobes on.',
-        tip: { title: 'Before rolling', text: 'Do a final scan: strobes ON, transponder ALT, time noted, runway clear both directions. Say "KUZA traffic, Skyhawk 4521G, departing runway 27" if uncontrolled.' }
+        tip: { title: 'Before rolling', text: `Do a final scan: strobes ON, transponder ALT, time noted, runway clear both directions. Say "${callName} traffic, Skyhawk 4521G, departing runway 27" if uncontrolled.` }
       },
       {
         type: 'radio',
         phase: 'Takeoff — Radio',
         prompt: 'Build your takeoff announcement for an uncontrolled field.',
-        context: 'KUZA is uncontrolled. Announce before rolling to alert traffic on downwind or base.',
-        words: ['KUZA traffic', 'Skyhawk Four Five Two One Golf', 'departing runway two seven', 'KUZA'],
-        ideal: 'KUZA traffic, Skyhawk Four Five Two One Golf, departing runway two seven, KUZA.',
+        context: `${icao} is uncontrolled. Announce before rolling to alert traffic on downwind or base.`,
+        words: [`${callName} traffic`, 'Skyhawk Four Five Two One Golf', 'departing runway two seven', callName],
+        ideal: `${callName} traffic, Skyhawk Four Five Two One Golf, departing runway two seven, ${callName}.`,
         distractors: [
-          { text: 'requesting takeoff clearance', why: 'No tower at KUZA — there\'s nobody to request clearance from. Just announce and go.' },
+          { text: 'requesting takeoff clearance', why: `No tower at ${icao} — there's nobody to request clearance from. Just announce and go.` },
           { text: 'holding short runway two seven', why: 'Holding short is a different call made when waiting. If you\'re departing, say departing.' },
           { text: 'over', why: '"Over" is not used in aviation radio calls.' },
         ],

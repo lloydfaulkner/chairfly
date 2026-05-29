@@ -1,7 +1,7 @@
 // node --test tests/utils.test.js   (Node 18+)
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { calcTPA, _firstSentence, radioCallMatches } = require('../js/utils.js');
+const { calcTPA, _firstSentence, radioCallMatches, airportCallName } = require('../js/utils.js');
 
 // ── calcTPA ──────────────────────────────────────────────────────────────────
 
@@ -112,4 +112,41 @@ describe('_firstSentence', () => {
 
   test('NewlineCharacters_AreCollapsedToSpaces', () =>
     assert.equal(_firstSentence('Line one.\nLine two.'), 'Line one.'));
+});
+
+// ── airportCallName ──────────────────────────────────────────────────────────
+
+describe('airportCallName', () => {
+  test('MunicipalityPresent_TakesPriorityOverNameParsing', () =>
+    assert.equal(airportCallName('Rock Hill - York County Airport', 'Rock Hill'), 'Rock Hill'));
+
+  test('MunicipalityPresent_UsedDirectlyWithoutStripping', () =>
+    assert.equal(airportCallName('Charlotte Douglas International Airport', 'Charlotte'), 'Charlotte'));
+
+  test('EmptyMunicipality_FallsBackToNameParsing', () =>
+    assert.equal(airportCallName('Rock Hill - York County Airport', ''), 'Rock Hill - York County'));
+
+  test('SlashSeparator_UsesFirstPartOnly', () =>
+    assert.equal(airportCallName('Raleigh-Durham / International Airport', ''), 'Raleigh-Durham'));
+
+  test('SuffixAirport_IsStripped', () =>
+    assert.equal(airportCallName('Gastonia Municipal Airport', ''), 'Gastonia Municipal'));
+
+  test('SuffixInternational_IsStripped', () =>
+    assert.equal(airportCallName('Charlotte Douglas International', ''), 'Charlotte Douglas'));
+
+  test('SuffixIntl_IsStripped', () =>
+    assert.equal(airportCallName('Miami Intl', ''), 'Miami'));
+
+  test('SuffixRegional_IsStripped', () =>
+    assert.equal(airportCallName('Piedmont Triad Regional', ''), 'Piedmont Triad'));
+
+  test('SuffixField_IsStripped', () =>
+    assert.equal(airportCallName('Hawthorne Field', ''), 'Hawthorne'));
+
+  test('NoSuffixAndNoMunicipality_ReturnsNameAsIs', () =>
+    assert.equal(airportCallName('Caldwell', ''), 'Caldwell'));
+
+  test('NoArguments_DefaultsToEmptyMunicipality', () =>
+    assert.equal(airportCallName('Rock Hill Airport'), 'Rock Hill'));
 });

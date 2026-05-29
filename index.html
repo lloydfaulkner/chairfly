@@ -497,11 +497,12 @@
         <div class="cf-eyebrow" style="margin-bottom: 14px;">Procedure Briefing</div>
         <div class="proc-setup">
 
-          <div class="proc-field-group">
-            <div class="proc-field-label">Home Airport</div>
+          <div class="proc-field-group" id="proc-field-group">
+            <div class="proc-field-label">Airport</div>
+            <div class="proc-field-hint">Search by airport code or city name</div>
             <div class="proc-field-row">
-              <input class="proc-input" id="proc-icao" maxlength="4" placeholder="e.g. KRDU" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')lookupAirport()" value="KUZA"/>
-              <button class="proc-lookup-btn" id="proc-lookup-btn" onclick="lookupAirport()">Look Up</button>
+              <input class="proc-input" id="proc-icao" placeholder="Airport code or city (e.g. KRDU, Charlotte)" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="onAirportSearch(this.value)" onkeydown="onAirportSearchKey(event)" onblur="setTimeout(hideAirportDropdown,150)" value="KUZA"/>
+              <div id="proc-airport-dropdown" class="proc-airport-dropdown" style="display:none"></div>
             </div>
             <div id="proc-airport-result"></div>
             <div id="proc-manual-fields" style="display:none">
@@ -652,6 +653,7 @@
 </div>
 
 <script src="js/data.js"></script>
+<script src="js/airports.js"></script>
 <script src="js/speech-grader.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/app.js"></script>
