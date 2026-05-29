@@ -23,21 +23,39 @@ Open source under MIT license.
 ## File structure
 ```
 chairfly/
-├── index.html          # App shell, nav, view containers
+├── index.html               # App shell, nav, view containers
+├── chairfly-preview.html    # Static HTML preview (no JS) for sharing screenshots
+├── manifest.json            # PWA manifest
+├── sw.js                    # Service worker (offline caching)
+├── package.json             # npm scripts — "test" runs all tests via node --test
+├── generate-airports.js     # One-off script: fetches OurAirports CSV → js/airports.js
 ├── css/
-│   └── styles.css      # All styles
+│   └── styles.css           # All styles
 ├── js/
-│   ├── data.js         # All static data (checklists, procedures,
-│   │                   # radio scenarios, emergencies, airports)
-│   ├── speech-grader.js # normalizeSpoken, scoreSpeechCall (exported, unit tested)
-│   ├── utils.js        # calcTPA, radioCallMatches, _firstSentence (exported, unit tested)
-│   └── app.js          # All application logic
-├── manifest.json       # PWA manifest
-├── sw.js               # Service worker (offline caching)
+│   ├── data.js              # All static data (checklists, procedures,
+│   │                        # radio scenarios, emergencies, phonetic alphabet)
+│   ├── airports.js          # Generated airport database (~3800 US public-use airports)
+│   ├── speech-grader.js     # normalizeSpoken, scoreSpeechCall (exported, unit tested)
+│   ├── alpha-grader.js      # gradeAlphaSequence, countPhoneticAttemptWords (exported, unit tested)
+│   ├── utils.js             # calcTPA, radioCallMatches, _firstSentence (exported, unit tested)
+│   └── app.js               # All application logic
+├── tests/
+│   ├── utils.test.js        # calcTPA, radioCallMatches, _firstSentence, airportCallName
+│   ├── speech-grader.test.js # scoreSpeechCall, normalizeSpoken
+│   ├── alpha-grader.test.js  # gradeAlphaSequence, _alphaMatchWord
+│   └── data-integrity.test.js # Structural checks on ALL_AIRCRAFT, RADIO_SCENARIOS, AIRPORTS
+├── infra/                   # Terraform/Terragrunt — S3 + CloudFront + OIDC deploy role
+│   ├── root.hcl
+│   ├── modules/
+│   │   ├── static-site/     # S3 bucket + CloudFront distribution
+│   │   └── deploy-role/     # OIDC IAM role for GitHub Actions
+│   └── live/prod/
+│       ├── static-site/
+│       └── deploy-role/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml  # GitHub Actions → S3 + CloudFront
-└── CLAUDE.md           # This file
+│       └── deploy.yml       # GitHub Actions → S3 + CloudFront
+└── CLAUDE.md                # This file
 ```
 
 ## Code style
