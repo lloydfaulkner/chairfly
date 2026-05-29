@@ -1,8 +1,9 @@
 // HTML is built in JS so rendering logic and markup stay together rather than split across template files.
 // Chose vanilla over a framework (React etc.) to keep the app deployable as plain files with no build toolchain.
 // Worth revisiting if rendering logic becomes harder to maintain, or the project gains collaborators
-// (human or AI — React/JSX is better represented in training data, so AI tools produce more idiomatic
-// output there; vanilla patterns need more cleanup).
+// (human or AI — React/JSX dominates training data, so AI-generated code fits existing React patterns
+// more consistently; in vanilla JS, valid approaches vary enough that AI output often diverges from
+// codebase conventions and needs more review).
 
 let CHECKLISTS = ALL_AIRCRAFT.c172.checklists;
 let EMERGENCIES = ALL_AIRCRAFT.c172.emergencies;
