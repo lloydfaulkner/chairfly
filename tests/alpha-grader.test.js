@@ -160,6 +160,22 @@ describe('_alphaMatchWord', () => {
   // STT misrecognition variants
   test('STTVariant_QuebecAsGoback_Accepted', () =>
     assert.equal(_alphaMatchWord('goback', 'Quebec'), true));
+
+  // Less-common map entries — all in the variant map but untested until now
+  const mapEdgeCases = [
+    ['when',  'Wun',   '"when" STT mishear of wun'],
+    ['for',   'Fower', '"for" homophone of fower'],
+    ['ex',    'X-ray', '"ex" prefix accepted for x-ray'],
+    ['wife',  'Fife',  '"wife" rhyme accepted for fife'],
+    ['minor', 'Niner', '"minor" rhyme accepted for niner'],
+    ['diner', 'Niner', '"diner" rhyme accepted for niner'],
+    ['tu',    'Too',   '"tu" accepted for too'],
+    ['power', 'Fower', '"power" rhyme accepted for fower'],
+  ];
+  for (const [spoken, expected, label] of mapEdgeCases) {
+    test(`MapEdge_${label}`, () =>
+      assert.equal(_alphaMatchWord(spoken, expected), true));
+  }
 });
 
 // ── gradeAlphaSequence ────────────────────────────────────────────────────────
@@ -284,5 +300,55 @@ describe('gradeAlphaSequence', () => {
     assert.deepEqual(
       gradeAlphaSequence('november go back golf', ['November', 'Quebec', 'Golf']),
       [true, true, true]
+    ));
+
+  // ── Hyphenated phonetic words in transcript ───────────────────────────────────
+
+  test('Hyphenated_XRay_MatchesXRayExpected', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('golf x-ray mike', ['Golf', 'X-ray', 'Mike']),
+      [true, true, true]
+    ));
+
+  // ── ICAO words (niner/wun/etc.) spoken in full-sequence context ───────────────
+
+  test('ICAOWord_Niner_MatchesInSequence', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('golf niner mike', ['Golf', 'Niner', 'Mike']),
+      [true, true, true]
+    ));
+
+  test('ICAOWord_Wun_MatchesInSequence', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('alpha wun bravo', ['Alfa', 'Wun', 'Bravo']),
+      [true, true, true]
+    ));
+
+  test('ICAOWord_Tree_MatchesInSequence', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('november tree golf', ['November', 'Tree', 'Golf']),
+      [true, true, true]
+    ));
+
+  // ── Five-character sequence ───────────────────────────────────────────────────
+
+  test('FiveCharSequence_AllCorrect', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('alfa bravo charlie delta echo', ['Alfa', 'Bravo', 'Charlie', 'Delta', 'Echo']),
+      [true, true, true, true, true]
+    ));
+
+  test('FiveCharSequence_OneWrong', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('alfa oscar charlie delta echo', ['Alfa', 'Bravo', 'Charlie', 'Delta', 'Echo']),
+      [true, false, true, true, true]
+    ));
+
+  // ── Case insensitivity ────────────────────────────────────────────────────────
+
+  test('UpperCaseTranscript_StillMatches', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('NOVEMBER GOLF', ['November', 'Golf']),
+      [true, true]
     ));
 });
