@@ -1805,6 +1805,11 @@
     .alpha-setup-ex-arrow { font-size: 1.4rem; color: var(--ink-4); }
     .alpha-setup-ex-word { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--ink); }
     .alpha-preview-caption { font-family: var(--font-sans); font-size: 12px; color: var(--ink-3); }
+    .alpha-zero-note { display: flex; align-items: baseline; gap: 6px; border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 2px; width: 100%; justify-content: center; flex-wrap: wrap; }
+    .alpha-zero-prefix { font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--ink-3); margin-right: 4px; }
+    .alpha-zero-char { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--sky); }
+    .alpha-zero-label { font-family: var(--font-sans); font-size: 13px; color: var(--ink-3); margin-right: 8px; }
+    .alpha-zero-sep { font-family: var(--font-sans); font-size: 13px; color: var(--ink-4); margin-right: 8px; }
     .alpha-finish-card {
       background: var(--paper-2); border: 1px solid var(--rule);
       border-radius: 10px; padding: 32px 24px;
@@ -1812,24 +1817,42 @@
     }
     .alpha-finish-label { font-family: var(--font-sans); font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); }
     .alpha-finish-score { font-family: var(--font-mono); font-size: 3rem; font-weight: 700; color: var(--ink); line-height: 1; }
-    .alpha-finish-acc { font-family: var(--font-sans); font-size: 14px; color: var(--ink-2); margin-bottom: 8px; }
-    .alpha-finish-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .alpha-finish-acc { font-family: var(--font-sans); font-size: 14px; color: var(--ink-2); }
     .alpha-start-btn {
       background: var(--kb-accent); color: #fff;
       border: none; border-radius: 8px;
       padding: 12px 36px; font-family: var(--font-sans); font-size: 15px; font-weight: 700;
-      cursor: pointer; letter-spacing: 0.04em;
+      cursor: pointer; letter-spacing: 0.04em; width: 100%;
       -webkit-tap-highlight-color: transparent;
     }
     .alpha-start-btn:hover { opacity: 0.9; }
     .alpha-stop-btn {
       background: none; color: var(--hazard);
-      border: 1px solid var(--hazard); border-radius: 6px;
-      padding: 4px 12px; font-family: var(--font-sans); font-size: 12px; font-weight: 600;
-      cursor: pointer; letter-spacing: 0.04em;
+      border: 1.5px solid var(--hazard); border-radius: 8px;
+      padding: 12px 36px; font-family: var(--font-sans); font-size: 15px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.04em; width: 100%; margin-top: 12px;
       -webkit-tap-highlight-color: transparent;
     }
-    .alpha-stop-btn:hover { background: var(--hazard-soft); }
+    .alpha-stop-btn:hover { opacity: 0.8; }
+    .alpha-finish-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+    .alpha-review { display: flex; flex-direction: column; gap: 6px; margin: 16px 0; }
+    .alpha-review-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 10px; border-radius: 6px;
+      background: var(--paper-2); border: 1px solid var(--rule);
+    }
+    .alpha-review-row--miss { border-color: var(--hazard); background: var(--hazard-soft); }
+    .alpha-review-num { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); min-width: 18px; padding-top: 2px; }
+    .alpha-review-body { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .alpha-review-char {
+      display: inline-flex; flex-direction: column; align-items: center;
+      font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700;
+      line-height: 1; color: var(--terrain);
+    }
+    .alpha-review-char--miss { color: var(--hazard); }
+    .alpha-review-phonetic { font-size: 10px; font-weight: 400; color: var(--ink-3); margin-top: 2px; }
+    .alpha-review-char--miss .alpha-review-phonetic { color: var(--hazard); }
+    .alpha-review-spoken { font-family: var(--font-sans); font-size: 11px; color: var(--ink-3); font-style: italic; margin-left: 4px; }
 
     /* ═══════════════════════════════════════════════════════════════════
        KNEEBOARD STEP 3 — Checklist tab reskin

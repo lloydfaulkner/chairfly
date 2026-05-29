@@ -156,6 +156,10 @@ describe('_alphaMatchWord', () => {
   // Prefix rule does not match unrelated words
   test('PrefixRule_UnrelatedWord_NoMatch', () =>
     assert.equal(_alphaMatchWord('hotdog', 'Whiskey'), false));
+
+  // STT misrecognition variants
+  test('STTVariant_QuebecAsGoback_Accepted', () =>
+    assert.equal(_alphaMatchWord('goback', 'Quebec'), true));
 });
 
 // ── gradeAlphaSequence ────────────────────────────────────────────────────────
@@ -233,4 +237,52 @@ describe('gradeAlphaSequence', () => {
     const result = gradeAlphaSequence('india whiskey november', ['Whiskey', 'India', 'November']);
     assert.deepEqual(result, [true, false, true]);
   });
+
+  // ── Colon-separated digits (STT artefact: "three six" → "3:6") ──────────────
+
+  test('ColonSeparated_ThreeSix_GradesCorrectly', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('victor 3:6', ['Victor', 'Tree', 'Six']),
+      [true, true, true]
+    ));
+
+  // ── Compound number handling ──────────────────────────────────────────────────
+
+  test('CompoundNumber_SixtyEight_GradesSixAndEight', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('golf sixty-eight', ['Golf', 'Six', 'Eight']),
+      [true, true, true]
+    ));
+
+  test('CompoundNumber_SpaceSeparated_SixtyEight', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('golf sixty eight', ['Golf', 'Six', 'Eight']),
+      [true, true, true]
+    ));
+
+  test('CompoundNumber_TwentyThree_GradesTwoAndThree', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('twenty-three', ['Too', 'Tree']),
+      [true, true]
+    ));
+
+  test('CompoundNumber_InSequence_Golf68November', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('golf sixty-eight november', ['Golf', 'Six', 'Eight', 'November']),
+      [true, true, true, true]
+    ));
+
+  // ── Bigram matching (STT splits a single word across two tokens) ──────────────
+
+  test('BigramMatch_Quebec_GoBack_Accepted', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('go back', ['Quebec']),
+      [true]
+    ));
+
+  test('BigramMatch_Quebec_InSequence', () =>
+    assert.deepEqual(
+      gradeAlphaSequence('november go back golf', ['November', 'Quebec', 'Golf']),
+      [true, true, true]
+    ));
 });

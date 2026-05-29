@@ -2941,6 +2941,7 @@ const alphaState = {
   drillCount: 5,
   drillProgress: 0,
   finished: false,
+  history: [],
   started: false,
   sequence: [],
   expected: [],
@@ -2955,6 +2956,8 @@ const alphaState = {
   _timer: null,
   _recognition: null,
   listening: false,
+  bag: [],
+  _transcript: '',
 };
 
 function initAlphaDrill() {
@@ -2966,6 +2969,8 @@ function initAlphaDrill() {
   alphaState.started = false;
   alphaState.finished = false;
   alphaState.drillProgress = 0;
+  alphaState.bag = [];
+  alphaState._transcript = '';
   renderAlphaDrill();
 }
 
@@ -2973,7 +2978,10 @@ function startAlphaDrill() {
   alphaState.started = true;
   alphaState.finished = false;
   alphaState.drillProgress = 0;
+  alphaState.history = [];
   alphaState.score = { correct: 0, total: 0, streak: 0 };
+  alphaState.bag = _shuffleArray([..._buildAlphaPool()]);
+  alphaState._transcript = '';
   _nextAlphaQuestion();
 }
 
@@ -3006,20 +3014,35 @@ function _buildAlphaPool() {
   return alphaState.alphanumeric ? [...letters, ...Object.keys(PHONETIC_NUMBERS)] : letters;
 }
 
+function _shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 function _nextAlphaQuestion() {
   if (alphaState.drillProgress >= alphaState.drillCount) { _finishAlphaDrill(); return; }
   if (alphaState._timer) { clearInterval(alphaState._timer); alphaState._timer = null; }
   if (alphaState._recognition) { try { alphaState._recognition.stop(); } catch(e) {} alphaState._recognition = null; }
   const pool = _buildAlphaPool();
   const len = alphaState.randomLen ? Math.floor(Math.random() * 5) + 1 : alphaState.seqLen;
-  const prev = alphaState.sequence;
+
+  // Bag-based selection: cycle through pool without repeats before refilling
+  if (alphaState.bag.length < len) {
+    const recentSet = new Set(alphaState.sequence);
+    const refill = pool.filter(c => !recentSet.has(c));
+    alphaState.bag.push(..._shuffleArray(refill.length >= len ? refill : [...pool]));
+  }
   const seq = [];
   for (let i = 0; i < len; i++) {
-    let ch;
-    do { ch = pool[Math.floor(Math.random() * pool.length)]; }
-    while (ch === (i === 0 ? prev[prev.length - 1] : seq[i - 1]) && pool.length > 1);
-    seq.push(ch);
+    const avoid = i === 0 ? alphaState.sequence[alphaState.sequence.length - 1] : seq[i - 1];
+    let idx = avoid ? alphaState.bag.findIndex(c => c !== avoid) : 0;
+    if (idx < 0) idx = 0;
+    seq.push(alphaState.bag.splice(idx, 1)[0]);
   }
+
   // Ensure at least 1 letter when alphanumeric is on; for len>=3 also ensure at least 1 digit
   if (alphaState.alphanumeric) {
     const letters = Object.keys(PHONETIC_ALPHABET);
@@ -3040,6 +3063,7 @@ function _nextAlphaQuestion() {
   alphaState.wasCorrect = null;
   alphaState.spokenText = '';
   alphaState.listening = false;
+  alphaState._transcript = '';
   alphaState.maxTime = len === 1 ? 3 : Math.round(len * 1.8 + 1);
   alphaState.timeLeft = alphaState.maxTime;
   alphaState._timer = setInterval(() => {
@@ -3065,10 +3089,19 @@ function _renderAlphaTimer() {
 function alphaTimeout() {
   if (alphaState.answered) return;
   if (alphaState._timer) { clearInterval(alphaState._timer); alphaState._timer = null; }
+  if (alphaState._recognition) {
+    try { alphaState._recognition.stop(); } catch(e) {}
+    alphaState._recognition = null;
+  }
+  alphaState.listening = false;
+  // Grade whatever was accumulated before the timer ran out
+  const accumulated = alphaState._transcript && alphaState._transcript.trim();
+  if (accumulated) { gradeAlphaResponse(accumulated); return; }
   alphaState.answered = true;
   alphaState.wasCorrect = false;
   alphaState.spokenText = '(no answer)';
   alphaState.results = Array(alphaState.sequence.length).fill(false);
+  alphaState.history.push({ sequence: [...alphaState.sequence], display: [...alphaState.expectedDisplay], results: [...alphaState.results], spoken: '(no answer)', correct: false });
   alphaState.score.total++;
   alphaState.score.streak = 0;
   alphaState.drillProgress++;
@@ -3076,27 +3109,48 @@ function alphaTimeout() {
   if (alphaState.autoAdvance) setTimeout(_nextAlphaQuestion, 1800);
 }
 
+// Internal helper — starts a single (non-continuous) recognition session and restarts
+// automatically on silence so the user can say all words without being cut off early.
+function _startAlphaRecognizer() {
+  const SR = window.webkitSpeechRecognition || window.SpeechRecognition;
+  if (!SR || alphaState.answered || !alphaState.listening) return;
+  const recog = new SR();
+  recog.lang = 'en-US';
+  recog.interimResults = false;
+  recog.maxAlternatives = 1;
+  alphaState._recognition = recog;
+  recog.onresult = (e) => {
+    const piece = e.results[0][0].transcript;
+    alphaState._transcript = ((alphaState._transcript || '') + ' ' + piece).trim();
+  };
+  recog.onerror = () => {
+    alphaState._recognition = null;
+    alphaState.listening = false;
+    renderAlphaDrill();
+  };
+  recog.onend = () => {
+    alphaState._recognition = null;
+    if (!alphaState.answered && alphaState.timeLeft > 0.3) {
+      // Time remains — restart so user can keep speaking across natural pauses
+      setTimeout(() => _startAlphaRecognizer(), 50);
+    } else if (!alphaState.answered) {
+      alphaState.listening = false;
+      const t = alphaState._transcript && alphaState._transcript.trim();
+      if (t) gradeAlphaResponse(t);
+      else renderAlphaDrill();
+    }
+  };
+  recog.start();
+}
+
 function startAlphaSpeech() {
   if (alphaState.answered || alphaState.listening) return;
   const SR = window.webkitSpeechRecognition || window.SpeechRecognition;
   if (!SR) { alert('Speech recognition not available. Use HTTPS or a supported browser.'); return; }
   alphaState.listening = true;
+  alphaState._transcript = '';
   renderAlphaDrill();
-  const recog = new SR();
-  recog.lang = 'en-US';
-  recog.interimResults = false;
-  recog.maxAlternatives = 3;
-  alphaState._recognition = recog;
-  recog.onresult = (e) => {
-    alphaState.listening = false;
-    alphaState._recognition = null;
-    gradeAlphaResponse(e.results[0][0].transcript);
-  };
-  recog.onerror = () => { alphaState.listening = false; alphaState._recognition = null; renderAlphaDrill(); };
-  recog.onend = () => {
-    if (alphaState.listening) { alphaState.listening = false; alphaState._recognition = null; renderAlphaDrill(); }
-  };
-  recog.start();
+  _startAlphaRecognizer();
 }
 
 function gradeAlphaResponse(transcript) {
@@ -3107,6 +3161,7 @@ function gradeAlphaResponse(transcript) {
   alphaState.results = gradeAlphaSequence(transcript, alphaState.expected);
   const allCorrect = alphaState.results.every(Boolean);
   alphaState.wasCorrect = allCorrect;
+  alphaState.history.push({ sequence: [...alphaState.sequence], display: [...alphaState.expectedDisplay], results: [...alphaState.results], spoken: transcript, correct: allCorrect });
   alphaState.score.total++;
   alphaState.drillProgress++;
   if (allCorrect) { alphaState.score.correct++; alphaState.score.streak++; }
@@ -3186,6 +3241,12 @@ function renderAlphaDrill() {
             <span class="alpha-setup-ex-word">November</span>
           </div>
           <div class="alpha-preview-caption">You&rsquo;ll see one or more characters depending on your settings above &mdash; say the phonetic word(s) out loud</div>
+          <div class="alpha-zero-note">
+            <span class="alpha-zero-prefix">Note:</span>
+            <span class="alpha-zero-char">0</span><span class="alpha-zero-label">Zero</span>
+            <span class="alpha-zero-sep">vs</span>
+            <span class="alpha-zero-char">O</span><span class="alpha-zero-label">Oscar</span>
+          </div>
         </div>
         <button class="alpha-start-btn" onclick="startAlphaDrill()">Start Drill</button>
       </div>`;
@@ -3195,16 +3256,31 @@ function renderAlphaDrill() {
   if (s.finished) {
     const finalAcc = s.score.total > 0 ? Math.round(s.score.correct / s.score.total * 100) : 0;
     const grade = finalAcc >= 90 ? 'Excellent' : finalAcc >= 70 ? 'Good' : 'Keep practicing';
+    const reviewHtml = s.history.map((entry, i) => {
+      const charsHtml = entry.sequence.map((ch, j) => {
+        const ok = entry.results[j];
+        return `<span class="alpha-review-char${ok ? ' alpha-review-char--ok' : ' alpha-review-char--miss'}">${ch}<span class="alpha-review-phonetic">${entry.display[j]}</span></span>`;
+      }).join('');
+      const spokenHtml = !entry.correct && entry.spoken !== '(no answer)'
+        ? `<span class="alpha-review-spoken">You said: ${entry.spoken}</span>` : '';
+      const noAnswerHtml = entry.spoken === '(no answer)'
+        ? `<span class="alpha-review-spoken">No answer</span>` : '';
+      return `<div class="alpha-review-row${entry.correct ? ' alpha-review-row--ok' : ' alpha-review-row--miss'}">
+        <span class="alpha-review-num">${i + 1}</span>
+        <div class="alpha-review-body">${charsHtml}${spokenHtml}${noAnswerHtml}</div>
+      </div>`;
+    }).join('');
     document.getElementById('radio-alpha-mode').innerHTML = `
       <div class="alpha-drill">
         <div class="alpha-finish-card">
           <div class="alpha-finish-label">Session Complete</div>
           <div class="alpha-finish-score">${s.score.correct} / ${s.score.total}</div>
           <div class="alpha-finish-acc">${finalAcc}% &mdash; ${grade}</div>
-          <div class="alpha-finish-actions">
-            <button class="alpha-start-btn" onclick="startAlphaDrill()">Go Again</button>
-            <button class="alpha-next-btn" onclick="initAlphaDrill()">Settings</button>
-          </div>
+        </div>
+        <div class="alpha-review">${reviewHtml}</div>
+        <div class="alpha-finish-actions">
+          <button class="alpha-start-btn" onclick="startAlphaDrill()">Go Again</button>
+          <button class="alpha-stop-btn" onclick="initAlphaDrill()">Settings</button>
         </div>
       </div>`;
     return;
@@ -3251,20 +3327,20 @@ function renderAlphaDrill() {
 
   const settingsTagHtml = [
     s.randomLen ? '?' : `${s.seqLen} char${s.seqLen > 1 ? 's' : ''}`,
-    s.alphanumeric ? 'A–Z 0–9' : 'A–Z',
+    s.alphanumeric ? 'Letters & Numbers' : 'Letters only',
   ].map(t => `<span class="alpha-settings-tag">${t}</span>`).join('');
 
   document.getElementById('radio-alpha-mode').innerHTML = `
     <div class="alpha-drill">
       <div class="alpha-settings-tags">${settingsTagHtml}</div>
       <div class="alpha-drill-header">
-        <button class="alpha-stop-btn" onclick="stopAlphaDrill()">&#9632;&nbsp;Stop</button>
         ${progressHtml}
         ${scoreHtml}
       </div>
       ${timerHtml}
       <div class="alpha-letter-card">${seqHtml}${spokenFeedback}<div class="alpha-actions">${micHtml}${nextHtml}</div></div>
       <div class="alpha-hint">${hintText}</div>
+      <button class="alpha-stop-btn" onclick="stopAlphaDrill()">&#9632;&nbsp;Stop Drill</button>
     </div>`;
 }
 
