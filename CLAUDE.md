@@ -42,10 +42,17 @@ chairfly/
 
 ## Code style
 
-Follows the [Google JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html).
+Follows the [Google JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html) and
+[Google HTML/CSS Style Guide](https://google.github.io/styleguide/htmlcssguide.html) for syntax and
+formatting. The Design System section below covers visual and UI constraints (color, contrast,
+scan-line behavior) that general style guides don't address — those rules take precedence over
+any Google guide guidance where they conflict.
+
 Key conventions in practice:
 - `//` for explanatory comments, `/** */` for JSDoc only
-- Single quotes for strings
+- Single quotes for strings in JS; double quotes for HTML attributes
+- `const` / `let` only — no `var`
+- `===` not `==`
 - Comments explain *why*, not *what* — if the name needs explanation, rename it
 
 ## Design system

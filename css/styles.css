@@ -255,90 +255,10 @@
       transition: width 0.3s ease;
     }
 
-    .checklist-items { list-style: none; overflow-y: auto; max-height: 380px; }
-
-    .checklist-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s;
-      position: relative;
-    }
-
-    .checklist-item:last-child { border-bottom: none; }
-
-    .checklist-item.current { background: rgba(0,200,255,0.04); }
-
-    .checklist-item.current::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 2px;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-    }
-
-    .checklist-item.done { opacity: 0.45; }
-
-    .item-check {
-      width: 20px; height: 20px;
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      flex-shrink: 0;
-      margin-top: 1px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .checklist-item.done .item-check {
-      border-color: var(--green);
-      background: rgba(0,232,135,0.1);
-    }
-
-    .item-check svg { display: none; }
-    .checklist-item.done .item-check svg { display: block; }
-
-    .item-content { flex: 1; }
-
-    .item-action {
-      font-family: var(--cond);
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      color: var(--text-bright);
-      text-transform: uppercase;
-    }
-
-    .item-value { font-family: var(--mono); font-size: 11px; color: var(--accent2); margin-top: 2px; }
-    .item-note { font-size: 12px; color: #8fb0cc; margin-top: 4px; line-height: 1.4; }
-
-    .item-info-btn {
-      flex-shrink: 0;
-      width: 22px; height: 22px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: #111f30;
-      color: #b8d4ea;
-      font-family: var(--mono);
-      font-size: 11px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 2px;
-      transition: all 0.15s;
-    }
-    .item-info-btn:hover { border-color: var(--accent); color: var(--accent); }
-
     /* Info sheet */
     .info-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.6); /* intentional: screen-dimming backdrop, not a panel background */
       z-index: 99;
       opacity: 0; pointer-events: none;
       transition: opacity 0.25s;
@@ -487,7 +407,7 @@
     .complete-banner {
       display: none;
       padding: 16px;
-      background: rgba(0,232,135,0.08);
+      background: #0d292d;
       border: 1px solid var(--green);
       border-radius: 4px;
       margin-bottom: 16px;
@@ -564,7 +484,7 @@
     .gloss-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.5); /* intentional: screen-dimming backdrop, not a panel background */
       z-index: 99;
       opacity: 0;
       pointer-events: none;
@@ -720,8 +640,8 @@
     }
 
     .recall-item:hover { border-color: #9ab8d0; }
-    .recall-item.selected-correct { border-color: var(--green); color: var(--green); background: rgba(0,232,135,0.06); }
-    .recall-item.selected-wrong { border-color: var(--red); color: var(--red); background: rgba(255,59,59,0.06); }
+    .recall-item.selected-correct { border-color: var(--green); color: var(--green); background: #132b35; }
+    .recall-item.selected-wrong { border-color: var(--red); color: var(--red); background: #222131; }
     .recall-item.reveal-correct { border-color: var(--green); color: var(--green); opacity: 0.6; }
     .recall-num { font-family: var(--mono); font-size: 11px; color: #9ab8d0; width: 18px; flex-shrink: 0; }
 
@@ -2556,7 +2476,7 @@
     }
     .seq-chip--shake {
       animation: cf-shake 0.5s;
-      background: var(--hazard-soft) !important;
+      background: var(--hazard-soft) !important; /* must override selected/active chip state */
       border-color: var(--hazard) !important;
       color: var(--hazard) !important;
     }
