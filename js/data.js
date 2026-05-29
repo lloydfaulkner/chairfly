@@ -1158,4 +1158,18 @@ const ATIS_INFO_CODES = ['Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Gol
 const RUNWAYS = ['4','9','14','18','22','27','32','36'];
 const APPROACHES = ['ILS','VOR','RNAV GPS','Visual'];
 
-if (typeof module !== 'undefined') module.exports = { ALL_AIRCRAFT, RADIO_SCENARIOS };
+const PHONETIC_NUMBERS = {
+  '0':'Zero', '1':'Wun', '2':'Too', '3':'Tree',
+  '4':'Fower', '5':'Fife', '6':'Six', '7':'Seven', '8':'Ait', '9':'Niner',
+};
+
+const PHONETIC_ALPHABET = {
+  A:'Alfa',   B:'Bravo',   C:'Charlie', D:'Delta',   E:'Echo',
+  F:'Foxtrot',G:'Golf',    H:'Hotel',   I:'India',   J:'Juliett',
+  K:'Kilo',   L:'Lima',    M:'Mike',    N:'November',O:'Oscar',
+  P:'Papa',   Q:'Quebec',  R:'Romeo',   S:'Sierra',  T:'Tango',
+  U:'Uniform',V:'Victor',  W:'Whiskey', X:'X-ray',   Y:'Yankee',
+  Z:'Zulu',
+};
+
+if (typeof module !== 'undefined') module.exports = { ALL_AIRCRAFT, RADIO_SCENARIOS, PHONETIC_ALPHABET, PHONETIC_NUMBERS };

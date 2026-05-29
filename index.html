@@ -242,6 +242,7 @@
         <div class="cl-mode-toggle rd-tab-toggle">
           <button class="cl-mode-btn active" onclick="setRadioMode('chips', this)">Radio Calls</button>
           <button class="cl-mode-btn" onclick="setRadioMode('atis', this)">ATIS Decoder</button>
+          <button class="cl-mode-btn" onclick="setRadioMode('alpha', this)">Phonetic</button>
         </div>
       </div>
 
@@ -358,6 +359,8 @@
 
         <div class="atis-results" id="atis-results" style="display:none"></div>
       </div>
+
+      <div id="radio-alpha-mode" style="display:none"></div>
     </div>
 
     <!-- INFO SHEET (position:fixed overlay) -->
@@ -568,6 +571,7 @@
           <div class="proc-airport-tag" id="proc-airport-tag"></div>
         </div>
         <div class="proc-progress"><div class="proc-progress-fill" id="proc-progress-fill"></div></div>
+        <div id="proc-speeds-strip" class="proc-speeds-strip" style="display:none"></div>
         <div id="proc-step-content"></div>
       </div>
 
@@ -655,6 +659,7 @@
 <script src="js/data.js"></script>
 <script src="js/airports.js"></script>
 <script src="js/speech-grader.js"></script>
+<script src="js/alpha-grader.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/app.js"></script>
 <script>

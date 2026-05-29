@@ -62,6 +62,7 @@ function updateHash() {
     }
   } else if (currentView === 'radio') {
     if (currentRadioMode === 'atis') parts.push('atis');
+    else if (currentRadioMode === 'alpha') parts.push('alpha');
     else if (radioInputMode === 'speak') parts.push('speak');
   } else if (currentView === 'procedures') {
     if (currentProcScreen === 'proc-screen-steps' && procState._lastProcId && procState.airport.icao) {
@@ -1322,34 +1323,56 @@ function buildPatternLanding(ap) {
     ],
     recallGroups: [
       {
-        label: 'Downwind',
-        context: `Entering on the 45° to left downwind runway ${rwy} at ${icao}. Altitude set. What are the downwind steps in order?`,
+        label: 'Abeam Setup',
+        context: `Threshold at your 4 o'clock — power back, speed bleeding. What do you configure, in order?`,
         stepStart: 0, stepEnd: 2,
+        items: [
+          { phase: `Power — ~${abeamPower} RPM` },
+          { phase: 'Carb Heat — ON' },
+          { phase: `Fuel — ${fuelCorrect}` },
+          { phase: 'Mixture — RICH' },
+          { phase: 'Seats & Belts — SECURE' },
+          { phase: 'Flaps — 10°' },
+          { phase: `Speed — ~${abeamSpeed} KIAS` },
+          ...(hasFuelPump ? [{ phase: 'Fuel Pump — ON' }] : []),
+        ],
         distractors: [
-          { phase: 'Takeoff Roll',       why: 'Takeoff roll is a departure step — you\'re inbound to land.' },
-          { phase: 'Trim for Vy',        why: 'Vy trim is a climb-out item, not pattern work.' },
-          { phase: 'Flaps 30° — Full',   why: 'Full flaps go on final once the runway is made — not on downwind.' },
-          { phase: 'Transponder — ALT',  why: 'Transponder to ALT is a departure item, not part of the landing sequence.' },
+          { phase: 'Carb Heat — OFF', why: 'Carb heat goes ON right after reducing power — low RPM is prime carb ice territory.' },
+          { phase: `Flaps — ${baseFlaps}`, why: `${baseFlaps} is for base leg. First notch (10°) abeam, once below ${vfe} KIAS.` },
+          { phase: 'Mixture — LEAN', why: 'Mixture stays RICH for approach. A lean engine on a go-around can surge or lose power.' },
         ],
       },
       {
         label: 'Base',
-        context: `Downwind complete — Before Landing checklist done, abeam numbers configured. Turning left base for runway ${rwy}.`,
+        context: `Turning left base for runway ${rwy}. What do you configure?`,
         stepStart: 3, stepEnd: 5,
+        items: [
+          { phase: 'Turn — ~45° behind wingtip' },
+          { phase: `Flaps — ${baseFlaps}` },
+          { phase: `Speed — ~${baseSpeed} KIAS` },
+          { phase: 'Radio — left base call' },
+        ],
         distractors: [
-          { phase: 'Abeam — Descent Setup',  why: 'Descent setup happens on downwind — already completed before the base turn.' },
-          { phase: 'Pattern Altitude',        why: 'Pattern altitude is set before entering downwind — already behind you.' },
-          { phase: 'Mixture — Lean',            why: 'Mixture stays full rich for approach — don\'t lean it on base.' },
+          { phase: 'Flaps — 10°', why: 'You already set 10° abeam the numbers. Advance to 20° on base.' },
+          { phase: `Flaps — ${finalFlaps}`, why: `Full flaps (${finalFlaps}) go on final once the runway is made — not on base.` },
+          { phase: 'Carb Heat — OFF', why: 'Carb heat stays ON throughout the approach.' },
         ],
       },
       {
         label: 'Final',
-        context: `Turning final for runway ${rwy}. Complete the configuration and land.`,
+        context: `Established on final for runway ${rwy}. Complete your configuration.`,
         stepStart: 6, stepEnd: 9,
+        items: [
+          { phase: `Flaps — ${finalFlaps} (full)` },
+          { phase: `Speed — ${shortFinal}–${approach} KIAS` },
+          { phase: 'Carb Heat — ON (stay on)' },
+          ...(hasFuelPump ? [{ phase: 'Fuel Pump — ON (stay on)' }] : []),
+          { phase: 'Stabilized by 500 ft AGL' },
+        ],
         distractors: [
-          { phase: 'Flaps 20° — Base', why: 'Flaps 20° was the base leg setting — already behind you.' },
-          { phase: 'Base Radio Call',   why: 'Base call was already made. This is final.' },
-          { phase: 'Carb Heat OFF',     why: 'Carb heat stays ON throughout approach — only off on rollout after landing.' },
+          { phase: `Flaps — ${baseFlaps}`, why: `${baseFlaps} was base leg. Full flaps (${finalFlaps}) once the runway is made on final.` },
+          { phase: 'Carb Heat — OFF', why: 'Carb heat stays ON throughout approach — only off after landing or full-power go-around.' },
+          { phase: 'Mixture — LEAN', why: 'Mixture stays RICH. You need full power available instantly for a go-around.' },
         ],
       },
     ],
@@ -1390,25 +1413,42 @@ function startProcedure(procId) {
   document.getElementById('proc-step-title').textContent = procState.currentProc.title + ' · ' + recallLabel;
   document.getElementById('proc-airport-tag').textContent = ap.icao || '';
   document.querySelector('.proc-progress').style.display = 'none';
+
+  const spd = ALL_AIRCRAFT[currentAircraft].speeds;
+  const speedsEl = document.getElementById('proc-speeds-strip');
+  speedsEl.innerHTML =
+    `<span class="proc-speeds-group"><span class="proc-speeds-label">Climb</span>` +
+    `<span class="proc-speed-item"><span class="proc-speed-key">Vr</span>${spd.vr}</span>` +
+    `<span class="proc-speed-item"><span class="proc-speed-key">Vx</span>${spd.vx}</span>` +
+    `<span class="proc-speed-item"><span class="proc-speed-key">Vy</span>${spd.vy}</span></span>` +
+    `<span class="proc-speeds-divider"></span>` +
+    `<span class="proc-speeds-group"><span class="proc-speeds-label">Approach</span>` +
+    `<span class="proc-speed-item"><span class="proc-speed-key">Vfe</span>${spd.vfe}</span>` +
+    `<span class="proc-speed-item"><span class="proc-speed-key">App</span>${spd.approach}</span>` +
+    `<span class="proc-speed-item"><span class="proc-speed-key">Final</span>${spd.shortFinal}</span>` +
+    `<span class="proc-speed-item"><span class="proc-speed-key">Glide</span>${spd.bestGlide}</span></span>` +
+    `<span class="proc-speeds-unit">KIAS</span>`;
+  speedsEl.style.display = '';
+
   showProcScreen('proc-screen-steps');
   _initProcRecall(procState.currentProc, firstGroup);
   renderProcStep();
 }
 
 function _initProcRecall(proc, group) {
-  const steps = group
-    ? proc.steps.slice(group.stepStart, group.stepEnd + 1)
-    : proc.steps;
+  const rawItems = group
+    ? (group.items || proc.steps.slice(group.stepStart, group.stepEnd + 1).map(s => ({ phase: s.phase })))
+    : proc.steps.map(s => ({ phase: s.phase }));
   const allDistractors = group ? (group.distractors || []) : (proc.distractors || []);
   const shuffledD = [...allDistractors].sort(() => Math.random() - 0.5);
   const picked = shuffledD.slice(0, Math.random() < 0.5 ? 2 : 3);
   const pool = [
-    ...steps.map((s, relIdx) => ({ phase: s.phase, origIdx: relIdx, isDistractor: false, why: '' })),
+    ...rawItems.map((item, relIdx) => ({ phase: item.phase, origIdx: relIdx, isDistractor: false, why: '' })),
     ...picked.map(d => ({ phase: d.phase, origIdx: -1, isDistractor: true, why: d.why })),
   ].sort(() => Math.random() - 0.5);
   if (procSeqState._timer) clearInterval(procSeqState._timer);
   procSeqState.pool = pool;
-  procSeqState.totalReal = steps.length;
+  procSeqState.totalReal = rawItems.length;
   procSeqState.nextSlot = 0;
   procSeqState.ok = 0;
   procSeqState.miss = 0;
@@ -1791,7 +1831,8 @@ function renderProcSeqRecall() {
   const ok = s.ok, miss = s.miss;
   const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
   const group = procState.currentProc?.recallGroups?.[procState.recallGroupIdx] || null;
-  const eyebrow = group ? `↳ ${group.label.toUpperCase()} PHASE · SEQUENCE RECALL` : '↳ SEQUENCE RECALL · TAP IN ORDER';
+  const isItemBased = !!group?.items;
+  const eyebrow = group ? `↳ ${group.label.toUpperCase()} · SEQUENCE RECALL` : '↳ SEQUENCE RECALL · TAP IN ORDER';
   const recallTitle = group ? `Build the ${group.label.toLowerCase()} flow from memory` : 'Build the procedure from memory';
   const contextHtml = group?.context ? `<div class="seq-group-context">${group.context}</div>` : '';
   const advanceBtnLabel = group ? `Practice ${group.label} ›` : 'Begin Procedure →';
@@ -1857,19 +1898,19 @@ function renderProcSeqRecall() {
     ${doneHtml}
     <div class="seq-grid">
       <div class="seq-slot-col">
-        <div class="seq-col-eyebrow">↓ THE PROCEDURE · IN ORDER</div>
+        <div class="seq-col-eyebrow">${isItemBased ? `↓ ${group.label.toUpperCase()} CHECKLIST · IN ORDER` : '↓ THE PROCEDURE · IN ORDER'}</div>
         <div class="seq-slot-list">${slotsHtml}</div>
       </div>
       <div class="seq-pool-col">
         <div class="seq-pool-card">
           <div class="seq-pool-card-header">
-            <span class="seq-pool-eyebrow">↓ TAP THE NEXT STEP</span>
+            <span class="seq-pool-eyebrow">↓ TAP THE NEXT ${isItemBased ? 'ITEM' : 'STEP'}</span>
             <span class="seq-pool-left-count">${remaining} LEFT</span>
           </div>
           <div class="seq-chips">${chipsHtml}</div>
           ${distractorHtml}
           <div class="seq-pool-footer">
-            <span class="seq-pool-hint">Tap steps in correct order · distractor steps are traps</span>
+            <span class="seq-pool-hint">${isItemBased ? 'Tap items in correct order · distractor items are traps' : 'Tap steps in correct order · distractor steps are traps'}</span>
             ${!s.done ? `<div style="margin-top:10px;text-align:center"><a href="#" onclick="procAdvanceFromRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Skip</a></div>` : ''}
           </div>
         </div>
@@ -2883,9 +2924,348 @@ function setRadioMode(mode, btn) {
   btn.classList.add('active');
   document.getElementById('radio-calls-mode').style.display = mode === 'chips' ? '' : 'none';
   document.getElementById('radio-atis-mode').style.display = mode === 'atis' ? '' : 'none';
+  document.getElementById('radio-alpha-mode').style.display = mode === 'alpha' ? '' : 'none';
   if (mode === 'atis' && !atisState.generated) newATIS();
+  if (mode === 'alpha' && !alphaState.started && !alphaState.sequence.length) initAlphaDrill();
   currentRadioMode = mode;
   updateHash();
+}
+
+// ── PHONETIC ALPHABET DRILL ──
+const alphaState = {
+  drillMode: 'drill',
+  seqLen: 3,
+  randomLen: false,
+  alphanumeric: false,
+  autoAdvance: false,
+  drillCount: 5,
+  drillProgress: 0,
+  finished: false,
+  started: false,
+  sequence: [],
+  expected: [],
+  expectedDisplay: [],
+  results: [],
+  answered: false,
+  wasCorrect: null,
+  spokenText: '',
+  score: { correct: 0, total: 0, streak: 0 },
+  maxTime: 3,
+  timeLeft: 3,
+  _timer: null,
+  _recognition: null,
+  listening: false,
+};
+
+function initAlphaDrill() {
+  if (alphaState._timer) { clearInterval(alphaState._timer); alphaState._timer = null; }
+  if (alphaState._recognition) { try { alphaState._recognition.stop(); } catch(e) {} alphaState._recognition = null; }
+  alphaState.score = { correct: 0, total: 0, streak: 0 };
+  alphaState.sequence = [];
+  alphaState.listening = false;
+  alphaState.started = false;
+  alphaState.finished = false;
+  alphaState.drillProgress = 0;
+  renderAlphaDrill();
+}
+
+function startAlphaDrill() {
+  alphaState.started = true;
+  alphaState.finished = false;
+  alphaState.drillProgress = 0;
+  alphaState.score = { correct: 0, total: 0, streak: 0 };
+  _nextAlphaQuestion();
+}
+
+function setAlphaDrillCount(n) {
+  alphaState.drillCount = n;
+  if (alphaState.started) stopAlphaDrill();
+  else renderAlphaDrill();
+}
+
+function _finishAlphaDrill() {
+  if (alphaState._timer) { clearInterval(alphaState._timer); alphaState._timer = null; }
+  if (alphaState._recognition) { try { alphaState._recognition.stop(); } catch(e) {} alphaState._recognition = null; }
+  alphaState.started = false;
+  alphaState.finished = true;
+  alphaState.listening = false;
+  renderAlphaDrill();
+}
+
+function stopAlphaDrill() {
+  if (alphaState._timer) { clearInterval(alphaState._timer); alphaState._timer = null; }
+  if (alphaState._recognition) { try { alphaState._recognition.stop(); } catch(e) {} alphaState._recognition = null; }
+  alphaState.started = false;
+  alphaState.listening = false;
+  alphaState.sequence = [];
+  renderAlphaDrill();
+}
+
+function _buildAlphaPool() {
+  const letters = Object.keys(PHONETIC_ALPHABET);
+  return alphaState.alphanumeric ? [...letters, ...Object.keys(PHONETIC_NUMBERS)] : letters;
+}
+
+function _nextAlphaQuestion() {
+  if (alphaState.drillProgress >= alphaState.drillCount) { _finishAlphaDrill(); return; }
+  if (alphaState._timer) { clearInterval(alphaState._timer); alphaState._timer = null; }
+  if (alphaState._recognition) { try { alphaState._recognition.stop(); } catch(e) {} alphaState._recognition = null; }
+  const pool = _buildAlphaPool();
+  const len = alphaState.randomLen ? Math.floor(Math.random() * 5) + 1 : alphaState.seqLen;
+  const prev = alphaState.sequence;
+  const seq = [];
+  for (let i = 0; i < len; i++) {
+    let ch;
+    do { ch = pool[Math.floor(Math.random() * pool.length)]; }
+    while (ch === (i === 0 ? prev[prev.length - 1] : seq[i - 1]) && pool.length > 1);
+    seq.push(ch);
+  }
+  // Ensure at least 1 letter when alphanumeric is on; for len>=3 also ensure at least 1 digit
+  if (alphaState.alphanumeric) {
+    const letters = Object.keys(PHONETIC_ALPHABET);
+    const numbers = Object.keys(PHONETIC_NUMBERS);
+    if (!seq.some(ch => PHONETIC_ALPHABET[ch])) {
+      seq[Math.floor(Math.random() * seq.length)] = letters[Math.floor(Math.random() * letters.length)];
+    }
+    if (seq.length >= 3 && !seq.some(ch => PHONETIC_NUMBERS[ch] !== undefined)) {
+      seq[Math.floor(Math.random() * seq.length)] = numbers[Math.floor(Math.random() * numbers.length)];
+    }
+  }
+  const _numDisplay = {'0':'Zero','1':'One','2':'Two','3':'Three','4':'Four','5':'Five','6':'Six','7':'Seven','8':'Eight','9':'Nine'};
+  alphaState.sequence = seq;
+  alphaState.expected = seq.map(ch => PHONETIC_ALPHABET[ch] || PHONETIC_NUMBERS[ch] || ch);
+  alphaState.expectedDisplay = seq.map(ch => PHONETIC_ALPHABET[ch] || _numDisplay[ch] || ch);
+  alphaState.results = Array(len).fill(null);
+  alphaState.answered = false;
+  alphaState.wasCorrect = null;
+  alphaState.spokenText = '';
+  alphaState.listening = false;
+  alphaState.maxTime = len === 1 ? 3 : Math.round(len * 1.8 + 1);
+  alphaState.timeLeft = alphaState.maxTime;
+  alphaState._timer = setInterval(() => {
+    alphaState.timeLeft = Math.max(0, alphaState.timeLeft - 0.1);
+    if (alphaState.timeLeft <= 0 && !alphaState.answered) { alphaTimeout(); }
+    else { _renderAlphaTimer(); }
+  }, 100);
+  renderAlphaDrill();
+  // Auto-start mic after a short pause so the user can see the letter
+  setTimeout(() => {
+    if (alphaState.started && !alphaState.answered && !alphaState.listening) startAlphaSpeech();
+  }, 400);
+}
+
+function _renderAlphaTimer() {
+  const fill = document.getElementById('alpha-timer-fill');
+  if (!fill) return;
+  const pct = Math.max(0, (alphaState.timeLeft / alphaState.maxTime) * 100);
+  fill.style.width = pct + '%';
+  fill.className = 'alpha-timer-fill' + (pct < 30 ? ' alpha-timer-fill--urgent' : '');
+}
+
+function alphaTimeout() {
+  if (alphaState.answered) return;
+  if (alphaState._timer) { clearInterval(alphaState._timer); alphaState._timer = null; }
+  alphaState.answered = true;
+  alphaState.wasCorrect = false;
+  alphaState.spokenText = '(no answer)';
+  alphaState.results = Array(alphaState.sequence.length).fill(false);
+  alphaState.score.total++;
+  alphaState.score.streak = 0;
+  alphaState.drillProgress++;
+  renderAlphaDrill();
+  if (alphaState.autoAdvance) setTimeout(_nextAlphaQuestion, 1800);
+}
+
+function startAlphaSpeech() {
+  if (alphaState.answered || alphaState.listening) return;
+  const SR = window.webkitSpeechRecognition || window.SpeechRecognition;
+  if (!SR) { alert('Speech recognition not available. Use HTTPS or a supported browser.'); return; }
+  alphaState.listening = true;
+  renderAlphaDrill();
+  const recog = new SR();
+  recog.lang = 'en-US';
+  recog.interimResults = false;
+  recog.maxAlternatives = 3;
+  alphaState._recognition = recog;
+  recog.onresult = (e) => {
+    alphaState.listening = false;
+    alphaState._recognition = null;
+    gradeAlphaResponse(e.results[0][0].transcript);
+  };
+  recog.onerror = () => { alphaState.listening = false; alphaState._recognition = null; renderAlphaDrill(); };
+  recog.onend = () => {
+    if (alphaState.listening) { alphaState.listening = false; alphaState._recognition = null; renderAlphaDrill(); }
+  };
+  recog.start();
+}
+
+function gradeAlphaResponse(transcript) {
+  if (alphaState.answered) return;
+  if (alphaState._timer) { clearInterval(alphaState._timer); alphaState._timer = null; }
+  alphaState.answered = true;
+  alphaState.spokenText = transcript;
+  alphaState.results = gradeAlphaSequence(transcript, alphaState.expected);
+  const allCorrect = alphaState.results.every(Boolean);
+  alphaState.wasCorrect = allCorrect;
+  alphaState.score.total++;
+  alphaState.drillProgress++;
+  if (allCorrect) { alphaState.score.correct++; alphaState.score.streak++; }
+  else { alphaState.score.streak = 0; }
+  renderAlphaDrill();
+  if (alphaState.autoAdvance) setTimeout(_nextAlphaQuestion, allCorrect ? 800 : 2000);
+}
+
+function setAlphaAutoAdvance(val) {
+  alphaState.autoAdvance = val;
+  renderAlphaDrill();
+}
+
+function setAlphaDrillMode(mode) {
+  alphaState.drillMode = mode;
+  if (alphaState.started) stopAlphaDrill();
+  else renderAlphaDrill();
+}
+
+function setAlphaSeqLen(len) {
+  if (len === null) { alphaState.randomLen = true; }
+  else { alphaState.randomLen = false; alphaState.seqLen = len; }
+  if (!alphaState.randomLen && alphaState.seqLen < 3) alphaState.alphanumeric = false;
+  if (alphaState.started) stopAlphaDrill();
+  else renderAlphaDrill();
+}
+
+function setAlphaAlphanumeric(val) {
+  alphaState.alphanumeric = val;
+  if (alphaState.started) stopAlphaDrill();
+  else renderAlphaDrill();
+}
+
+function renderAlphaDrill() {
+  const s = alphaState;
+  const pct = Math.max(0, (s.timeLeft / s.maxTime) * 100);
+  const acc = s.score.total > 0 ? Math.round(s.score.correct / s.score.total * 100) : null;
+  const len = s.sequence.length || s.seqLen;
+
+  const lenBtns = [1,2,3,4,5].map(n => {
+    const active = !s.randomLen && s.seqLen === n;
+    return `<button class="alpha-len-btn${active?' active':''}" onclick="setAlphaSeqLen(${n})">${n}</button>`;
+  }).join('') + `<button class="alpha-len-btn${s.randomLen?' active':''}" onclick="setAlphaSeqLen(null)">?</button>`;
+
+  const drillCountBtns = [5,10,15,20].map(n => {
+    const active = s.drillCount === n;
+    return `<button class="alpha-len-btn alpha-len-btn--wide${active?' active':''}" onclick="setAlphaDrillCount(${n})">${n}</button>`;
+  }).join('');
+
+  if (!s.started && !s.finished) {
+    document.getElementById('radio-alpha-mode').innerHTML = `
+      <div class="alpha-drill">
+        <div class="alpha-setup-desc">Practice NATO phonetic pronunciation. Configure the settings below, then tap Start.</div>
+        <div class="alpha-setup-controls">
+          <div class="alpha-setup-row">
+            <span class="alpha-ctrl-label">Characters</span>${lenBtns}
+          </div>
+          <div class="alpha-setup-row">
+            <span class="alpha-ctrl-label">Reps</span>${drillCountBtns}
+          </div>
+          <div class="alpha-setup-row">
+            <span class="alpha-ctrl-label">Alphanumeric</span>
+            ${!s.randomLen && s.seqLen < 3
+              ? `<div class="alpha-toggle alpha-toggle--disabled"></div><span class="alpha-toggle-note">requires count 3 or more</span>`
+              : `<div class="alpha-toggle${s.alphanumeric?' alpha-toggle--on':''}" onclick="setAlphaAlphanumeric(${!s.alphanumeric})"></div>`
+            }
+          </div>
+          <div class="alpha-setup-row">
+            <span class="alpha-ctrl-label">Auto-Advance</span>
+            <div class="alpha-toggle${s.autoAdvance?' alpha-toggle--on':''}" onclick="setAlphaAutoAdvance(${!s.autoAdvance})"></div>
+          </div>
+        </div>
+        <div class="alpha-preview-card">
+          <div class="alpha-setup-example">
+            <span class="alpha-setup-ex-char">N</span>
+            <span class="alpha-setup-ex-arrow">&rarr;</span>
+            <span class="alpha-setup-ex-word">November</span>
+          </div>
+          <div class="alpha-preview-caption">You&rsquo;ll see one or more characters depending on your settings above &mdash; say the phonetic word(s) out loud</div>
+        </div>
+        <button class="alpha-start-btn" onclick="startAlphaDrill()">Start Drill</button>
+      </div>`;
+    return;
+  }
+
+  if (s.finished) {
+    const finalAcc = s.score.total > 0 ? Math.round(s.score.correct / s.score.total * 100) : 0;
+    const grade = finalAcc >= 90 ? 'Excellent' : finalAcc >= 70 ? 'Good' : 'Keep practicing';
+    document.getElementById('radio-alpha-mode').innerHTML = `
+      <div class="alpha-drill">
+        <div class="alpha-finish-card">
+          <div class="alpha-finish-label">Session Complete</div>
+          <div class="alpha-finish-score">${s.score.correct} / ${s.score.total}</div>
+          <div class="alpha-finish-acc">${finalAcc}% &mdash; ${grade}</div>
+          <div class="alpha-finish-actions">
+            <button class="alpha-start-btn" onclick="startAlphaDrill()">Go Again</button>
+            <button class="alpha-next-btn" onclick="initAlphaDrill()">Settings</button>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const progressHtml = `<span class="alpha-progress">${s.drillProgress + 1} / ${s.drillCount}</span>`;
+  const scoreHtml = s.score.total > 0
+    ? `<div class="alpha-score"><span class="alpha-score-stat">${s.score.correct}/${s.score.total}</span><span class="alpha-score-acc">${acc}%</span>${s.score.streak >= 3 ? `<span class="alpha-score-streak">&#128293;&nbsp;${s.score.streak}</span>` : ''}</div>` : '';
+
+  const timerHtml = `<div class="alpha-timer-bar"><div class="alpha-timer-fill${pct < 30 ? ' alpha-timer-fill--urgent' : ''}" id="alpha-timer-fill" style="width:${pct}%"></div></div>`;
+
+  const fontSizes = ['', '5rem', '4rem', '3.5rem', '3rem', '2.5rem'];
+  const fs = fontSizes[Math.min(len, 5)];
+
+  let seqHtml;
+  if (len === 1 && s.sequence.length) {
+    const res = s.results[0];
+    const cls = s.answered ? (res ? ' alpha-letter--correct' : ' alpha-letter--wrong') : '';
+    const below = s.answered ? `<div class="alpha-single-phonetic">${s.expectedDisplay[0]}</div>` : '';
+    seqHtml = `<div class="alpha-single"><div class="alpha-letter${cls}" style="font-size:${fs}">${s.sequence[0]}</div>${below}</div>`;
+  } else if (s.sequence.length) {
+    const cells = s.sequence.map((ch, i) => {
+      const res = s.results[i];
+      const cls = s.answered && res !== null ? (res ? ' alpha-seq-cell--correct' : ' alpha-seq-cell--wrong') : '';
+      const below = s.answered ? `<div class="alpha-seq-phonetic">${s.expectedDisplay[i]}</div>` : `<div class="alpha-seq-phonetic-ph"></div>`;
+      return `<div class="alpha-seq-cell${cls}"><div class="alpha-seq-char" style="font-size:${fs}">${ch}</div>${below}</div>`;
+    }).join('');
+    seqHtml = `<div class="alpha-seq-row">${cells}</div>`;
+  } else {
+    seqHtml = `<div class="alpha-letter" style="font-size:5rem">?</div>`;
+  }
+
+  const spokenFeedback = s.answered && !s.wasCorrect && s.spokenText && s.spokenText !== '(no answer)'
+    ? `<div class="alpha-spoken-feedback">You said: <em>${s.spokenText}</em></div>` : '';
+
+  const micHtml = !s.answered
+    ? `<button class="alpha-mic-btn${s.listening ? ' alpha-mic-btn--listening' : ''}" onclick="startAlphaSpeech()" ${s.listening ? 'disabled' : ''}>${s.listening ? '&#9210;&nbsp;Listening&hellip;' : '&#127897;&nbsp;Say it'}</button>` : '';
+
+  const isLast = s.drillProgress >= s.drillCount - 1;
+  const nextHtml = s.answered
+    ? `<button class="alpha-next-btn" onclick="_nextAlphaQuestion()">${isLast ? 'Finish' : 'Next'} &rsaquo;</button>` : '';
+
+  const hintText = len > 1 ? `Say all ${len} in order &middot; NATO phonetic` : `Say the phonetic word &middot; NATO standard`;
+
+  const settingsTagHtml = [
+    s.randomLen ? '?' : `${s.seqLen} char${s.seqLen > 1 ? 's' : ''}`,
+    s.alphanumeric ? 'A–Z 0–9' : 'A–Z',
+  ].map(t => `<span class="alpha-settings-tag">${t}</span>`).join('');
+
+  document.getElementById('radio-alpha-mode').innerHTML = `
+    <div class="alpha-drill">
+      <div class="alpha-settings-tags">${settingsTagHtml}</div>
+      <div class="alpha-drill-header">
+        <button class="alpha-stop-btn" onclick="stopAlphaDrill()">&#9632;&nbsp;Stop</button>
+        ${progressHtml}
+        ${scoreHtml}
+      </div>
+      ${timerHtml}
+      <div class="alpha-letter-card">${seqHtml}${spokenFeedback}<div class="alpha-actions">${micHtml}${nextHtml}</div></div>
+      <div class="alpha-hint">${hintText}</div>
+    </div>`;
 }
 
 function setRadioInputMode(mode) {
@@ -3361,6 +3741,10 @@ function restoreNav() {
       const btn = [...document.querySelectorAll('#view-radio .cl-mode-btn')]
         .find(b => b.getAttribute('onclick').includes("'atis'"));
       if (btn) setRadioMode('atis', btn);
+    } else if (sub === 'alpha') {
+      const btn = [...document.querySelectorAll('#view-radio .cl-mode-btn')]
+        .find(b => b.getAttribute('onclick').includes("'alpha'"));
+      if (btn) setRadioMode('alpha', btn);
     } else if (sub === 'speak') {
       setRadioInputMode('speak');
     }

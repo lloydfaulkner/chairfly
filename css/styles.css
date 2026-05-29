@@ -899,8 +899,39 @@
     .proc-title { font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: var(--ink); }
     .proc-airport-tag { font-family: var(--font-mono); font-size: 11px; color: var(--sky); margin-left: auto; letter-spacing: 0.1em; font-weight: 600; }
 
-    .proc-progress { height: 3px; background: var(--rule); margin-bottom: 20px; border-radius: 2px; }
+    .proc-progress { height: 3px; background: var(--rule); margin-bottom: 0; border-radius: 2px; }
     .proc-progress-fill { height: 100%; background: var(--kb-accent); transition: width 0.4s ease; border-radius: 2px; }
+
+    .proc-speeds-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 10px;
+      padding: 6px 16px 7px;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .proc-speeds-group { display: flex; align-items: center; gap: 8px; }
+    .proc-speeds-label {
+      font-family: var(--font-sans);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+    }
+    .proc-speed-item { display: flex; gap: 3px; color: var(--sky); font-weight: 600; }
+    .proc-speed-key { color: var(--ink-4); font-weight: 400; }
+    .proc-speeds-divider { width: 1px; height: 12px; background: var(--rule-strong); flex-shrink: 0; }
+    .proc-speeds-unit {
+      font-family: var(--font-sans);
+      font-size: 9px;
+      color: var(--ink-4);
+      margin-left: auto;
+      letter-spacing: 0.06em;
+    }
 
     .proc-step-card {
       background: var(--paper-2);
@@ -1589,6 +1620,216 @@
 
     .atis-results-detail { background: var(--paper-2); border: 1px solid var(--rule); border-radius: var(--radius-m); padding: 14px; margin-bottom: 14px; }
     .atis-transcript-reveal { background: var(--paper-3); border: 1px solid var(--rule); border-radius: var(--radius-m); padding: 12px; margin-bottom: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--ink); line-height: 1.8; }
+
+    /* ── Phonetic Alphabet Drill ── */
+    .alpha-drill { padding: 0 24px 32px; max-width: 520px; margin: 0 auto; }
+    .alpha-settings-tags { display: flex; gap: 6px; margin-bottom: 10px; }
+    .alpha-settings-tag { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: var(--ink-3); background: var(--paper-2); border: 1px solid var(--rule); border-radius: 4px; padding: 2px 8px; }
+    .alpha-drill-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .alpha-progress { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--ink-2); flex: 1; text-align: center; }
+    .alpha-mode-toggle {
+      display: flex;
+      background: var(--paper-2);
+      border: 1px solid var(--rule-strong);
+      border-radius: var(--radius-s);
+      padding: 3px;
+      gap: 2px;
+    }
+    .alpha-mode-btn {
+      padding: 6px 16px;
+      border: none;
+      background: none;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-3);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .alpha-mode-btn.active { background: var(--paper); color: var(--ink); box-shadow: var(--shadow-1); }
+    .alpha-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .alpha-len-group { display: flex; align-items: center; gap: 4px; }
+    .alpha-ctrl-label { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); margin-right: 4px; min-width: 112px; }
+    .alpha-len-btn {
+      width: 34px; height: 34px;
+      border: 1px solid var(--rule-strong);
+      border-radius: var(--radius-s);
+      background: var(--paper-2);
+      color: var(--ink-3);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: all 0.15s;
+    }
+    .alpha-len-btn.active { background: var(--kb-accent); color: #fff; border-color: var(--kb-accent); }
+    .alpha-len-btn:not(.active):hover { border-color: var(--ink-3); color: var(--ink); }
+    .alpha-len-btn.alpha-len-btn--wide { width: auto; padding: 0 14px; }
+    .alpha-an-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--rule-strong);
+      border-radius: var(--radius-s);
+      background: var(--paper-2);
+      color: var(--ink-3);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: all 0.15s;
+      margin-left: auto;
+    }
+    .alpha-an-btn.active { background: var(--kb-accent); color: #fff; border-color: var(--kb-accent); }
+    .alpha-score { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; }
+    .alpha-score-stat { color: var(--ink); font-weight: 600; }
+    .alpha-score-acc { color: var(--ink-3); }
+    .alpha-score-streak { color: var(--kb-accent); }
+    .alpha-timer-bar { height: 3px; background: var(--rule); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+    .alpha-timer-fill { height: 100%; background: var(--sky); border-radius: 2px; transition: width 0.1s linear; }
+    .alpha-timer-fill--urgent { background: var(--hazard); }
+    .alpha-letter-card {
+      background: var(--paper-2);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-l);
+      padding: 36px 20px 28px;
+      text-align: center;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      box-shadow: var(--shadow-1);
+    }
+    .alpha-single { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .alpha-letter {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--sky);
+      transition: color 0.2s;
+      user-select: none;
+    }
+    .alpha-letter--correct { color: var(--terrain); }
+    .alpha-letter--wrong   { color: var(--hazard); }
+    .alpha-single-phonetic { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--ink-2); }
+    .alpha-seq-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .alpha-seq-cell {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      background: var(--paper); border: 1.5px solid var(--rule-strong);
+      border-radius: var(--radius-m); padding: 12px 10px 10px;
+      min-width: 52px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .alpha-seq-cell--correct { background: var(--terrain-soft); border-color: var(--terrain); }
+    .alpha-seq-cell--wrong   { background: var(--hazard-soft);  border-color: var(--hazard); }
+    .alpha-seq-char { font-family: var(--font-mono); font-weight: 700; color: var(--sky); line-height: 1; user-select: none; }
+    .alpha-seq-cell--correct .alpha-seq-char { color: var(--terrain); }
+    .alpha-seq-cell--wrong   .alpha-seq-char { color: var(--hazard); }
+    .alpha-seq-phonetic { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+    .alpha-seq-cell--correct .alpha-seq-phonetic { color: var(--terrain); }
+    .alpha-seq-cell--wrong   .alpha-seq-phonetic { color: var(--hazard); }
+    .alpha-seq-phonetic-ph { height: 14px; }
+    .alpha-spoken-feedback { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); }
+    .alpha-spoken-feedback em { font-style: normal; color: var(--hazard); }
+    .alpha-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+    .alpha-mic-btn {
+      background: var(--paper);
+      border: 1.5px solid var(--rule-strong);
+      border-radius: var(--radius-m);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 14px 36px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      width: 100%;
+      max-width: 240px;
+      transition: border-color 0.15s, color 0.15s;
+      box-shadow: var(--shadow-1);
+    }
+    .alpha-mic-btn:hover { border-color: var(--sky); color: var(--sky); }
+    .alpha-mic-btn--listening { border-color: var(--sky); color: var(--sky); animation: alpha-pulse 1.1s ease-in-out infinite; }
+    @keyframes alpha-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .alpha-next-btn {
+      background: none;
+      border: 1px solid var(--rule-strong);
+      border-radius: var(--radius-s);
+      color: var(--ink-3);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 20px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .alpha-next-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+    .alpha-hint { text-align: center; font-family: var(--font-sans); font-size: 12px; color: var(--ink-4); margin-top: 12px; }
+    .alpha-setup-desc { font-family: var(--font-sans); font-size: 13px; color: var(--ink-2); line-height: 1.6; margin-bottom: 20px; }
+    .alpha-setup-controls { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+    .alpha-setup-row { display: flex; align-items: center; gap: 6px; }
+    .alpha-toggle {
+      width: 44px; height: 26px; border-radius: 13px;
+      background: var(--rule-strong);
+      position: relative; cursor: pointer; flex-shrink: 0;
+      transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .alpha-toggle::after {
+      content: ''; position: absolute;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--paper); top: 3px; left: 3px;
+      transition: transform 0.2s;
+    }
+    .alpha-toggle--on { background: var(--terrain); }
+    .alpha-toggle--on::after { transform: translateX(18px); }
+    .alpha-toggle--disabled { opacity: 0.35; cursor: not-allowed; }
+    .alpha-toggle-note { font-family: var(--font-sans); font-size: 12px; color: var(--ink-3); margin-left: 10px; font-style: italic; }
+    .alpha-preview-card {
+      background: var(--paper-2); border: 1px solid var(--rule);
+      border-radius: 8px; padding: 16px 20px 14px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      margin-bottom: 20px;
+    }
+    .alpha-setup-example { display: flex; align-items: center; justify-content: center; gap: 18px; }
+    .alpha-setup-ex-char { font-family: var(--font-mono); font-size: 2.8rem; font-weight: 700; color: var(--sky); line-height: 1; }
+    .alpha-setup-ex-arrow { font-size: 1.4rem; color: var(--ink-4); }
+    .alpha-setup-ex-word { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--ink); }
+    .alpha-preview-caption { font-family: var(--font-sans); font-size: 12px; color: var(--ink-3); }
+    .alpha-finish-card {
+      background: var(--paper-2); border: 1px solid var(--rule);
+      border-radius: 10px; padding: 32px 24px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+    }
+    .alpha-finish-label { font-family: var(--font-sans); font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); }
+    .alpha-finish-score { font-family: var(--font-mono); font-size: 3rem; font-weight: 700; color: var(--ink); line-height: 1; }
+    .alpha-finish-acc { font-family: var(--font-sans); font-size: 14px; color: var(--ink-2); margin-bottom: 8px; }
+    .alpha-finish-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .alpha-start-btn {
+      background: var(--kb-accent); color: #fff;
+      border: none; border-radius: 8px;
+      padding: 12px 36px; font-family: var(--font-sans); font-size: 15px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.04em;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .alpha-start-btn:hover { opacity: 0.9; }
+    .alpha-stop-btn {
+      background: none; color: var(--hazard);
+      border: 1px solid var(--hazard); border-radius: 6px;
+      padding: 4px 12px; font-family: var(--font-sans); font-size: 12px; font-weight: 600;
+      cursor: pointer; letter-spacing: 0.04em;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .alpha-stop-btn:hover { background: var(--hazard-soft); }
 
     /* ═══════════════════════════════════════════════════════════════════
        KNEEBOARD STEP 3 — Checklist tab reskin
