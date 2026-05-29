@@ -40,6 +40,14 @@ chairfly/
 └── CLAUDE.md           # This file
 ```
 
+## Code style
+
+Follows the [Google JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html).
+Key conventions in practice:
+- `//` for explanatory comments, `/** */` for JSDoc only
+- Single quotes for strings
+- Comments explain *why*, not *what* — if the name needs explanation, rename it
+
 ## Design system
 
 ### Theme
