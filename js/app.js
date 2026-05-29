@@ -3122,11 +3122,10 @@ function _startAlphaRecognizer() {
   recog.onresult = (e) => {
     const piece = e.results[0][0].transcript;
     alphaState._transcript = ((alphaState._transcript || '') + ' ' + piece).trim();
-    // Grade immediately once all expected words are matched — fillers/exclamations
-    // are naturally skipped by the sequential grader, so "Oh umm Alpha Bravo" for
-    // a 2-char sequence still waits until both phonetic words are heard.
-    const partialResults = gradeAlphaSequence(alphaState._transcript.trim(), alphaState.expected);
-    if (partialResults.every(Boolean)) {
+    // Grade as soon as the user has said enough real words to cover the sequence,
+    // correct or not — so a wrong answer like "umbrella" grades immediately rather
+    // than letting the timer run. Fillers (oh, umm, etc.) don't count toward the total.
+    if (countPhoneticAttemptWords(alphaState._transcript) >= alphaState.sequence.length) {
       try { recog.stop(); } catch(_) {}
       gradeAlphaResponse(alphaState._transcript.trim());
     }

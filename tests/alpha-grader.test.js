@@ -1,7 +1,7 @@
 // node --test tests/alpha-grader.test.js   (Node 18+)
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { _alphaMatchWord, gradeAlphaSequence } = require('../js/alpha-grader.js');
+const { _alphaMatchWord, gradeAlphaSequence, countPhoneticAttemptWords } = require('../js/alpha-grader.js');
 const { PHONETIC_ALPHABET, PHONETIC_NUMBERS } = require('../js/data.js');
 
 // ── PHONETIC_ALPHABET data integrity ─────────────────────────────────────────
@@ -352,10 +352,7 @@ describe('gradeAlphaSequence', () => {
       [true, true]
     ));
 
-  // ── Filler / exclamation words (early-grade contract) ────────────────────────
-  // The early-grade logic fires when gradeAlphaSequence(...).every(Boolean).
-  // These tests verify that fillers don't corrupt the grade AND that a partial
-  // sequence with fillers does NOT appear fully matched.
+  // ── Filler words in gradeAlphaSequence (grader skips non-phonetic tokens) ────
 
   test('Filler_Exclamation_BeforeSingleWord_Ignored', () =>
     assert.deepEqual(
@@ -375,22 +372,66 @@ describe('gradeAlphaSequence', () => {
       [true, true, true]
     ));
 
-  test('Filler_BeforeSequence_AllMatchedTriggersEarlyGrade', () => {
-    // Simulates the early-grade check: every() returns true when all words found
-    const results = gradeAlphaSequence('Oh umm alpha bravo', ['Alfa', 'Bravo']);
-    assert.ok(results.every(Boolean), 'all expected words found despite fillers');
-  });
-
-  test('Filler_PlusPartialSequence_DoesNotAppearFullyMatched', () => {
-    // "Oh alpha" for a 2-char sequence: only Alfa matched, early-grade must NOT fire
-    const results = gradeAlphaSequence('Oh alpha', ['Alfa', 'Bravo']);
-    assert.deepEqual(results, [true, false]);
-    assert.equal(results.every(Boolean), false);
-  });
-
   test('Filler_MidSequence_Ignored', () =>
     assert.deepEqual(
       gradeAlphaSequence('alpha oh bravo', ['Alfa', 'Bravo']),
       [true, true]
     ));
+});
+
+// ── countPhoneticAttemptWords ─────────────────────────────────────────────────
+// Controls the early-grade trigger: grade fires when this count >= sequence
+// length, so wrong answers grade immediately and fillers don't pad the count.
+
+describe('countPhoneticAttemptWords', () => {
+  // Correct phonetic words count as attempts
+  test('SinglePhoneticWord_CountsOne', () =>
+    assert.equal(countPhoneticAttemptWords('november'), 1));
+
+  test('TwoPhoneticWords_CountsTwo', () =>
+    assert.equal(countPhoneticAttemptWords('november golf'), 2));
+
+  // Filler words are excluded
+  test('Filler_Oh_NotCounted', () =>
+    assert.equal(countPhoneticAttemptWords('oh'), 0));
+
+  test('Filler_Uh_NotCounted', () =>
+    assert.equal(countPhoneticAttemptWords('uh'), 0));
+
+  test('Filler_Um_NotCounted', () =>
+    assert.equal(countPhoneticAttemptWords('um'), 0));
+
+  test('Filler_Umm_NotCounted', () =>
+    assert.equal(countPhoneticAttemptWords('umm'), 0));
+
+  test('Filler_Hmm_NotCounted', () =>
+    assert.equal(countPhoneticAttemptWords('hmm'), 0));
+
+  // Wrong but real words count — "umbrella" is a real attempt, not a filler
+  test('WrongWord_Umbrella_CountsAsAttempt', () =>
+    assert.equal(countPhoneticAttemptWords('umbrella'), 1));
+
+  test('WrongWord_Apple_CountsAsAttempt', () =>
+    assert.equal(countPhoneticAttemptWords('apple'), 1));
+
+  // Mixed: fillers before/after real words
+  test('FillerThenPhonetic_CountsOnlyPhonetic', () =>
+    assert.equal(countPhoneticAttemptWords('oh november'), 1));
+
+  test('MultipleFillersThenTwoPhonetic_CountsTwo', () =>
+    assert.equal(countPhoneticAttemptWords('Oh umm november golf'), 2));
+
+  test('FillerExclamationStripped_ThenPhonetic_CountsOne', () =>
+    assert.equal(countPhoneticAttemptWords('Oh! november'), 1));
+
+  // The critical case: filler + partial sequence must not reach sequence length
+  test('FillerPlusOneWord_ForTwoCharSequence_CountsOne', () =>
+    assert.equal(countPhoneticAttemptWords('oh november'), 1));
+
+  // Empty / whitespace
+  test('EmptyString_CountsZero', () =>
+    assert.equal(countPhoneticAttemptWords(''), 0));
+
+  test('OnlyFillers_CountsZero', () =>
+    assert.equal(countPhoneticAttemptWords('oh uh um ah'), 0));
 });

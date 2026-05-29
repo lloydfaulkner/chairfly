@@ -63,4 +63,21 @@ function gradeAlphaSequence(transcript, expected) {
   });
 }
 
-if (typeof module !== 'undefined') module.exports = { _alphaMatchWord, gradeAlphaSequence };
+// Words that STT commonly emits as reactions/hesitations and should not count
+// as phonetic attempts when deciding whether to grade early.
+const _ALPHA_FILLERS = new Set([
+  'oh','uh','um','ah','hmm','hm','err','erm','umm','uhh','like','so','and',
+]);
+
+// Returns the number of "real attempt" words in a raw STT transcript —
+// words that are not short filler sounds. Used to decide when to fire
+// early grading: once this count reaches the sequence length, the user
+// has committed to an answer whether it's correct or not.
+function countPhoneticAttemptWords(transcript) {
+  return transcript.trim().split(/\s+/).filter(w => {
+    const clean = w.toLowerCase().replace(/[^a-z]/g, '');
+    return clean.length >= 2 && !_ALPHA_FILLERS.has(clean);
+  }).length;
+}
+
+if (typeof module !== 'undefined') module.exports = { _alphaMatchWord, gradeAlphaSequence, countPhoneticAttemptWords };
