@@ -1,3 +1,8 @@
+// HTML is built in JS so rendering logic and markup stay together rather than split across template files.
+// Chose vanilla over a framework (React etc.) to keep the app deployable as plain files with no build toolchain.
+// Worth revisiting if the project gains collaborators, rendering logic becomes harder to maintain, or the
+// codebase needs to serve as a public learning reference.
+
 let CHECKLISTS = ALL_AIRCRAFT.c172.checklists;
 let EMERGENCIES = ALL_AIRCRAFT.c172.emergencies;
 let currentAircraft = 'c172';
