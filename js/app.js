@@ -1,7 +1,6 @@
 // HTML is built in JS so rendering logic and markup stay together rather than split across template files.
 // Chose vanilla over a framework (React etc.) to keep the app deployable as plain files with no build toolchain.
-// Worth revisiting if the project gains collaborators, rendering logic becomes harder to maintain, or the
-// codebase needs to serve as a public learning reference.
+// Worth revisiting if the project gains collaborators or rendering logic becomes harder to maintain.
 
 let CHECKLISTS = ALL_AIRCRAFT.c172.checklists;
 let EMERGENCIES = ALL_AIRCRAFT.c172.emergencies;
@@ -20,6 +19,8 @@ let currentDrill = null; // 'checklist'|'radio'|'procedures'|'emergency'
 let currentClMode = 'reference';
 let currentRadioMode = 'chips';
 let currentProcScreen = 'proc-screen-setup';
+// Prevents updateHash() from writing the URL while we're parsing it on load/hashchange,
+// which would cause a feedback loop and corrupt the hash.
 let _restoringNav = false;
 
 // ── DAY / NIGHT MODE ─────────────────────────────────────────────────────────
@@ -427,17 +428,10 @@ function _renderQuizItem(phase, item, idx) {
 function renderChecklist() {
   const phase = state.checklist.phase;
   const list = CHECKLISTS[phase];
-  const quizPhase = true;
 
-  let doneCount;
+  const qs = clQuizState[phase] || {};
+  const doneCount = Object.values(qs).filter(s => s.status === 'correct' || s.status === 'wrong' || s.status === 'skipped').length;
   const total = list.items.length;
-  if (quizPhase) {
-    const qs = clQuizState[phase] || {};
-    doneCount = Object.values(qs).filter(s => s.status === 'correct' || s.status === 'wrong' || s.status === 'skipped').length;
-  } else {
-    const completed = state.checklist.completed[phase] || new Set();
-    doneCount = completed.size;
-  }
 
   document.getElementById('cl-title').textContent = list.label;
   document.getElementById('cl-progress').textContent = `${doneCount} / ${total}`;
@@ -446,28 +440,7 @@ function renderChecklist() {
   const ul = document.getElementById('checklist-items');
   const preflightNote = document.getElementById('cl-preflight-note');
   if (preflightNote) preflightNote.style.display = phase === 'preflight' ? '' : 'none';
-  if (quizPhase) {
-    ul.innerHTML = list.items.map((item, i) => _renderQuizItem(phase, item, i)).join('');
-  } else {
-    const completed = state.checklist.completed[phase] || new Set();
-    ul.innerHTML = list.items.map((item, i) => {
-      const done = completed.has(i);
-      return `<li class="cl-item${done ? ' cl-item--done' : ''}" onclick="toggleItem(${i})">
-      <span class="cl-item-idx">${String(i + 1).padStart(2, '0')}</span>
-      <div class="cl-item-chk${done ? ' cl-item-chk--done' : ''}">
-        ${done ? '<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' : ''}
-      </div>
-      <div class="cl-item-body">
-        <div class="cl-item-name-row">
-          <span class="cl-item-name${done ? ' cl-item-name--done' : ''}">${item.action}</span>
-          ${item.value ? `<span class="cl-item-call"><span class="cl-item-dot"></span>${item.value}</span>` : ''}
-        </div>
-        ${item.why ? `<div class="cl-item-why">${item.why}</div>` : ''}
-      </div>
-      <button class="cl-item-info" onclick="event.stopPropagation();openInfo('${phase}',${i})" title="Why &amp; Show Me">ⓘ</button>
-    </li>`;
-    }).join('');
-  }
+  ul.innerHTML = list.items.map((item, i) => _renderQuizItem(phase, item, i)).join('');
 
   // Update sidebar memory hook from first item with a phrase acronym tip
   const hookCard = document.getElementById('cl-memory-hook');
@@ -1388,7 +1361,7 @@ function buildPatternLanding(ap) {
 let procRadioState = { built: [], words: [] };
 
 const procSeqState = {
-  pool: [], totalReal: 0,
+  pool: [], slotCount: 0,
   nextSlot: 0, ok: 0, miss: 0,
   elapsed: 0, done: false, _timer: null,
   shakingIdx: -1, lastDistractorMsg: ''
@@ -1453,7 +1426,7 @@ function _initProcRecall(proc, group) {
   ].sort(() => Math.random() - 0.5);
   if (procSeqState._timer) clearInterval(procSeqState._timer);
   procSeqState.pool = pool;
-  procSeqState.totalReal = rawItems.length;
+  procSeqState.slotCount = rawItems.length;
   procSeqState.nextSlot = 0;
   procSeqState.ok = 0;
   procSeqState.miss = 0;
@@ -2857,16 +2830,16 @@ function seqTouchStart(e, type, idx) {
   ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:0.7;pointer-events:none;z-index:9999;margin:0;`;
   document.body.appendChild(ghost);
   _touch.ghost = ghost;
-  _touch.offX = e.touches[0].clientX - rect.left;
-  _touch.offY = e.touches[0].clientY - rect.top;
+  _touch.grabOffsetX = e.touches[0].clientX - rect.left;
+  _touch.grabOffsetY = e.touches[0].clientY - rect.top;
 }
 
 function seqTouchMove(e) {
   if (!_touch.ghost) return;
   e.preventDefault();
   const t = e.touches[0];
-  _touch.ghost.style.left = (t.clientX - _touch.offX) + 'px';
-  _touch.ghost.style.top = (t.clientY - _touch.offY) + 'px';
+  _touch.ghost.style.left = (t.clientX - _touch.grabOffsetX) + 'px';
+  _touch.ghost.style.top = (t.clientY - _touch.grabOffsetY) + 'px';
 }
 
 function seqTouchEnd(e) {
@@ -3414,7 +3387,7 @@ function startSpeech() {
 
   const rec = new SpeechRecognition();
   rec.lang = 'en-US';
-  rec.continuous = true;
+  rec.continuous = true; // radio call length is unknown — user stops manually
   rec.interimResults = true;
   rec.maxAlternatives = 3;
 
@@ -3874,6 +3847,8 @@ function restoreNav() {
 }
 
 // ── VERDICT SHEET ──
+// Callbacks stored here because the sheet's buttons fire onclick strings — they can't
+// capture closures from the drill render that opened the sheet.
 const verdictState = { onTryAgain: null, onNext: null };
 
 function openVerdictSheet(status, title, body, onTryAgain, onNext) {
