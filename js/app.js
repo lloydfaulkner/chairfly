@@ -27,16 +27,6 @@ let currentProcMode = 'airport';
 // which would cause a feedback loop and corrupt the hash.
 let _restoringNav = false;
 
-function _stopBodyScroll(e) {
-  e.preventDefault();
-}
-function _lockScroll() {
-  document.addEventListener('touchmove', _stopBodyScroll, { passive: false });
-}
-function _unlockScroll() {
-  document.removeEventListener('touchmove', _stopBodyScroll);
-}
-
 // ── DAY / NIGHT MODE ─────────────────────────────────────────────────────────
 // data-mode is set on <html> by the inline boot script in <head>.
 // Once the user manually toggles, matchMedia changes are ignored.
@@ -158,7 +148,6 @@ function openAircraftSheet() {
     `<button class="cf-hub-btn${key === currentAircraft ? ' active' : ''}" data-aircraft="${key}" onclick="switchAircraft('${key}', this)">${a.name}</button>`
   ).join('');
 
-  _lockScroll();
   document.getElementById('cf-sheet-backdrop').classList.add('open');
   document.getElementById('cf-aircraft-sheet').classList.add('open');
 }
@@ -166,12 +155,9 @@ function openAircraftSheet() {
 function closeAircraftSheet() {
   document.getElementById('cf-sheet-backdrop').classList.remove('open');
   document.getElementById('cf-aircraft-sheet').classList.remove('open');
-  window.scrollTo(0, 0);
-  setTimeout(_unlockScroll, 350);
 }
 
 function openDrillSheet() {
-  _lockScroll();
   document.getElementById('drill-sheet-backdrop').classList.add('open');
   document.getElementById('drill-sheet').classList.add('open');
 }
@@ -179,8 +165,6 @@ function openDrillSheet() {
 function closeDrillSheet() {
   document.getElementById('drill-sheet-backdrop').classList.remove('open');
   document.getElementById('drill-sheet').classList.remove('open');
-  window.scrollTo(0, 0);
-  setTimeout(_unlockScroll, 350);
 }
 
 function selectDrill(drill, mode) {
