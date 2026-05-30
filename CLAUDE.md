@@ -33,17 +33,17 @@ chairfly/
 │   └── styles.css           # All styles
 ├── js/
 │   ├── data.js              # All static data (checklists, procedures,
-│   │                        # radio scenarios, emergencies, phonetic alphabet)
+│   │                        # radio scenarios, emergencies, phonetic alphabet, VSPEEDS_META)
 │   ├── airports.js          # Generated airport database (~3800 US public-use airports)
 │   ├── speech-grader.js     # normalizeSpoken, scoreSpeechCall (exported, unit tested)
 │   ├── alpha-grader.js      # gradeAlphaSequence, countPhoneticAttemptWords (exported, unit tested)
-│   ├── utils.js             # calcTPA, radioCallMatches, _firstSentence (exported, unit tested)
+│   ├── utils.js             # calcTPA, radioCallMatches, _firstSentence, shouldNudgeVspeedTimer (exported, unit tested)
 │   └── app.js               # All application logic
 ├── tests/
-│   ├── utils.test.js        # calcTPA, radioCallMatches, _firstSentence, airportCallName
+│   ├── utils.test.js        # calcTPA, radioCallMatches, _firstSentence, airportCallName, shouldNudgeVspeedTimer
 │   ├── speech-grader.test.js # scoreSpeechCall, normalizeSpoken
 │   ├── alpha-grader.test.js  # gradeAlphaSequence, _alphaMatchWord
-│   └── data-integrity.test.js # Structural checks on ALL_AIRCRAFT, RADIO_SCENARIOS, AIRPORTS
+│   └── data-integrity.test.js # Structural checks on ALL_AIRCRAFT, RADIO_SCENARIOS, AIRPORTS, VSPEEDS_META
 ├── infra/                   # Terraform/Terragrunt — S3 + CloudFront + OIDC deploy role
 │   ├── root.hcl
 │   ├── modules/
@@ -146,6 +146,9 @@ backgrounds unreadable. This has caused repeated contrast issues.
   - Full ATIS text revealed after grading
 
 ### Procedures tab
+The tab has two modes toggled by a `cl-mode-toggle` at the top: **Procedures** and **V-Speeds**.
+
+#### Procedures mode
 - Airport lookup by ICAO — bundled database (~200 airports), no network needed
 - Default airport: KUZA
 - Pattern altitude: field elev + 1000, rounded to nearest 100 ft MSL
@@ -168,6 +171,19 @@ backgrounds unreadable. This has caused repeated contrast issues.
 - Choice steps: Try Again | Show Answers on wrong
 - Procedure title card has solid panel background — not floating on scan-line bg
 - Step header: dark green background (#1a2a1a), bright green text (#7fff9a)
+
+#### V-Speeds drill mode
+Multiple-choice flashcard drill drawn from `VSPEEDS_META` in `data.js`.
+- Three drill modes: **Symbol** (Vx → tap speed), **Speed** (74 KIAS → tap symbol), **Both** (random mix)
+- Settings: reps (5/10/15, default 5), optional countdown timer (3s/5s/10s)
+- Consecutive repeat prevention via `_lastKey` bag-swap
+- Reverse mode deduplicates by value (`_buildVspeedReversePool`) to avoid ambiguous questions
+- Both mode hides the label on forward cards to prevent info leakage between alternating questions
+- Response time tracked per question (`_questionStart = Date.now()`); shown in review history
+- Finish screen shows "Your Answers" review with response time per row
+- `shouldNudgeVspeedTimer(history, score, timerEnabled)` (in `utils.js`) fires a timer suggestion
+  when untimed, 75%+ of answered questions under 4 s, and 60%+ accuracy
+- Kneeboard (light) theme — all CSS uses `var(--paper)`, `var(--ink)`, `var(--sky)` etc., never hardcoded dark hex
 
 ### Emergency tab
 - Randomized C172 emergency scenarios

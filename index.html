@@ -496,6 +496,13 @@
     <!-- PROCEDURES -->
     <div class="view" id="view-procedures">
 
+      <div class="cl-mode-toggle" id="proc-mode-row" style="margin-bottom:16px">
+        <button class="cl-mode-btn active" onclick="setProcMode('procedures', this)">Procedures</button>
+        <button class="cl-mode-btn" onclick="setProcMode('vspeeds', this)">V-Speeds</button>
+      </div>
+
+      <div id="proc-main-mode">
+
       <div class="proc-screen active" id="proc-screen-setup">
         <div class="cf-eyebrow" style="margin-bottom: 14px;">Procedure Briefing</div>
         <div class="proc-setup">
@@ -574,6 +581,10 @@
         <div id="proc-speeds-strip" class="proc-speeds-strip" style="display:none"></div>
         <div id="proc-step-content"></div>
       </div>
+
+      </div><!-- /proc-main-mode -->
+
+      <div id="proc-vspeeds-mode" style="display:none"></div>
 
     </div>
 

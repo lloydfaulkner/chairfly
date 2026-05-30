@@ -1774,6 +1774,101 @@
     .alpha-review-char--miss .alpha-review-phonetic { color: var(--hazard); }
     .alpha-review-spoken { font-family: var(--font-sans); font-size: 11px; color: var(--ink-3); font-style: italic; margin-left: 4px; }
 
+    /* ── V-SPEEDS DRILL ─────────────────────────────────────────────────── */
+    .vs-card {
+      background: var(--paper-2);
+      border: 2px solid var(--rule);
+      border-radius: 10px;
+      padding: 28px 24px 20px;
+      text-align: center;
+      margin: 16px 0 20px;
+    }
+    .vs-symbol {
+      font-family: var(--font-mono);
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--sky);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .vs-label {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--ink-3);
+      margin-top: 8px;
+      letter-spacing: 0.04em;
+    }
+    .vs-choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .vs-choice {
+      background: var(--paper);
+      border: 1.5px solid var(--rule);
+      border-radius: 8px;
+      padding: 16px 8px;
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.1s, background 0.1s;
+    }
+    .vs-choice:not(:disabled):hover { border-color: var(--kb-accent); }
+    .vs-choice.correct { background: var(--terrain-soft); border-color: var(--terrain); color: var(--terrain); }
+    .vs-choice.wrong   { background: var(--hazard-soft); border-color: var(--hazard); color: var(--hazard); }
+    .vs-choice.dim     { opacity: 0.35; }
+    .vs-choice:disabled { cursor: default; }
+    .vs-choice-unit {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--ink-3);
+      margin-left: 3px;
+    }
+    .vs-choice.correct .vs-choice-unit { color: var(--terrain); opacity: 0.7; }
+    .vs-choice.wrong .vs-choice-unit   { color: var(--hazard); opacity: 0.7; }
+    .vs-history { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+    .vs-history-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 10px; border-radius: 6px;
+      background: var(--paper-2); border: 1px solid var(--rule);
+      font-family: var(--font-sans); font-size: 13px;
+    }
+    .vs-history-row.miss { border-color: var(--hazard); background: var(--hazard-soft); }
+    .vs-history-symbol { font-family: var(--font-mono); font-weight: 700; color: var(--ink); min-width: 36px; }
+    .vs-history-label  { color: var(--ink-3); flex: 1; }
+    .vs-history-val    { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+    .vs-history-row.miss .vs-history-val { color: var(--hazard); }
+    .vs-history-row.ok .vs-history-val   { color: var(--terrain); }
+    .vs-history-timeout { color: var(--hazard); font-style: italic; }
+    .vs-history-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); min-width: 32px; text-align: right; }
+    .vs-rep-btn { min-width: 48px; }
+    .vs-mode-desc { font-family: var(--font-sans); font-size: 13px; color: var(--ink-3); line-height: 1.5; margin-bottom: 12px; }
+    .vs-timer-note { font-family: var(--font-sans); font-size: 12px; color: var(--ink-3); line-height: 1.5; margin-top: 10px; font-style: italic; }
+    .vs-back-btn {
+      font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+      color: var(--ink-3); background: none; border: none; cursor: pointer;
+      padding: 6px 12px 6px 0; -webkit-tap-highlight-color: transparent;
+      letter-spacing: 0.04em; min-height: 44px; display: flex; align-items: center;
+    }
+    .vs-back-btn:hover { color: var(--ink); }
+    .vs-timer { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .vs-timer-track { flex: 1; height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+    .vs-timer-bar { height: 100%; border-radius: 2px; transition: width 0.1s linear, background 0.3s; }
+    .vs-timer-label { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--ink-3); min-width: 24px; text-align: right; }
+    .vs-symbol--speed { font-size: 2.4rem; }
+    .vs-symbol-unit { font-size: 1rem; font-weight: 400; color: var(--ink-3); margin-left: 4px; }
+    .vs-choice--sym {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 12px 6px;
+    }
+    .vs-choice-sym-label { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; color: inherit; line-height: 1; }
+    .vs-choice-sym-def { font-family: var(--font-sans); font-size: 10px; color: var(--ink-3); line-height: 1.2; text-align: center; }
+    .vs-choice--sym.correct .vs-choice-sym-def { color: var(--terrain); opacity: 0.8; }
+    .vs-choice--sym.wrong   .vs-choice-sym-def { color: var(--hazard); opacity: 0.8; }
+
     /* ═══════════════════════════════════════════════════════════════════
        KNEEBOARD STEP 3 — Checklist tab reskin
        All classes prefixed cf- or cl- are new; old dark classes left

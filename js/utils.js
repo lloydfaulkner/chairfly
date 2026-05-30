@@ -26,4 +26,15 @@ function airportCallName(name, municipality = '') {
   return n || name;
 }
 
-if (typeof module !== 'undefined') module.exports = { calcTPA, _firstSentence, radioCallMatches, airportCallName };
+// Returns true when an untimed V-speeds drill result suggests the user is ready for the timer.
+// Requires: timer off, 3+ non-timeout answers, 75%+ answered under 4s, 60%+ overall correct.
+function shouldNudgeVspeedTimer(history, score, timerEnabled) {
+  if (timerEnabled) return false;
+  const answered = history.filter(h => !h.timedOut && h.elapsed !== undefined);
+  if (answered.length < 3) return false;
+  if (answered.filter(h => h.elapsed < 4).length / answered.length < 0.75) return false;
+  if (score.total === 0 || score.correct / score.total < 0.6) return false;
+  return true;
+}
+
+if (typeof module !== 'undefined') module.exports = { calcTPA, _firstSentence, radioCallMatches, airportCallName, shouldNudgeVspeedTimer };

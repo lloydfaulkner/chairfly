@@ -1,7 +1,7 @@
 // node --test tests/utils.test.js   (Node 18+)
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { calcTPA, _firstSentence, radioCallMatches, airportCallName } = require('../js/utils.js');
+const { calcTPA, _firstSentence, radioCallMatches, airportCallName, shouldNudgeVspeedTimer } = require('../js/utils.js');
 
 // ── calcTPA ──────────────────────────────────────────────────────────────────
 
@@ -149,4 +149,47 @@ describe('airportCallName', () => {
 
   test('NoArguments_DefaultsToEmptyMunicipality', () =>
     assert.equal(airportCallName('Rock Hill Airport'), 'Rock Hill'));
+});
+
+// ── shouldNudgeVspeedTimer ────────────────────────────────────────────────────
+
+describe('shouldNudgeVspeedTimer', () => {
+  const fast = (n, ok = true) =>
+    Array.from({ length: n }, () => ({ timedOut: false, elapsed: 2.5, ok }));
+  const slow = (n, ok = true) =>
+    Array.from({ length: n }, () => ({ timedOut: false, elapsed: 6.0, ok }));
+
+  test('TimerAlreadyEnabled_ReturnsFalse', () =>
+    assert.equal(shouldNudgeVspeedTimer(fast(5), { correct: 5, total: 5 }, true), false));
+
+  test('FewerThan3NonTimeoutAnswers_ReturnsFalse', () =>
+    assert.equal(shouldNudgeVspeedTimer(fast(2), { correct: 2, total: 2 }, false), false));
+
+  test('AccuracyBelow60Pct_ReturnsFalse', () =>
+    assert.equal(shouldNudgeVspeedTimer(fast(5), { correct: 2, total: 5 }, false), false));
+
+  test('ExactlyAt60PctAccuracy_IsAccepted', () =>
+    assert.equal(shouldNudgeVspeedTimer(fast(5), { correct: 3, total: 5 }, false), true));
+
+  test('FewerThan75PctFast_ReturnsFalse', () => {
+    const h = [...fast(2), ...slow(2)];  // 50% fast
+    assert.equal(shouldNudgeVspeedTimer(h, { correct: 4, total: 4 }, false), false);
+  });
+
+  test('Exactly75PctFast_IsAccepted', () => {
+    const h = [...fast(3), ...slow(1)];  // 75% fast
+    assert.equal(shouldNudgeVspeedTimer(h, { correct: 4, total: 4 }, false), true);
+  });
+
+  test('TimedOutEntries_AreExcludedFromSpeedCheck', () => {
+    // Only 2 non-timeout answers — below the minimum of 3
+    const h = [...fast(2), { timedOut: true, elapsed: 5, ok: false }];
+    assert.equal(shouldNudgeVspeedTimer(h, { correct: 2, total: 3 }, false), false);
+  });
+
+  test('MostlyFastAndCorrect_ReturnsTrue', () =>
+    assert.equal(shouldNudgeVspeedTimer(fast(5), { correct: 4, total: 5 }, false), true));
+
+  test('ZeroScoreTotal_ReturnsFalse', () =>
+    assert.equal(shouldNudgeVspeedTimer(fast(5), { correct: 0, total: 0 }, false), false));
 });

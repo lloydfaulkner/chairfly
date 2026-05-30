@@ -22,6 +22,7 @@ let currentDrill = null; // 'checklist'|'radio'|'procedures'|'emergency'
 let currentClMode = 'reference';
 let currentRadioMode = 'chips';
 let currentProcScreen = 'proc-screen-setup';
+let currentProcMode = 'procedures';
 // Prevents updateHash() from writing the URL while we're parsing it on load/hashchange,
 // which would cause a feedback loop and corrupt the hash.
 let _restoringNav = false;
@@ -74,7 +75,9 @@ function updateHash() {
     else if (currentRadioMode === 'alpha') parts.push('alpha');
     else if (radioInputMode === 'speak') parts.push('speak');
   } else if (currentView === 'procedures') {
-    if (currentProcScreen === 'proc-screen-steps' && procState._lastProcId && procState.airport.icao) {
+    if (currentProcMode === 'vspeeds') {
+      parts.push('vspeeds');
+    } else if (currentProcScreen === 'proc-screen-steps' && procState._lastProcId && procState.airport.icao) {
       parts.push(procState.airport.icao);
       parts.push(procState._lastProcId);
       parts.push(procState.inRecall ? 'recall' : procState.currentStep);
@@ -149,7 +152,7 @@ function switchDrill(type) {
   _setBottomTabActive('drills');
   if (type === 'checklist')        _switchViewOnly('checklist');
   else if (type === 'radio')       _switchViewOnly('radio');
-  else if (type === 'procedures')  { _switchViewOnly('procedures'); showProcScreen('proc-screen-setup'); }
+  else if (type === 'procedures')  { _switchViewOnly('procedures'); _setProcModeUI('procedures'); showProcScreen('proc-screen-setup'); }
   else if (type === 'emergency')   _switchViewOnly('emergency');
   updateHash();
 }
@@ -2417,6 +2420,367 @@ function showProcScreen(id) {
   document.getElementById(id).classList.add('active');
   currentProcScreen = id;
   updateHash();
+}
+
+function _setProcModeUI(mode) {
+  document.querySelectorAll('#proc-mode-row .cl-mode-btn').forEach(b => b.classList.remove('active'));
+  const idx = mode === 'vspeeds' ? 1 : 0;
+  document.querySelectorAll('#proc-mode-row .cl-mode-btn')[idx].classList.add('active');
+  document.getElementById('proc-main-mode').style.display = mode === 'procedures' ? '' : 'none';
+  document.getElementById('proc-vspeeds-mode').style.display = mode === 'vspeeds' ? '' : 'none';
+  currentProcMode = mode;
+}
+
+function setProcMode(mode, btn) {
+  _setProcModeUI(mode);
+  if (mode === 'vspeeds' && !vspeedState.started && !vspeedState.finished) initVspeedDrill();
+  updateHash();
+}
+
+// ── V-SPEEDS DRILL ──────────────────────────────────────────────────────────
+
+const vspeedState = {
+  started: false,
+  finished: false,
+  drillCount: 5,
+  drillProgress: 0,
+  bag: [],
+  current: null,
+  choices: [],
+  answered: false,
+  timedOut: false,
+  selected: null,
+  score: { correct: 0, total: 0, streak: 0 },
+  history: [],
+  drillMode: 'forward',   // 'forward' (symbol→speed) | 'reverse' (speed→symbol)
+  timerEnabled: false,
+  timerSecs: 5,
+  _timerRemaining: 0,
+  _timerInterval: null,
+  _questionStart: 0,
+};
+
+function _buildVspeedPool() {
+  const speeds = ALL_AIRCRAFT[currentAircraft].speeds;
+  return VSPEEDS_META.filter(m => speeds[m.key] != null);
+}
+
+function _buildVspeedReversePool() {
+  const speeds = ALL_AIRCRAFT[currentAircraft].speeds;
+  const seen = new Set();
+  return VSPEEDS_META.filter(m => {
+    if (speeds[m.key] == null) return false;
+    const v = speeds[m.key];
+    if (seen.has(v)) return false;
+    seen.add(v);
+    return true;
+  });
+}
+
+function _buildVspeedDistractors(correctVal) {
+  const allVals = new Set();
+  Object.values(ALL_AIRCRAFT).forEach(ac => Object.values(ac.speeds).forEach(v => allVals.add(v)));
+  const pool = [...allVals].filter(v => v !== correctVal);
+  _shuffleArray(pool);
+  return pool.slice(0, 3);
+}
+
+function _buildVspeedReverseDistractors(correctMeta, pool) {
+  const correctVal = ALL_AIRCRAFT[currentAircraft].speeds[correctMeta.key];
+  const others = pool.filter(m => ALL_AIRCRAFT[currentAircraft].speeds[m.key] !== correctVal);
+  _shuffleArray(others);
+  return others.slice(0, 3);
+}
+
+function _clearVspeedTimer() {
+  if (vspeedState._timerInterval) { clearInterval(vspeedState._timerInterval); vspeedState._timerInterval = null; }
+}
+
+function initVspeedDrill() {
+  _clearVspeedTimer();
+  Object.assign(vspeedState, {
+    started: false, finished: false, drillProgress: 0, bag: [],
+    current: null, choices: [], answered: false, timedOut: false,
+    selected: null, score: { correct: 0, total: 0, streak: 0 }, history: [],
+  });
+  renderVspeedDrill();
+}
+
+function startVspeedDrill() {
+  _clearVspeedTimer();
+  const pool = vspeedState.drillMode === 'reverse' ? _buildVspeedReversePool() : _buildVspeedPool();
+  Object.assign(vspeedState, {
+    started: true, finished: false, drillProgress: 0,
+    score: { correct: 0, total: 0, streak: 0 }, history: [],
+    bag: _shuffleArray([...pool]),
+    _lastKey: null,
+  });
+  _nextVspeedQuestion();
+}
+
+function _nextVspeedQuestion() {
+  if (vspeedState.drillProgress >= vspeedState.drillCount) {
+    _clearVspeedTimer();
+    vspeedState.started = false;
+    vspeedState.finished = true;
+    renderVspeedDrill();
+    return;
+  }
+  const effectiveMode = vspeedState.drillMode === 'both'
+    ? (Math.random() < 0.5 ? 'forward' : 'reverse')
+    : vspeedState.drillMode;
+  const pool = effectiveMode === 'reverse' ? _buildVspeedReversePool() : _buildVspeedPool();
+  if (!vspeedState.bag.length || vspeedState.drillMode === 'both') {
+    vspeedState.bag = _shuffleArray([...pool]);
+  }
+  // Avoid consecutive repeat — if top of bag matches last shown, swap it with next item
+  const lastKey = vspeedState._lastKey;
+  if (vspeedState.bag.length > 1 && vspeedState.bag[vspeedState.bag.length - 1].key === lastKey) {
+    const top = vspeedState.bag.pop();
+    vspeedState.bag.splice(vspeedState.bag.length - 1, 0, top);
+  }
+  const meta = vspeedState.bag.pop();
+  vspeedState._lastKey = meta.key;
+  const correctVal = ALL_AIRCRAFT[currentAircraft].speeds[meta.key];
+  const choices = effectiveMode === 'forward'
+    ? _shuffleArray([correctVal, ..._buildVspeedDistractors(correctVal)])
+    : _shuffleArray([meta, ..._buildVspeedReverseDistractors(meta, pool)]);
+  Object.assign(vspeedState, { current: { meta, correctVal, effectiveMode }, choices, answered: false, timedOut: false, selected: null });
+  renderVspeedDrill();
+  vspeedState._questionStart = Date.now();
+  if (vspeedState.timerEnabled) _startVspeedTimer();
+}
+
+function _startVspeedTimer() {
+  _clearVspeedTimer();
+  vspeedState._timerRemaining = vspeedState.timerSecs;
+  vspeedState._timerInterval = setInterval(() => {
+    vspeedState._timerRemaining = Math.max(0, vspeedState._timerRemaining - 0.1);
+    if (vspeedState._timerRemaining <= 0) {
+      _clearVspeedTimer();
+      _vspeedTimeout();
+    } else {
+      _updateVspeedTimerDOM();
+    }
+  }, 100);
+}
+
+function _updateVspeedTimerDOM() {
+  const bar = document.getElementById('vs-timer-bar');
+  const label = document.getElementById('vs-timer-label');
+  if (!bar) return;
+  const pct = vspeedState._timerRemaining / vspeedState.timerSecs;
+  bar.style.width = (pct * 100) + '%';
+  bar.style.background = pct > 0.5 ? 'var(--terrain)' : pct > 0.2 ? 'var(--kb-accent)' : 'var(--hazard)';
+  if (label) label.textContent = Math.ceil(vspeedState._timerRemaining) + 's';
+}
+
+function _vspeedTimeout() {
+  if (vspeedState.answered) return;
+  vspeedState.answered = true;
+  vspeedState.timedOut = true;
+  vspeedState.score.total++;
+  vspeedState.score.streak = 0;
+  vspeedState.history.push({ meta: vspeedState.current.meta, correctVal: vspeedState.current.correctVal, chosen: null, ok: false, timedOut: true, effectiveMode: vspeedState.current.effectiveMode, elapsed: vspeedState.timerSecs });
+  vspeedState.drillProgress++;
+  renderVspeedDrill();
+}
+
+function answerVspeed(val) {
+  if (vspeedState.answered) return;
+  const elapsed = Math.round((Date.now() - vspeedState._questionStart) / 100) / 10;
+  _clearVspeedTimer();
+  vspeedState.answered = true;
+  vspeedState.selected = val;
+  const em = vspeedState.current.effectiveMode;
+  const correct = em === 'forward'
+    ? val === vspeedState.current.correctVal
+    : ALL_AIRCRAFT[currentAircraft].speeds[val] === vspeedState.current.correctVal;
+  vspeedState.score.total++;
+  if (correct) { vspeedState.score.correct++; vspeedState.score.streak++; }
+  else { vspeedState.score.streak = 0; }
+  vspeedState.history.push({ meta: vspeedState.current.meta, correctVal: vspeedState.current.correctVal, chosen: val, ok: correct, timedOut: false, effectiveMode: em, elapsed });
+  vspeedState.drillProgress++;
+  renderVspeedDrill();
+}
+
+function setVspeedDrillCount(n) { vspeedState.drillCount = n; if (!vspeedState.started) renderVspeedDrill(); }
+function setVspeedDrillMode(m)  { vspeedState.drillMode = m;  if (!vspeedState.started) renderVspeedDrill(); }
+function setVspeedTimerEnabled(v) { vspeedState.timerEnabled = v; if (!vspeedState.started) renderVspeedDrill(); }
+function setVspeedTimerSecs(n)  { vspeedState.timerSecs = n;  if (!vspeedState.started) renderVspeedDrill(); }
+
+function renderVspeedDrill() {
+  const el = document.getElementById('proc-vspeeds-mode');
+  if (!el) return;
+  const s = vspeedState;
+  const ac = ALL_AIRCRAFT[currentAircraft];
+
+  // ── Setup screen ──
+  if (!s.started && !s.finished) {
+    const repOpts = [5, 10, 15].map(n =>
+      `<button class="alpha-len-btn vs-rep-btn${n === s.drillCount ? ' active' : ''}" onclick="setVspeedDrillCount(${n})">${n}</button>`
+    ).join('');
+    const exMeta = VSPEEDS_META[2]; // Vy
+    const exVal  = ac.speeds[exMeta.key];
+    const isBoth = s.drillMode === 'both';
+    const isRev  = s.drillMode === 'reverse';
+    const exCaption = isBoth
+      ? `Random mix of both modes &middot; ${ac.name}`
+      : isRev
+        ? `Tap the symbol that matches the speed &middot; ${ac.name}`
+        : `Tap the speed that matches the symbol &middot; ${ac.name}`;
+    const exCard = isBoth
+      ? `<div class="alpha-setup-example">
+           <span class="alpha-setup-ex-char">${exMeta.symbol}</span>
+           <span class="alpha-setup-ex-arrow">&harr;</span>
+           <span class="alpha-setup-ex-word">${exVal} KIAS</span>
+         </div>`
+      : isRev
+        ? `<div class="alpha-setup-example">
+             <span class="alpha-setup-ex-word">${exVal} KIAS</span>
+             <span class="alpha-setup-ex-arrow">&rarr;</span>
+             <span class="alpha-setup-ex-char">${exMeta.symbol}</span>
+           </div>`
+        : `<div class="alpha-setup-example">
+             <span class="alpha-setup-ex-char">${exMeta.symbol}</span>
+             <span class="alpha-setup-ex-arrow">&rarr;</span>
+             <span class="alpha-setup-ex-word">${exVal} KIAS</span>
+           </div>`;
+    const timerSecsOpts = [3, 5, 10].map(n =>
+      `<button class="alpha-len-btn vs-rep-btn${n === s.timerSecs ? ' active' : ''}" onclick="setVspeedTimerSecs(${n})" style="visibility:${s.timerEnabled ? 'visible' : 'hidden'}">${n}s</button>`
+    ).join('');
+    el.innerHTML = `
+      <div class="alpha-drill" style="padding-top:16px">
+        <div class="alpha-setup-desc">V-speeds tell you when to rotate, how to climb, and how fast to fly the pattern. Knowing them without thinking frees up your attention for everything else. This drill uses repetition to make them automatic. The goal is for the right number to surface before you even finish reading the question.</div>
+        <div class="alpha-preview-card">${exCard}<div class="alpha-preview-caption">${exCaption}</div></div>
+        <div class="alpha-setup-controls">
+          <div class="alpha-setup-row">
+            <span class="alpha-ctrl-label">Mode</span>
+            <button class="alpha-len-btn alpha-len-btn--wide${!isRev && !isBoth ? ' active' : ''}" onclick="setVspeedDrillMode('forward')">Symbol</button>
+            <button class="alpha-len-btn alpha-len-btn--wide${isRev ? ' active' : ''}" onclick="setVspeedDrillMode('reverse')">Speed</button>
+            <button class="alpha-len-btn alpha-len-btn--wide${isBoth ? ' active' : ''}" onclick="setVspeedDrillMode('both')">Both</button>
+          </div>
+          <div class="alpha-setup-row">
+            <span class="alpha-ctrl-label">Reps</span>${repOpts}
+          </div>
+          <div class="alpha-setup-row">
+            <span class="alpha-ctrl-label">Timer</span>
+            <div class="alpha-toggle${s.timerEnabled ? ' alpha-toggle--on' : ''}" onclick="setVspeedTimerEnabled(${!s.timerEnabled})"></div>
+            ${timerSecsOpts}
+          </div>
+        </div>
+        <div class="vs-mode-desc"><strong>Drill configuration:</strong> ${
+          isBoth ? 'Random mix &mdash; sometimes the symbol, sometimes the speed.' :
+          isRev  ? 'You\'ll see an airspeed. Tap the V-speed symbol it matches.' :
+                   'You\'ll see a V-speed symbol. Tap the airspeed it matches.'
+        } ${s.drillCount} reps, ${s.timerEnabled ? `${s.timerSecs} second${s.timerSecs === 1 ? '' : 's'} per question.` : 'untimed.'}</div>
+        <button class="alpha-start-btn" onclick="startVspeedDrill()">Start Drill</button>
+        ${!s.timerEnabled ? `<div class="vs-timer-note"><strong>Note:</strong> No timer is fine while you&rsquo;re still learning the numbers. Once they start to stick, turn it on. You want these automatic, not something you have to think about when you&rsquo;re busy in the pattern.</div>` : ''}
+      </div>`;
+    return;
+  }
+
+  // ── Finish screen ──
+  if (s.finished) {
+    const pct = s.score.total ? Math.round(100 * s.score.correct / s.score.total) : 0;
+    const histHtml = s.history.map(h => {
+      let valHtml;
+      if (h.timedOut) {
+        valHtml = `<span class="vs-history-timeout">Timed out &rarr; ${h.correctVal} KIAS</span>`;
+      } else if (h.effectiveMode === 'forward') {
+        valHtml = h.ok
+          ? `${h.correctVal} KIAS`
+          : `<s>${h.chosen} KIAS</s> &rarr; ${h.correctVal} KIAS`;
+      } else {
+        const chosenMeta = VSPEEDS_META.find(m => m.key === h.chosen);
+        valHtml = h.ok
+          ? h.meta.symbol
+          : `<s>${chosenMeta ? chosenMeta.symbol : '?'}</s> &rarr; ${h.meta.symbol}`;
+      }
+      const timeHtml = h.elapsed !== undefined ? `<span class="vs-history-time">${h.elapsed}s</span>` : '';
+      return `<div class="vs-history-row${h.ok ? ' ok' : ' miss'}">
+        <span class="vs-history-symbol">${h.meta.symbol}</span>
+        <span class="vs-history-label">${h.meta.label}</span>
+        <span class="vs-history-val">${valHtml}</span>
+        ${timeHtml}
+      </div>`;
+    }).join('');
+    const mostlyFast = shouldNudgeVspeedTimer(s.history, s.score, s.timerEnabled);
+    const nudgeHtml = mostlyFast
+      ? `<div class="vs-timer-note"><strong>Nice.</strong> Most of those came in under 4 seconds. Try turning on the timer and see how you hold up under pressure.</div>`
+      : '';
+    el.innerHTML = `
+      <div class="alpha-drill" style="padding-top:16px">
+        <div class="alpha-finish-score">${s.score.correct} / ${s.score.total}</div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-bottom:16px">${pct}% correct</div>
+        <div class="cf-eyebrow" style="margin-bottom:8px">Your Answers</div>
+        <div class="vs-history">${histHtml}</div>
+        ${nudgeHtml}
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <button class="alpha-start-btn" style="flex:1" onclick="startVspeedDrill()">Go Again</button>
+          <button class="alpha-stop-btn" style="flex:1;margin-top:0" onclick="initVspeedDrill()">Settings</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // ── Active question ──
+  const { meta, correctVal, effectiveMode } = s.current;
+  const isRev = effectiveMode === 'reverse';
+  const progressHtml = `<span class="alpha-progress">${s.drillProgress + 1} / ${s.drillCount}</span>`;
+  const streakBadge = s.score.streak >= 3 ? `<span class="alpha-score-streak">&#128293;&nbsp;${s.score.streak}</span>` : '';
+  const scoreHtml = `<div class="alpha-score"><span class="alpha-score-stat">${s.score.correct}/${s.drillProgress}</span>${streakBadge}</div>`;
+  const backBtn = `<button class="vs-back-btn" onclick="initVspeedDrill()">&lsaquo; Settings</button>`;
+
+  const timerHtml = s.timerEnabled ? `
+    <div class="vs-timer">
+      <div class="vs-timer-track"><div class="vs-timer-bar" id="vs-timer-bar" style="width:100%;background:var(--terrain)"></div></div>
+      <span class="vs-timer-label" id="vs-timer-label">${Math.ceil(s._timerRemaining || s.timerSecs)}s</span>
+    </div>` : '';
+
+  let cardHtml, choicesHtml;
+  if (!isRev) {
+    cardHtml = `<div class="vs-card"><div class="vs-symbol">${meta.symbol}</div>${s.drillMode !== 'both' ? `<div class="vs-label">${meta.label}</div>` : ''}</div>`;
+    choicesHtml = s.choices.map(v => {
+      let cls = 'vs-choice';
+      if (s.answered) {
+        if (v === correctVal) cls += ' correct';
+        else if (v === s.selected) cls += ' wrong';
+        else cls += ' dim';
+      }
+      return `<button class="${cls}" onclick="answerVspeed(${v})" ${s.answered ? 'disabled' : ''}>${v}<span class="vs-choice-unit">KIAS</span></button>`;
+    }).join('');
+  } else {
+    cardHtml = `<div class="vs-card"><div class="vs-symbol vs-symbol--speed">${correctVal}<span class="vs-symbol-unit">KIAS</span></div><div class="vs-label">Which V-speed is this?</div></div>`;
+    choicesHtml = s.choices.map(m => {
+      const isCorrect = ALL_AIRCRAFT[currentAircraft].speeds[m.key] === correctVal;
+      let cls = 'vs-choice vs-choice--sym';
+      if (s.answered) {
+        if (isCorrect) cls += ' correct';
+        else if (m.key === s.selected) cls += ' wrong';
+        else cls += ' dim';
+      }
+      return `<button class="${cls}" onclick="answerVspeed('${m.key}')" ${s.answered ? 'disabled' : ''}>
+        <span class="vs-choice-sym-label">${m.symbol}</span>
+        <span class="vs-choice-sym-def">${m.label}</span>
+      </button>`;
+    }).join('');
+  }
+
+  const nextBtn = s.answered
+    ? `<button class="alpha-start-btn" style="margin-top:16px" onclick="_nextVspeedQuestion()">Next &rarr;</button>`
+    : '';
+
+  el.innerHTML = `
+    <div class="alpha-drill" style="padding-top:16px">
+      <div class="alpha-drill-header">${backBtn}${progressHtml}${scoreHtml}</div>
+      ${timerHtml}
+      ${cardHtml}
+      <div class="vs-choices">${choicesHtml}</div>
+      ${nextBtn}
+    </div>`;
+
+  if (s.timerEnabled && !s.answered) _updateVspeedTimerDOM();
 }
 
 // ── SEQUENCE RECALL ──

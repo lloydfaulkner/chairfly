@@ -1,7 +1,7 @@
 // node --test tests/data-integrity.test.js   (Node 18+)
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { ALL_AIRCRAFT, RADIO_SCENARIOS } = require('../js/data.js');
+const { ALL_AIRCRAFT, RADIO_SCENARIOS, VSPEEDS_META } = require('../js/data.js');
 const { AIRPORTS } = require('../js/airports.js');
 
 const KNOWN_ZONES = new Set([
@@ -102,6 +102,45 @@ describe('ALL_AIRCRAFT_Speeds', () => {
 
     test(`${id}Speeds_ApproachAtOrBelowVfe_IsWithinFlapsLimit`, () =>
       assert.ok(s.approach <= s.vfe, `${id}: approach(${s.approach}) must be <= Vfe(${s.vfe})`));
+  }
+});
+
+// ── VSPEEDS_META ─────────────────────────────────────────────────────────────
+
+describe('VSPEEDS_META', () => {
+  test('IsNonEmptyArray', () => {
+    assert.ok(Array.isArray(VSPEEDS_META));
+    assert.ok(VSPEEDS_META.length > 0);
+  });
+
+  test('AllEntries_HaveKeySymbolLabel', () => {
+    for (const m of VSPEEDS_META) {
+      assert.ok(m.key,    `VSPEEDS_META entry missing key: ${JSON.stringify(m)}`);
+      assert.ok(m.symbol, `VSPEEDS_META entry missing symbol: ${JSON.stringify(m)}`);
+      assert.ok(m.label,  `VSPEEDS_META entry missing label: ${JSON.stringify(m)}`);
+    }
+  });
+
+  test('NoDuplicateKeys', () => {
+    const keys = VSPEEDS_META.map(m => m.key);
+    assert.equal(new Set(keys).size, keys.length, 'VSPEEDS_META has duplicate keys');
+  });
+
+  test('NoDuplicateSymbols', () => {
+    const symbols = VSPEEDS_META.map(m => m.symbol);
+    assert.equal(new Set(symbols).size, symbols.length, 'VSPEEDS_META has duplicate symbols');
+  });
+
+  for (const id of AIRCRAFT_IDS) {
+    test(`${id}Speeds_ContainAllVspeedsMetaKeys`, () => {
+      const speeds = ALL_AIRCRAFT[id].speeds;
+      for (const m of VSPEEDS_META) {
+        assert.ok(
+          typeof speeds[m.key] === 'number',
+          `${id}.speeds.${m.key} (${m.symbol}) missing or not a number`,
+        );
+      }
+    });
   }
 });
 

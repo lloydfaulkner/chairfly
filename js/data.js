@@ -1172,4 +1172,14 @@ const PHONETIC_ALPHABET = {
   Z:'Zulu',
 };
 
-if (typeof module !== 'undefined') module.exports = { ALL_AIRCRAFT, RADIO_SCENARIOS, PHONETIC_ALPHABET, PHONETIC_NUMBERS };
+const VSPEEDS_META = [
+  { key: 'vr',         symbol: 'Vr',   label: 'Rotation speed' },
+  { key: 'vx',         symbol: 'Vx',   label: 'Best angle of climb' },
+  { key: 'vy',         symbol: 'Vy',   label: 'Best rate of climb' },
+  { key: 'vfe',        symbol: 'Vfe',  label: 'Max flaps extended' },
+  { key: 'bestGlide',  symbol: 'Vg',   label: 'Best glide' },
+  { key: 'approach',   symbol: 'Vapp', label: 'Normal approach' },
+  { key: 'shortFinal', symbol: 'Vref', label: 'Short final' },
+];
+
+if (typeof module !== 'undefined') module.exports = { ALL_AIRCRAFT, RADIO_SCENARIOS, PHONETIC_ALPHABET, PHONETIC_NUMBERS, VSPEEDS_META };
