@@ -908,18 +908,7 @@ const procState = {
 let _dropdownIdx = -1;
 
 function searchAirports(query) {
-  const q = query.trim();
-  if (q.length < 2) return [];
-  const qUp = q.toUpperCase();
-  const results = [];
-  for (const [icao, data] of Object.entries(AIRPORTS)) {
-    const [name, elev, notes, municipality = '', state = ''] = data;
-    const icaoMatch = icao.startsWith(qUp);
-    const nameMatch = name.toUpperCase().includes(qUp) || municipality.toUpperCase().includes(qUp) || state.toUpperCase() === qUp;
-    if (icaoMatch || nameMatch) results.push({ icao, name, elev, notes, municipality, state, icaoMatch });
-  }
-  results.sort((a, b) => b.icaoMatch - a.icaoMatch);
-  return results.slice(0, 8);
+  return searchAirportData(query, AIRPORTS);
 }
 
 function onAirportSearch(query) {
@@ -1010,8 +999,7 @@ function lookupAirport() {
 }
 
 function randomAirport() {
-  const keys = Object.keys(AIRPORTS);
-  const icao = keys[Math.floor(Math.random() * keys.length)];
+  const icao = pickRandomAirport(AIRPORTS);
   document.getElementById('proc-icao').value = icao;
   selectAirport(icao);
 }

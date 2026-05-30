@@ -1,7 +1,7 @@
 // node --test tests/utils.test.js   (Node 18+)
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { calcTPA, _firstSentence, radioCallMatches, airportCallName, shouldNudgeVspeedTimer } = require('../js/utils.js');
+const { calcTPA, _firstSentence, radioCallMatches, airportCallName, shouldNudgeVspeedTimer, searchAirportData, pickRandomAirport } = require('../js/utils.js');
 
 // ── calcTPA ──────────────────────────────────────────────────────────────────
 
@@ -192,4 +192,131 @@ describe('shouldNudgeVspeedTimer', () => {
 
   test('ZeroScoreTotal_ReturnsFalse', () =>
     assert.equal(shouldNudgeVspeedTimer(fast(5), { correct: 0, total: 0 }, false), false));
+});
+
+// ── searchAirportData ────────────────────────────────────────────────────────
+
+// Minimal fixture: [name, elev, notes, municipality, state]
+const FIXTURE = {
+  KUZA: ['Rock Hill - York County Airport', 666, '', 'Rock Hill', 'SC'],
+  KJQF: ['Concord-Padgett Regional Airport', 705, '', 'Concord', 'NC'],
+  KCLT: ['Charlotte Douglas International Airport', 748, '', 'Charlotte', 'NC'],
+  KRDU: ['Raleigh-Durham International Airport', 435, '', 'Raleigh', 'NC'],
+  KGSO: ['Piedmont Triad International Airport', 925, '', 'Greensboro', 'NC'],
+  KOAK: ['Metropolitan Oakland International Airport', 9, '', 'Oakland', 'CA'],
+  KSFO: ['San Francisco International Airport', 13, '', 'San Francisco', 'CA'],
+  KSEA: ['Seattle-Tacoma International Airport', 433, '', 'Seattle', 'WA'],
+  K1A5: ['Macon County Airport', 2020, '', 'Franklin', 'NC'],
+};
+
+describe('searchAirportData', () => {
+  test('QueryTooShort_ReturnsEmpty', () =>
+    assert.deepEqual(searchAirportData('K', FIXTURE), []));
+
+  test('EmptyQuery_ReturnsEmpty', () =>
+    assert.deepEqual(searchAirportData('', FIXTURE), []));
+
+  test('ExactIcaoPrefix_ReturnsMatch', () => {
+    const results = searchAirportData('KUZ', FIXTURE);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].icao, 'KUZA');
+  });
+
+  test('FullIcao_ReturnsMatch', () => {
+    const results = searchAirportData('KUZA', FIXTURE);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].icao, 'KUZA');
+  });
+
+  test('IcaoIsCaseInsensitive', () => {
+    const results = searchAirportData('kuza', FIXTURE);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].icao, 'KUZA');
+  });
+
+  test('MunicipalityMatch_ReturnsAirport', () => {
+    const results = searchAirportData('Rock Hill', FIXTURE);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].icao, 'KUZA');
+  });
+
+  test('PartialNameMatch_ReturnsAirport', () => {
+    const results = searchAirportData('Charlotte', FIXTURE);
+    // Matches name ("Charlotte Douglas...") and municipality ("Charlotte") for KCLT
+    assert.ok(results.some(r => r.icao === 'KCLT'));
+  });
+
+  test('StateMatch_ReturnsOnlyThatState', () => {
+    const results = searchAirportData('CA', FIXTURE);
+    assert.equal(results.length, 2);
+    assert.ok(results.every(r => r.state === 'CA'));
+  });
+
+  test('StateMatchIsCaseInsensitive', () => {
+    const results = searchAirportData('ca', FIXTURE);
+    assert.equal(results.length, 2);
+  });
+
+  test('IcaoMatchesRankedBeforeNameMatches', () => {
+    // 'KJ' matches KJQF by ICAO prefix; nothing matches by name starting with 'KJ'
+    // but also check ranking when both kinds appear
+    const mixed = {
+      KFOO: ['Foo Field', 100, '', 'KJ City', 'TX'],  // name/municipality match for 'KJ'
+      KJQF: ['Concord Airport', 500, '', 'Concord', 'TX'], // ICAO prefix match
+    };
+    const results = searchAirportData('KJ', mixed);
+    assert.equal(results[0].icaoMatch, true);
+    assert.equal(results[0].icao, 'KJQF');
+  });
+
+  test('ResultsCappedAtEight', () => {
+    const many = {};
+    for (let i = 0; i < 12; i++) {
+      many[`KABC${i}`] = [`Airport ${i}`, 100, '', `City ${i}`, 'TX'];
+    }
+    // All match 'KABC' prefix
+    const results = searchAirportData('KABC', many);
+    assert.equal(results.length, 8);
+  });
+
+  test('NoMatch_ReturnsEmpty', () =>
+    assert.deepEqual(searchAirportData('ZZZZ', FIXTURE), []));
+
+  test('ResultShape_HasExpectedFields', () => {
+    const [r] = searchAirportData('KUZA', FIXTURE);
+    assert.ok('icao' in r && 'name' in r && 'elev' in r && 'municipality' in r && 'state' in r && 'icaoMatch' in r);
+  });
+
+  test('IcaoMatchFlag_TrueForIcaoPrefixHit', () => {
+    const [r] = searchAirportData('KUZA', FIXTURE);
+    assert.equal(r.icaoMatch, true);
+  });
+
+  test('IcaoMatchFlag_FalseForNameOnlyHit', () => {
+    const results = searchAirportData('Rock Hill', FIXTURE);
+    assert.equal(results[0].icaoMatch, false);
+  });
+});
+
+// ── pickRandomAirport ────────────────────────────────────────────────────────
+
+describe('pickRandomAirport', () => {
+  test('ReturnedIcaoExistsInDatabase', () => {
+    const icao = pickRandomAirport(FIXTURE);
+    assert.ok(icao in FIXTURE, `Expected "${icao}" to be a key in the fixture`);
+  });
+
+  test('SingleEntryDatabase_AlwaysReturnsThatEntry', () => {
+    const single = { KUZA: ['Rock Hill', 666, '', 'Rock Hill', 'SC'] };
+    assert.equal(pickRandomAirport(single), 'KUZA');
+  });
+
+  test('DistributionCoversAllKeys', () => {
+    // Run enough times that every key in a small set is picked at least once.
+    // With 4 keys and 200 draws the probability of missing any one is (3/4)^200 ≈ 10^-25.
+    const small = { KA: [], KB: [], KC: [], KD: [] };
+    const seen = new Set();
+    for (let i = 0; i < 200; i++) seen.add(pickRandomAirport(small));
+    assert.deepEqual(seen, new Set(['KA', 'KB', 'KC', 'KD']));
+  });
 });

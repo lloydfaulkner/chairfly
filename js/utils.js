@@ -37,4 +37,28 @@ function shouldNudgeVspeedTimer(history, score, timerEnabled) {
   return true;
 }
 
-if (typeof module !== 'undefined') module.exports = { calcTPA, _firstSentence, radioCallMatches, airportCallName, shouldNudgeVspeedTimer };
+// Searches an airports object ({ ICAO: [name, elev, notes, municipality, state] }) by query.
+// Matches ICAO prefix, airport name, municipality, or exact state abbreviation.
+// Returns up to 8 results sorted so ICAO prefix matches come first.
+function searchAirportData(query, airports) {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const qUp = q.toUpperCase();
+  const results = [];
+  for (const [icao, data] of Object.entries(airports)) {
+    const [name, elev, notes, municipality = '', state = ''] = data;
+    const icaoMatch = icao.startsWith(qUp);
+    const nameMatch = name.toUpperCase().includes(qUp) || municipality.toUpperCase().includes(qUp) || state.toUpperCase() === qUp;
+    if (icaoMatch || nameMatch) results.push({ icao, name, elev, notes, municipality, state, icaoMatch });
+  }
+  results.sort((a, b) => b.icaoMatch - a.icaoMatch);
+  return results.slice(0, 8);
+}
+
+// Returns a random ICAO key from an airports object.
+function pickRandomAirport(airports) {
+  const keys = Object.keys(airports);
+  return keys[Math.floor(Math.random() * keys.length)];
+}
+
+if (typeof module !== 'undefined') module.exports = { calcTPA, _firstSentence, radioCallMatches, airportCallName, shouldNudgeVspeedTimer, searchAirportData, pickRandomAirport };
