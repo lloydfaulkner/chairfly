@@ -437,6 +437,7 @@
             <div class="proc-field-hint">Search by airport code or city name</div>
             <div class="proc-field-row">
               <input class="proc-input" id="proc-icao" placeholder="Airport code or city (e.g. KRDU, Charlotte)" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="onAirportSearch(this.value)" onkeydown="onAirportSearchKey(event)" onblur="setTimeout(hideAirportDropdown,150)" value="KUZA"/>
+              <button class="proc-lookup-btn" onclick="randomAirport()">Random</button>
               <div id="proc-airport-dropdown" class="proc-airport-dropdown" style="display:none"></div>
             </div>
             <div id="proc-airport-result"></div>

@@ -217,14 +217,15 @@ describe('AIRPORTS', () => {
     assert.ok(Object.keys(AIRPORTS).length > 0);
   });
 
-  test('AllEntries_HaveNameElevationNotesMunicipalityStructure', () => {
+  test('AllEntries_HaveNameElevationNotesMunicipalityStateStructure', () => {
     for (const [icao, entry] of Object.entries(AIRPORTS)) {
       assert.ok(Array.isArray(entry),          `${icao}: entry must be array`);
-      assert.equal(entry.length, 4,            `${icao}: entry must have 4 elements`);
+      assert.equal(entry.length, 5,            `${icao}: entry must have 5 elements`);
       assert.equal(typeof entry[0], 'string',  `${icao}: name must be string`);
       assert.equal(typeof entry[1], 'number',  `${icao}: elevation must be number`);
       assert.equal(typeof entry[2], 'string',  `${icao}: notes must be string`);
       assert.equal(typeof entry[3], 'string',  `${icao}: municipality must be string`);
+      assert.equal(typeof entry[4], 'string',  `${icao}: state must be string`);
     }
   });
 

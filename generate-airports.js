@@ -158,6 +158,7 @@ https.get('https://davidmegginson.github.io/ourairports-data/airports.csv', (res
       name:        headers.indexOf('name'),
       elev:        headers.indexOf('elevation_ft'),
       country:     headers.indexOf('iso_country'),
+      region:      headers.indexOf('iso_region'),
       municipality: headers.indexOf('municipality'),
     };
 
@@ -185,8 +186,10 @@ https.get('https://davidmegginson.github.io/ourairports-data/airports.csv', (res
       const elev = parseInt(elevStr) || 0;
       const municipality = f[idx.municipality] || '';
       const notes = NOTES[ident] || '';
+      const region = f[idx.region] || '';
+      const state = region.startsWith('US-') ? region.slice(3) : '';
 
-      airports[ident] = [name, elev, notes, municipality];
+      airports[ident] = [name, elev, notes, municipality, state];
     }
 
     const date = new Date().toISOString().slice(0, 10);
@@ -197,15 +200,15 @@ https.get('https://davidmegginson.github.io/ourairports-data/airports.csv', (res
     let out = `// Generated from OurAirports — https://ourairports.com/data/\n`;
     out    += `// Filter: US public-use airports (small/medium/large), 4-char ICAO ident, elevation known\n`;
     out    += `// Updated: ${date} · ${count} airports\n`;
-    out    += `// Format: [name, elevation_ft_msl, notes, municipality]\n\n`;
+    out    += `// Format: [name, elevation_ft_msl, notes, municipality, state]\n\n`;
     out    += `const AIRPORTS = {\n`;
 
     for (const [icao, d] of Object.entries(airports).sort()) {
-      const [name, elev, notes, muni] = d;
-      out += `  ${icao}: ['${esc(name)}', ${elev}, '${esc(notes)}', '${esc(muni)}'],\n`;
+      const [name, elev, notes, muni, state] = d;
+      out += `  ${icao}: ['${esc(name)}', ${elev}, '${esc(notes)}', '${esc(muni)}', '${esc(state)}'],\n`;
     }
 
-    out += `};\n`;
+    out += `};\n\nif (typeof module !== 'undefined') module.exports = { AIRPORTS };\n`;
 
     const outPath = path.join(__dirname, 'js', 'airports.js');
     fs.writeFileSync(outPath, out, 'utf8');

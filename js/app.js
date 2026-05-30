@@ -81,6 +81,8 @@ function updateHash() {
       parts.push(procState.airport.icao);
       parts.push(procState._lastProcId);
       parts.push(procState.inRecall ? 'recall' : procState.currentStep);
+    } else {
+      parts.push(currentProcMode); // 'airport' or 'airwork'
     }
   }
   const hash = '#' + parts.join('/');
@@ -181,7 +183,9 @@ function selectDrill(drill, mode) {
     if (!vspeedState.started && !vspeedState.finished) initVspeedDrill();
     updateHash();
   } else if (drill === 'procedures' && (mode === 'airport' || mode === 'airwork')) {
+    _setProcModeUI(mode);
     filterProcedures(mode);
+    updateHash();
   }
 }
 
@@ -909,10 +913,10 @@ function searchAirports(query) {
   const qUp = q.toUpperCase();
   const results = [];
   for (const [icao, data] of Object.entries(AIRPORTS)) {
-    const [name, elev, notes, municipality = ''] = data;
+    const [name, elev, notes, municipality = '', state = ''] = data;
     const icaoMatch = icao.startsWith(qUp);
-    const nameMatch = name.toUpperCase().includes(qUp) || municipality.toUpperCase().includes(qUp);
-    if (icaoMatch || nameMatch) results.push({ icao, name, elev, notes, municipality, icaoMatch });
+    const nameMatch = name.toUpperCase().includes(qUp) || municipality.toUpperCase().includes(qUp) || state.toUpperCase() === qUp;
+    if (icaoMatch || nameMatch) results.push({ icao, name, elev, notes, municipality, state, icaoMatch });
   }
   results.sort((a, b) => b.icaoMatch - a.icaoMatch);
   return results.slice(0, 8);
@@ -927,7 +931,7 @@ function onAirportSearch(query) {
     dd.innerHTML = results.map(r =>
       `<div class="proc-airport-option" data-icao="${r.icao}" onclick="selectAirport('${r.icao}')">` +
       `<span class="proc-airport-option-icao">${r.icao}</span>` +
-      `<span class="proc-airport-option-name">${r.name}</span>` +
+      `<span class="proc-airport-option-name">${r.name}${r.state ? ` <span class="proc-airport-option-state">${r.state}</span>` : ''}</span>` +
       `</div>`
     ).join('');
     dd.style.display = '';
@@ -982,13 +986,13 @@ function selectAirport(icao) {
 
   const ap = AIRPORTS[icao];
   if (ap) {
-    const [name, elev, notes, municipality] = ap;
+    const [name, elev, notes, municipality, state = ''] = ap;
     const tpa = Math.round((elev + 1000) / 100) * 100;
     const callName = airportCallName(name, municipality);
     procState.airport = { icao, name, elev, tpa, callName };
     result.innerHTML = `
       <div class="proc-airport-result">
-        <div class="proc-airport-name">${name}</div>
+        <div class="proc-airport-name">${name}${state ? ` <span class="proc-airport-option-state">${state}</span>` : ''}</div>
         <div class="proc-airport-meta">${icao} · Elev ${elev} ft MSL${notes ? ' · ' + notes : ''}</div>
       </div>`;
     manual.style.display = 'none';
@@ -1003,6 +1007,13 @@ function selectAirport(icao) {
 function lookupAirport() {
   const icao = document.getElementById('proc-icao').value.trim().toUpperCase();
   if (icao.length >= 3) selectAirport(icao);
+}
+
+function randomAirport() {
+  const keys = Object.keys(AIRPORTS);
+  const icao = keys[Math.floor(Math.random() * keys.length)];
+  document.getElementById('proc-icao').value = icao;
+  selectAirport(icao);
 }
 
 function updateManualValues() {
@@ -2483,9 +2494,10 @@ function filterProcedures(category) {
   });
   const eyebrow = document.querySelector('#proc-screen-setup .cf-eyebrow');
   if (eyebrow) {
-    eyebrow.textContent = category === 'airport' ? 'Airport Procedures'
-                        : category === 'airwork'  ? 'Airwork'
-                        : 'Procedure Briefing';
+    const desc = category === 'airport' ? 'Procedures flown in the vicinity of the field, such as takeoffs, landings, and the traffic pattern'
+               : category === 'airwork' ? 'Maneuvers practiced away from the field in the practice area, such as slow flight and stalls'
+               : 'Select a procedure to begin';
+    eyebrow.textContent = desc;
   }
 }
 
@@ -2832,7 +2844,7 @@ function renderVspeedDrill() {
     el.innerHTML = `
       <div class="alpha-drill" style="padding-top:16px">
         ${pillHtml}
-        <div class="alpha-setup-desc">V-speeds tell you when to rotate, how to climb, and how fast to fly the pattern. Knowing them without thinking frees up your attention for everything else. This drill uses repetition to make them automatic. The goal is for the right number to surface before you even finish reading the question.</div>
+        <div class="alpha-setup-desc">Knowing v-speeds without thinking frees up your attention for everything else. This drill uses repetition to make them automatic. The goal is for the right number to surface before you even finish reading the question.</div>
         <div class="alpha-preview-card">${exCard}<div class="alpha-preview-caption">${exCaption}</div></div>
         <div class="alpha-setup-controls">
           <div class="alpha-setup-row">
@@ -4427,28 +4439,38 @@ function restoreNav() {
       setRadioInputMode('speak');
     }
   } else if (view === 'procedures') {
-    const icao     = parts[i];
-    const procId   = parts[i + 1];
-    const stepPart = parts[i + 2];
-    if (icao && procId) {
-      const apData = AIRPORTS[icao];
-      if (apData) {
-        const [name, elev] = apData;
-        procState.airport = { icao, name, elev, tpa: Math.round((elev + 1000) / 100) * 100 };
-        document.getElementById('proc-icao').value = icao;
-        lookupAirport();
-      }
-      startProcedure(procId);
-      if (stepPart && stepPart !== 'recall') {
-        const stepIdx = parseInt(stepPart, 10);
-        if (!isNaN(stepIdx)) {
-          procAdvanceFromRecall();
-          procState.currentStep = stepIdx;
-          renderProcStep();
-        }
-      }
-    } else {
+    const sub = parts[i];
+    if (sub === 'vspeeds') {
+      _setProcModeUI('vspeeds');
+      if (!vspeedState.started && !vspeedState.finished) initVspeedDrill();
+    } else if (sub === 'airport' || sub === 'airwork') {
+      _setProcModeUI(sub);
       showProcScreen('proc-screen-setup');
+      filterProcedures(sub);
+    } else {
+      const icao     = sub;
+      const procId   = parts[i + 1];
+      const stepPart = parts[i + 2];
+      if (icao && procId) {
+        const apData = AIRPORTS[icao];
+        if (apData) {
+          const [name, elev] = apData;
+          procState.airport = { icao, name, elev, tpa: Math.round((elev + 1000) / 100) * 100 };
+          document.getElementById('proc-icao').value = icao;
+          lookupAirport();
+        }
+        startProcedure(procId);
+        if (stepPart && stepPart !== 'recall') {
+          const stepIdx = parseInt(stepPart, 10);
+          if (!isNaN(stepIdx)) {
+            procAdvanceFromRecall();
+            procState.currentStep = stepIdx;
+            renderProcStep();
+          }
+        }
+      } else {
+        showProcScreen('proc-screen-setup');
+      }
     }
   }
 
