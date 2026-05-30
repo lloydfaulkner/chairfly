@@ -4307,9 +4307,13 @@
   z-index: 199;
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.25s, pointer-events 0s 0.25s;
+}
+.cf-sheet-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
   transition: opacity 0.25s;
 }
-.cf-sheet-backdrop.open { opacity: 1; pointer-events: all; }
 
 .cf-aircraft-sheet {
   position: fixed;
@@ -4541,9 +4545,13 @@
   z-index: 149;
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.25s, pointer-events 0s 0.25s;
+}
+.drill-sheet-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
   transition: opacity 0.25s;
 }
-.drill-sheet-backdrop.open { opacity: 1; pointer-events: all; }
 
 .drill-sheet {
   position: fixed;
