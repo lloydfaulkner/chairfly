@@ -3977,7 +3977,7 @@
 }
 .cf-topbar  { grid-area: header; }
 .cf-sidebar { grid-area: sidebar; }
-.cf-main    { grid-area: main; overflow-y: auto; overflow-x: hidden; min-height: 0; min-width: 0; }
+.cf-main    { grid-area: main; overflow-y: auto; overflow-x: hidden; min-height: 0; min-width: 0; overscroll-behavior: contain; }
 
 /* The original #app rule sets display:flex on the same element — reset it so
    .view children are plain block elements and fill the column width naturally */
