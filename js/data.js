@@ -2,7 +2,7 @@ const ALL_AIRCRAFT = {
   c172: {
     name: 'C172 Skyhawk',
     label: 'C172',
-    speeds: { vr: 52, vx: 59, vy: 74, vfe: 85, approach: 70, shortFinal: 65, bestGlide: 65, vs0: 43, vs: 50, va: 99, vno: 122, vne: 151 },
+    speeds: { vr: 52, vx: 59, vy: 71, vfe: 87, approach: 70, shortFinal: 65, bestGlide: 65, vs0: 43, vs: 50, va: 99, vno: 122, vne: 151 },
     checklists: {
   preflight: {
     label: 'Preflight',

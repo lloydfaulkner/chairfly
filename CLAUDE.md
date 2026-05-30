@@ -195,8 +195,8 @@ Multiple-choice flashcard drill drawn from `VSPEEDS_META` in `data.js`.
 ## Aircraft data
 
 ### C172 Skyhawk (steam gauge)
-- Vr: 52 KIAS, Vx: 59 KIAS, Vy: 74 KIAS
-- Vfe: 85 KIAS (max flaps extended speed)
+- Vr: 52 KIAS, Vx: 59 KIAS, Vy: 71 KIAS
+- Vfe: 87 KIAS (max flaps extended speed)
 - Approach: 70 KIAS, Short final: 65 KIAS, Best glide: 65 KIAS
 - Flap positions: 0° / 10° / 20° / 30°
 - Standard pattern: 1000 ft AGL
