@@ -164,10 +164,10 @@ function openAircraftSheet() {
 }
 
 function closeAircraftSheet() {
-  _unlockScroll();
   document.getElementById('cf-sheet-backdrop').classList.remove('open');
   document.getElementById('cf-aircraft-sheet').classList.remove('open');
   window.scrollTo(0, 0);
+  setTimeout(_unlockScroll, 350);
 }
 
 function openDrillSheet() {
@@ -177,10 +177,10 @@ function openDrillSheet() {
 }
 
 function closeDrillSheet() {
-  _unlockScroll();
   document.getElementById('drill-sheet-backdrop').classList.remove('open');
   document.getElementById('drill-sheet').classList.remove('open');
   window.scrollTo(0, 0);
+  setTimeout(_unlockScroll, 350);
 }
 
 function selectDrill(drill, mode) {
