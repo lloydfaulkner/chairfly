@@ -2705,7 +2705,7 @@ function renderVspeedDrill() {
           <div class="alpha-preview-card">${sitCard}<div class="alpha-preview-caption">Tap the symbol or speed the situation calls for &middot; ${ac.name}</div></div>
           <div class="alpha-setup-controls">
             <div class="alpha-setup-row">
-              <span class="alpha-ctrl-label" style="min-width:46px">Reps</span>${repOpts}
+              <span class="alpha-ctrl-label" style="min-width:62px">Reps</span>${repOpts}
             </div>
           </div>
           <div class="vs-mode-desc"><strong>Drill configuration:</strong> You&rsquo;ll see a V-speed symbol. Tap the situation that describes when you&rsquo;d use it. ${s.drillCount} reps, untimed.</div>
@@ -2757,21 +2757,21 @@ function renderVspeedDrill() {
         <div class="alpha-preview-card">${exCard}<div class="alpha-preview-caption">${exCaption}</div></div>
         <div class="alpha-setup-controls">
           <div class="alpha-setup-row">
-            <span class="alpha-ctrl-label" style="min-width:46px">Mode</span>
+            <span class="alpha-ctrl-label" style="min-width:62px">Mode</span>
             <button class="alpha-len-btn alpha-len-btn--wide${!isRev && !isBoth && !isLabel ? ' active' : ''}" onclick="setVspeedDrillMode('forward')" ${isBoth ? 'disabled' : ''}>Symbol</button>
             <button class="alpha-len-btn alpha-len-btn--wide${isRev ? ' active' : ''}" onclick="setVspeedDrillMode('reverse')" ${isBoth ? 'disabled' : ''}>Speed</button>
             <button class="alpha-len-btn alpha-len-btn--wide${isLabel ? ' active' : ''}" onclick="setVspeedDrillMode('label')" ${isBoth ? 'disabled' : ''}>Label</button>
           </div>
           <div class="alpha-setup-row">
-            <span class="alpha-ctrl-label" style="min-width:46px">Random</span>
+            <span class="alpha-ctrl-label" style="min-width:62px">Random</span>
             <div class="alpha-toggle${isBoth ? ' alpha-toggle--on' : ''}" onclick="setVspeedDrillMode('${isBoth ? 'forward' : 'both'}')"></div>
             <span class="alpha-toggle-note">${isBoth ? 'mix of Symbol, Speed, &amp; Label' : ''}</span>
           </div>
           <div class="alpha-setup-row">
-            <span class="alpha-ctrl-label" style="min-width:46px">Reps</span>${repOpts}
+            <span class="alpha-ctrl-label" style="min-width:62px">Reps</span>${repOpts}
           </div>
           <div class="alpha-setup-row">
-            <span class="alpha-ctrl-label" style="min-width:46px">Timer</span>
+            <span class="alpha-ctrl-label" style="min-width:62px">Timer</span>
             <div class="alpha-toggle${s.timerEnabled ? ' alpha-toggle--on' : ''}" onclick="setVspeedTimerEnabled(${!s.timerEnabled})"></div>
             ${timerSecsOpts}
           </div>
