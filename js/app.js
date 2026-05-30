@@ -63,7 +63,7 @@ function toggleMode() {
 function updateHash() {
   if (_restoringNav) return;
   const parts = [];
-  if (currentAircraft !== 'c172') parts.push(currentAircraft);
+  parts.push(currentAircraft);
   parts.push(currentView);
   if (currentView === 'checklist') {
     if (currentClMode !== 'reference' || state.checklist.phase !== 'preflight') {
@@ -95,15 +95,16 @@ function switchAircraft(key, btn) {
   EMERGENCIES = ac.emergencies;
   _quizAllPool = null; // invalidate cross-phase distractor cache
 
-  // Update all aircraft buttons (sidebar + aircraft hub)
+  // Update all aircraft buttons (sidebar)
   document.querySelectorAll('[data-aircraft]').forEach(b => b.classList.remove('active'));
   document.querySelectorAll(`[data-aircraft="${key}"]`).forEach(b => b.classList.add('active'));
 
-  // Update drills hub context line and aircraft hub current card
+  // Update header aircraft button and drills hub context line
+  const acLabel = document.getElementById('cf-aircraft-label');
+  if (acLabel) acLabel.textContent = ac.label || ac.name;
   const ctx = document.getElementById('drills-hub-context');
   if (ctx) ctx.textContent = `${ac.label || ac.name}`;
-  const currentCard = document.getElementById('aircraft-hub-current');
-  if (currentCard) currentCard.querySelector('.cf-aircraft-current-name').textContent = ac.name;
+  closeAircraftSheet();
 
   // Update page eyebrow
   document.getElementById('cl-section-label').textContent = `↳ REFERENCE · ${ac.name.toUpperCase()} · POH-DERIVED`;
@@ -124,6 +125,36 @@ function switchAircraft(key, btn) {
   procState.currentProc = null;
   showProcScreen('proc-screen-setup');
   updateHash();
+}
+
+function openAircraftSheet() {
+  const ac = ALL_AIRCRAFT[currentAircraft];
+  const s = ac.speeds;
+  document.getElementById('cf-sheet-name').textContent = ac.name;
+  document.getElementById('cf-sheet-sub').textContent = `${ac.variant} · ${ac.engine}`;
+
+  const speeds = [
+    ['Vr', s.vr], ['Vx', s.vx], ['Vy', s.vy],
+    ['Vfe', s.vfe], ['Va', s.va], ['Vno', s.vno],
+    ['Vne', s.vne], ['Vs', s.vs], ['Vs0', s.vs0],
+    ['Vg', s.bestGlideGross ? `${s.bestGlide} / ${s.bestGlideGross} gross` : s.bestGlide],
+    ['Approach', s.approach], ['Short Final', s.shortFinal],
+  ];
+  document.getElementById('cf-sheet-speeds').innerHTML = speeds.map(([label, val]) =>
+    `<div class="cf-sheet-speed-row"><span class="cf-sheet-speed-label">${label}</span><span class="cf-sheet-speed-val">${val}</span></div>`
+  ).join('');
+
+  document.getElementById('cf-sheet-switch-btns').innerHTML = Object.entries(ALL_AIRCRAFT).map(([key, a]) =>
+    `<button class="cf-hub-btn${key === currentAircraft ? ' active' : ''}" data-aircraft="${key}" onclick="switchAircraft('${key}', this)">${a.name}</button>`
+  ).join('');
+
+  document.getElementById('cf-sheet-backdrop').classList.add('open');
+  document.getElementById('cf-aircraft-sheet').classList.add('open');
+}
+
+function closeAircraftSheet() {
+  document.getElementById('cf-sheet-backdrop').classList.remove('open');
+  document.getElementById('cf-aircraft-sheet').classList.remove('open');
 }
 
 function _switchViewOnly(name) {
@@ -159,9 +190,8 @@ function switchDrill(type) {
 
 function switchBottomTab(tabName) {
   _setBottomTabActive(tabName);
-  if (tabName === 'drills')        _switchViewOnly('drills-hub');
-  else if (tabName === 'aircraft') _switchViewOnly('aircraft-hub');
-  else if (tabName === 'more')     _switchViewOnly('more-hub');
+  if (tabName === 'drills') _switchViewOnly('drills-hub');
+  else if (tabName === 'more') _switchViewOnly('more-hub');
 }
 
 // ── CHECKLIST ──
@@ -2709,7 +2739,7 @@ function renderVspeedDrill() {
             </div>
           </div>
           <div class="vs-mode-desc"><strong>Drill configuration:</strong> You&rsquo;ll see a V-speed symbol. Tap the situation that describes when you&rsquo;d use it. ${s.drillCount} reps, untimed.</div>
-          <button class="alpha-start-btn" onclick="startVspeedDrill()">Start Drill</button>
+          <button class="alpha-start-btn" onclick="startVspeedDrill()">Start Drill for ${ac.name}</button>
         </div>`;
       return;
     }
@@ -2782,7 +2812,7 @@ function renderVspeedDrill() {
           isLabel ? 'You\'ll see a V-speed symbol. Tap the name it stands for.' :
                     'You\'ll see a V-speed symbol. Tap the airspeed it matches.'
         } ${s.drillCount} reps, ${s.timerEnabled ? `${s.timerSecs} second${s.timerSecs === 1 ? '' : 's'} per question.` : 'untimed.'}</div>
-        <button class="alpha-start-btn" onclick="startVspeedDrill()">Start Drill</button>
+        <button class="alpha-start-btn" onclick="startVspeedDrill()">Start Drill for ${ac.name}</button>
         ${!s.timerEnabled ? `<div class="vs-timer-note"><strong>Note:</strong> No timer is fine while you&rsquo;re still learning the numbers. Once they start to stick, turn it on. You want these automatic, not something you have to think about when you&rsquo;re busy in the pattern.</div>` : ''}
       </div>`;
     return;
@@ -4421,6 +4451,9 @@ function verdictNext() {
 document.addEventListener('DOMContentLoaded', () => {
   // Sync mode toggle button state with boot-time mode
   _applyMode(document.documentElement.dataset.mode || 'day', false);
+  // Initialize aircraft header button
+  const acLabel = document.getElementById('cf-aircraft-label');
+  if (acLabel) acLabel.textContent = ALL_AIRCRAFT[currentAircraft].label || ALL_AIRCRAFT[currentAircraft].name;
   initChecklist();
   initRadio();
   initEmergency();

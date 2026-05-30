@@ -32,7 +32,10 @@
       </svg>
       <span class="cf-wordmark-text"><span class="cf-wm-chair">chair</span><span class="cf-wm-fly">fly</span></span>
     </div>
-    <div class="cf-avatar mono" aria-hidden="true">LL</div>
+    <button class="cf-aircraft-btn" id="cf-aircraft-btn" onclick="openAircraftSheet()" aria-label="Current aircraft — tap for specs and switching">
+      <svg width="8" height="5" viewBox="0 0 8 5" fill="currentColor" aria-hidden="true"><polygon points="0,0 8,0 4,5"/></svg>
+      <span id="cf-aircraft-label">Cessna 172 I/K/L</span>
+    </button>
     <button class="cf-mode-toggle" id="cf-mode-toggle" onclick="toggleMode()" aria-label="Switch to night mode" aria-pressed="false">
       <!-- sun icon (shown in night mode, click to day) -->
       <svg class="cf-mode-icon cf-mode-icon--sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -62,8 +65,8 @@
     <button class="cf-sidebar-btn" data-drill="emergency" onclick="switchDrill('emergency')">Emergency Procs</button>
 
     <div class="cf-sidebar-category">Aircraft</div>
-    <button class="cf-sidebar-btn active" data-aircraft="c172" onclick="switchAircraft('c172', this)">C172 Skyhawk</button>
-    <button class="cf-sidebar-btn" data-aircraft="cherokee140" onclick="switchAircraft('cherokee140', this)">PA-28 Cherokee</button>
+    <button class="cf-sidebar-btn active" data-aircraft="c172" onclick="switchAircraft('c172', this)">Cessna 172 I/K/L</button>
+    <button class="cf-sidebar-btn" data-aircraft="cherokee140" onclick="switchAircraft('cherokee140', this)">Cherokee 140</button>
 
     <div class="cf-sidebar-category">Account</div>
     <button class="cf-sidebar-btn">Settings</button>
@@ -148,19 +151,6 @@
           </div>
           <span class="hub-card-arrow">›</span>
         </button>
-      </div>
-    </div>
-
-    <!-- AIRCRAFT HUB (mobile Aircraft tab) -->
-    <div class="view" id="view-aircraft-hub">
-      <div class="cf-hub">
-        <div class="cf-hub-section-label">Current Aircraft</div>
-        <div class="cf-aircraft-current" id="aircraft-hub-current">
-          <div class="cf-aircraft-current-name">C172 Skyhawk</div>
-        </div>
-        <div class="cf-hub-section-label" style="margin-top:16px">Switch Aircraft</div>
-        <button class="cf-hub-btn" data-aircraft="c172" onclick="switchAircraft('c172', this)">C172 Skyhawk</button>
-        <button class="cf-hub-btn" data-aircraft="cherokee140" onclick="switchAircraft('cherokee140', this)">PA-28 Cherokee</button>
       </div>
     </div>
 
@@ -646,10 +636,20 @@
   <!-- BOTTOM NAV (mobile only, shown via CSS) -->
   <nav class="cf-bottom-nav" id="cf-bottom-nav">
     <button class="cf-bottom-tab active" data-tab="drills" onclick="switchBottomTab('drills')">Drills</button>
-    <button class="cf-bottom-tab" data-tab="aircraft" onclick="switchBottomTab('aircraft')">Aircraft</button>
     <button class="cf-bottom-tab" data-tab="more" onclick="switchBottomTab('more')">More</button>
   </nav>
 
+</div>
+
+<!-- AIRCRAFT SPEC SHEET -->
+<div class="cf-sheet-backdrop" id="cf-sheet-backdrop" onclick="closeAircraftSheet()"></div>
+<div class="cf-aircraft-sheet" id="cf-aircraft-sheet" role="dialog" aria-modal="true" aria-label="Aircraft specs">
+  <div class="cf-sheet-handle"></div>
+  <div class="cf-sheet-name" id="cf-sheet-name"></div>
+  <div class="cf-sheet-sub" id="cf-sheet-sub"></div>
+  <div class="cf-sheet-speeds" id="cf-sheet-speeds"></div>
+  <div class="cf-sheet-section-label">Switch Aircraft</div>
+  <div class="cf-sheet-switch-btns" id="cf-sheet-switch-btns"></div>
 </div>
 
 <!-- VERDICT SHEET -->

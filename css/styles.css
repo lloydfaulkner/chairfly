@@ -3762,6 +3762,27 @@
 }
 .cf-mode-toggle:hover { background: var(--paper-2); color: var(--ink-2); }
 
+.cf-aircraft-btn {
+  margin-left: auto;
+  padding: 6px 12px;
+  background: var(--paper);
+  border: 1.5px solid var(--sky);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.08);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--sky);
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cf-aircraft-btn:hover { background: var(--paper-2); }
+.cf-aircraft-btn { display: flex; align-items: center; gap: 5px; }
+
 /* Show moon in day mode, sun in night mode */
 .cf-mode-icon--sun  { display: none; }
 .cf-mode-icon--moon { display: block; }
@@ -3811,7 +3832,7 @@
   .cf-tab { flex-shrink: 0; }
 }
 
-/* ── Top bar: hide pill + avatar below 640px ── */
+/* ── Top bar: hide legacy pill + avatar below 640px; aircraft-btn always visible ── */
 @media (max-width: 640px) {
   .cf-aircraft-pill { display: none; }
   .cf-avatar { display: none; }
@@ -4261,6 +4282,112 @@
   .verdict-sheet[data-status="partial"] { border-color: var(--sky);     border-top-color: var(--sky); }
   .verdict-handle { display: none; }
   .verdict-actions { padding-bottom: 20px; }
+}
+
+/* ── Aircraft Spec Sheet ─────────────────────────────────────────────────── */
+.cf-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: oklch(0% 0 0 / 0.45);
+  z-index: 199;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.cf-sheet-backdrop.open { opacity: 1; pointer-events: all; }
+
+.cf-aircraft-sheet {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translate(-50%, 100%);
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--paper);
+  border-top: 2px solid var(--sky);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  z-index: 200;
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  padding: 0 0 32px;
+  -webkit-tap-highlight-color: transparent;
+}
+.cf-aircraft-sheet.open { transform: translate(-50%, 0); }
+
+.cf-sheet-handle {
+  width: 36px; height: 3px;
+  background: var(--rule-strong);
+  border-radius: 2px;
+  margin: 12px auto 16px;
+  flex-shrink: 0;
+}
+
+.cf-sheet-name {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 0 20px 4px;
+}
+
+.cf-sheet-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.cf-sheet-speeds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.cf-sheet-speed-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 8px 20px;
+  gap: 12px;
+}
+
+.cf-sheet-speed-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.cf-sheet-speed-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+}
+
+.cf-sheet-section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 16px 20px 8px;
+}
+
+.cf-sheet-switch-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px;
 }
 
 /* ── Drills Hub ──────────────────────────────────────────────────────────── */

@@ -1,8 +1,10 @@
 const ALL_AIRCRAFT = {
   c172: {
-    name: 'C172 Skyhawk',
-    label: 'C172',
-    speeds: { vr: 52, vx: 59, vy: 71, vfe: 87, approach: 70, shortFinal: 65, bestGlide: 65, vs0: 43, vs: 50, va: 99, vno: 122, vne: 151 },
+    name: 'Cessna 172 I/K/L',
+    label: 'Cessna 172 I/K/L',
+    variant: 'Skyhawk',
+    engine: 'Lycoming O-320 · 150 HP',
+    speeds: { vr: 52, vx: 59, vy: 71, vfe: 87, approach: 70, shortFinal: 61, bestGlide: 65, bestGlideGross: 70, vs0: 43, vs: 50, va: 99, vno: 122, vne: 151 },
     checklists: {
   preflight: {
     label: 'Preflight',
@@ -802,7 +804,9 @@ const ALL_AIRCRAFT = {
 
   cherokee140: {
     name: 'Cherokee 140',
-    label: 'PA-28',
+    label: 'Cherokee 140',
+    variant: 'Piper PA-28-140',
+    engine: 'Lycoming O-320 · 150 HP',
     speeds: { vr: 48, vx: 66, vy: 75, vfe: 101, approach: 70, shortFinal: 59, bestGlide: 60, vs0: 41, vs: 50, va: 100, vno: 124, vne: 155 },
     checklists: {
       preflight: {
