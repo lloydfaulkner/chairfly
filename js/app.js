@@ -5,9 +5,9 @@
 // more consistently; in vanilla JS, valid approaches vary enough that AI output often diverges from
 // codebase conventions and needs more review).
 
-let CHECKLISTS = ALL_AIRCRAFT.c172.checklists;
-let EMERGENCIES = ALL_AIRCRAFT.c172.emergencies;
-let currentAircraft = 'c172';
+let CHECKLISTS = ALL_AIRCRAFT.c172ikl.checklists;
+let EMERGENCIES = ALL_AIRCRAFT.c172ikl.emergencies;
+let currentAircraft = 'c172ikl';
 
 
 let state = {
@@ -4344,7 +4344,7 @@ function restoreNav() {
   let i = 0;
 
   // Optional aircraft prefix
-  if (parts[i] === 'c172' || parts[i] === 'cherokee140') {
+  if (parts[i] === 'c172ikl' || parts[i] === 'cherokee140') {
     const aircraft = parts[i++];
     if (aircraft !== currentAircraft) {
       const acBtn = document.querySelector(`[data-aircraft="${aircraft}"]`);

@@ -1,5 +1,5 @@
 const ALL_AIRCRAFT = {
-  c172: {
+  c172ikl: {
     name: 'Cessna 172 I/K/L',
     label: 'Cessna 172 I/K/L',
     variant: 'Skyhawk',
