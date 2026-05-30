@@ -4466,3 +4466,157 @@
   flex-shrink: 0;
   line-height: 1;
 }
+
+/* ── Drills Hub empty state ─────────────────────────────────────────────────── */
+.hub-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  padding: 0 32px 56px; /* bottom nav offset */
+  text-align: center;
+}
+.hub-empty-title {
+  font-family: var(--font-serif);
+  font-size: 42px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.1;
+  margin: 0;
+}
+.hub-empty-sub {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--ink-3);
+  line-height: 1.55;
+  max-width: 280px;
+  margin: 0;
+}
+.hub-empty-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 12px 22px;
+  border-radius: 100px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, border-color 0.12s;
+  box-shadow: var(--shadow-2);
+}
+.hub-empty-cta:active { background: var(--paper-3); border-color: var(--kb-accent); }
+.hub-empty-cta-arrow {
+  font-size: 16px;
+  color: var(--kb-accent);
+}
+
+/* ── Drill Picker Sheet ──────────────────────────────────────────────────────── */
+.drill-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: oklch(0% 0 0 / 0.5);
+  z-index: 149;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.drill-sheet-backdrop.open { opacity: 1; pointer-events: all; }
+
+.drill-sheet {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--paper-2);
+  border-top: 1px solid var(--rule-strong);
+  border-radius: 16px 16px 0 0;
+  z-index: 150;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  padding: 0 0 40px;
+  -webkit-tap-highlight-color: transparent;
+}
+.drill-sheet.open { transform: translateY(0); }
+
+.drill-sheet-handle {
+  width: 36px; height: 3px;
+  background: var(--rule-strong);
+  border-radius: 2px;
+  margin: 12px auto 0;
+  flex-shrink: 0;
+}
+
+.drill-sheet-header {
+  padding: 16px 20px 16px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 4px;
+}
+.drill-sheet-headline {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.drill-sheet-section {
+  padding: 14px 20px 4px;
+}
+
+.drill-sheet-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+.drill-sheet-label svg { flex-shrink: 0; }
+.drill-sheet-desc {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+.drill-sheet-label--green  { color: #00c070; }
+.drill-sheet-label--blue   { color: #4db8ff; }
+.drill-sheet-label--orange { color: #ff9a5d; }
+.drill-sheet-label--red    { color: #ff7070; }
+
+.drill-sheet-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 10px;
+}
+
+.drill-chip {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--paper-3);
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  padding: 9px 16px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+.drill-chip--green  { border-left: 3px solid #00c070; }
+.drill-chip--blue   { border-left: 3px solid #4db8ff; }
+.drill-chip--orange { border-left: 3px solid #ff9a5d; }
+.drill-chip--red    { border-left: 3px solid #ff7070; }
+
+.drill-chip--green:active  { border-color: #00c070; color: #00c070; background: var(--paper); }
+.drill-chip--blue:active   { border-color: #4db8ff; color: #4db8ff; background: var(--paper); }
+.drill-chip--orange:active { border-color: #ff9a5d; color: #ff9a5d; background: var(--paper); }
+.drill-chip--red:active    { border-color: #ff7070; color: #ff7070; background: var(--paper); }

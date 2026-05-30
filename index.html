@@ -76,80 +76,14 @@
   <!-- MAIN CONTENT -->
   <main class="cf-main" id="app">
 
-    <!-- DRILLS HUB (mobile landing view) -->
+    <!-- DRILLS HUB (mobile landing view — shown when no drill is active) -->
     <div class="view" id="view-drills-hub">
-      <div class="hub-hero">
-        <div class="hub-hero-tag" id="drills-hub-context">C172 · Skyhawk</div>
-        <h1 class="hub-hero-title">Train between flights.</h1>
-      </div>
-      <div class="hub-grid">
-        <button class="hub-card hub-card--green" data-drill="checklist" onclick="switchDrill('checklist')">
-          <div class="hub-card-icon">
-            <svg viewBox="0 0 64 64" fill="none" stroke="#1f8a5b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="10" y="10" width="44" height="44" rx="8" fill="white"/>
-              <path d="M 14 20 L 17 23 L 21 18"/>
-              <line x1="23" y1="20" x2="46" y2="20"/>
-              <circle cx="17" cy="32" r="2" fill="#1f8a5b"/>
-              <line x1="23" y1="32" x2="46" y2="32"/>
-              <circle cx="17" cy="44" r="2" fill="#1f8a5b"/>
-              <line x1="23" y1="44" x2="46" y2="44"/>
-            </svg>
-          </div>
-          <div class="hub-card-text">
-            <div class="hub-card-name">Checklist</div>
-            <div class="hub-card-desc">Know what to do before you touch anything</div>
-          </div>
-          <span class="hub-card-arrow">›</span>
-        </button>
-        <button class="hub-card hub-card--blue" data-drill="radio" onclick="switchDrill('radio')">
-          <div class="hub-card-icon">
-            <svg viewBox="0 0 64 64" fill="#0066cc" stroke="none" aria-hidden="true">
-              <rect x="10" y="10" width="44" height="44" rx="8" fill="white" stroke="#0066cc" stroke-width="2"/>
-              <rect x="20" y="16" width="24" height="22" rx="6" ry="6" fill="#0066cc"/>
-              <rect x="22" y="21" width="20" height="2" rx="1" fill="white"/>
-              <rect x="22" y="27" width="20" height="2" rx="1" fill="white"/>
-              <rect x="22" y="33" width="20" height="2" rx="1" fill="white"/>
-              <rect x="30" y="38" width="4" height="8" rx="2" fill="#0066cc"/>
-              <rect x="20" y="46" width="24" height="4" rx="2" fill="#0066cc"/>
-            </svg>
-          </div>
-          <div class="hub-card-text">
-            <div class="hub-card-name">Radio Calls</div>
-            <div class="hub-card-desc">Sound like you belong up there</div>
-          </div>
-          <span class="hub-card-arrow">›</span>
-        </button>
-        <button class="hub-card hub-card--orange" data-drill="procedures" onclick="switchDrill('procedures')">
-          <div class="hub-card-icon">
-            <svg viewBox="0 0 64 64" fill="none" stroke="#b8601c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="10" y="10" width="44" height="44" rx="8" fill="white"/>
-              <circle cx="32" cy="32" r="18"/>
-              <line x1="32" y1="14" x2="32" y2="20"/>
-              <line x1="32" y1="44" x2="32" y2="50"/>
-              <line x1="14" y1="32" x2="20" y2="32"/>
-              <line x1="44" y1="32" x2="50" y2="32"/>
-              <polygon points="32,14 28,24 36,24" fill="#b8601c"/>
-            </svg>
-          </div>
-          <div class="hub-card-text">
-            <div class="hub-card-name">Procedures</div>
-            <div class="hub-card-desc">Fly the full pattern from memory</div>
-          </div>
-          <span class="hub-card-arrow">›</span>
-        </button>
-        <button class="hub-card hub-card--red" data-drill="emergency" onclick="switchDrill('emergency')">
-          <div class="hub-card-icon">
-            <svg viewBox="0 0 64 64" fill="none" stroke="#c1483f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="10" y="10" width="44" height="44" rx="8" fill="white"/>
-              <path d="M 10 32 L 20 32 L 24 20 L 28 44 L 32 32 L 54 32"/>
-              <circle cx="32" cy="32" r="1.5" fill="#c1483f"/>
-            </svg>
-          </div>
-          <div class="hub-card-text">
-            <div class="hub-card-name">Emergency Procs</div>
-            <div class="hub-card-desc">Be ready when seconds matter</div>
-          </div>
-          <span class="hub-card-arrow">›</span>
+      <div class="hub-empty">
+        <h1 class="hub-empty-title">Train between<br>flights.</h1>
+        <p class="hub-empty-sub">Chair-fly the pattern, brief the radio call,<br>run the checklist from memory.</p>
+        <button class="hub-empty-cta" onclick="openDrillSheet()" aria-label="Open drill picker">
+          <span class="hub-empty-cta-label">Pick a drill</span>
+          <span class="hub-empty-cta-arrow">&#8593;</span>
         </button>
       </div>
     </div>
@@ -230,7 +164,7 @@
           <h1 class="rd-page-title">Read back like you mean it.</h1>
         </div>
         <div class="cl-mode-toggle rd-tab-toggle">
-          <button class="cl-mode-btn active" onclick="setRadioMode('chips', this)">Radio Calls</button>
+          <button class="cl-mode-btn active" onclick="setRadioMode('chips', this)">Call Builder</button>
           <button class="cl-mode-btn" onclick="setRadioMode('atis', this)">ATIS Decoder</button>
           <button class="cl-mode-btn" onclick="setRadioMode('alpha', this)">Phonetic</button>
         </div>
@@ -639,6 +573,75 @@
     <button class="cf-bottom-tab" data-tab="more" onclick="switchBottomTab('more')">More</button>
   </nav>
 
+</div>
+
+<!-- DRILL PICKER SHEET -->
+<div class="drill-sheet-backdrop" id="drill-sheet-backdrop" onclick="closeDrillSheet()"></div>
+<div class="drill-sheet" id="drill-sheet" role="dialog" aria-modal="true" aria-label="Pick a drill">
+  <div class="drill-sheet-handle"></div>
+  <div class="drill-sheet-header">
+    <div class="drill-sheet-headline">What are we working on?</div>
+  </div>
+
+  <div class="drill-sheet-section">
+    <div class="drill-sheet-label drill-sheet-label--green">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <polyline points="7 12 11 16 17 8"/>
+      </svg>
+      | Checklist
+    </div>
+    <div class="drill-sheet-desc">Know what to do before you touch anything.</div>
+    <div class="drill-sheet-chips">
+      <button class="drill-chip drill-chip--green" onclick="selectDrill('checklist','reference')">Reference</button>
+      <button class="drill-chip drill-chip--green" onclick="selectDrill('checklist','recall')">Recall Drill</button>
+    </div>
+  </div>
+
+  <div class="drill-sheet-section">
+    <div class="drill-sheet-label drill-sheet-label--blue">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="8" y1="22" x2="16" y2="22"/>
+      </svg>
+      | Radio
+    </div>
+    <div class="drill-sheet-desc">Sound like you belong up there.</div>
+    <div class="drill-sheet-chips">
+      <button class="drill-chip drill-chip--blue" onclick="selectDrill('radio','chips')">Call Builder</button>
+      <button class="drill-chip drill-chip--blue" onclick="selectDrill('radio','atis')">ATIS</button>
+      <button class="drill-chip drill-chip--blue" onclick="selectDrill('radio','alpha')">Phonetic</button>
+    </div>
+  </div>
+
+  <div class="drill-sheet-section">
+    <div class="drill-sheet-label drill-sheet-label--orange">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2L10 10 3 14v2l7-2v4l-2 2v1l4-1 4 1v-1l-2-2v-4l7 2v-2l-7-4z"/>
+      </svg>
+      | Procedures
+    </div>
+    <div class="drill-sheet-desc">Fly the full pattern from memory.</div>
+    <div class="drill-sheet-chips">
+      <button class="drill-chip drill-chip--orange" onclick="selectDrill('procedures','procedures')">Procedures</button>
+      <button class="drill-chip drill-chip--orange" onclick="selectDrill('procedures','vspeeds')">V-Speeds</button>
+    </div>
+  </div>
+
+  <div class="drill-sheet-section">
+    <div class="drill-sheet-label drill-sheet-label--red">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/>
+      </svg>
+      | Emergency
+    </div>
+    <div class="drill-sheet-desc">Be ready when seconds matter.</div>
+    <div class="drill-sheet-chips">
+      <button class="drill-chip drill-chip--red" onclick="selectDrill('emergency',null)">Emergency Procs</button>
+    </div>
+  </div>
 </div>
 
 <!-- AIRCRAFT SPEC SHEET -->

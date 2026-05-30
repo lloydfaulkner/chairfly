@@ -102,8 +102,6 @@ function switchAircraft(key, btn) {
   // Update header aircraft button and drills hub context line
   const acLabel = document.getElementById('cf-aircraft-label');
   if (acLabel) acLabel.textContent = ac.label || ac.name;
-  const ctx = document.getElementById('drills-hub-context');
-  if (ctx) ctx.textContent = `${ac.label || ac.name}`;
   closeAircraftSheet();
 
   // Update page eyebrow
@@ -157,6 +155,34 @@ function closeAircraftSheet() {
   document.getElementById('cf-aircraft-sheet').classList.remove('open');
 }
 
+function openDrillSheet() {
+  document.getElementById('drill-sheet-backdrop').classList.add('open');
+  document.getElementById('drill-sheet').classList.add('open');
+}
+
+function closeDrillSheet() {
+  document.getElementById('drill-sheet-backdrop').classList.remove('open');
+  document.getElementById('drill-sheet').classList.remove('open');
+}
+
+function selectDrill(drill, mode) {
+  closeDrillSheet();
+  switchDrill(drill);
+  if (drill === 'checklist' && mode === 'recall') {
+    const btn = [...document.querySelectorAll('#view-checklist .cl-mode-btn')]
+      .find(b => b.getAttribute('onclick').includes("'recall'"));
+    if (btn) setClMode('recall', btn);
+  } else if (drill === 'radio' && mode !== 'chips') {
+    const btn = [...document.querySelectorAll('#view-radio .cl-mode-btn')]
+      .find(b => b.getAttribute('onclick').includes(`'${mode}'`));
+    if (btn) setRadioMode(mode, btn);
+  } else if (drill === 'procedures' && mode === 'vspeeds') {
+    _setProcModeUI('vspeeds');
+    if (!vspeedState.started && !vspeedState.finished) initVspeedDrill();
+    updateHash();
+  }
+}
+
 function _switchViewOnly(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const el = document.getElementById('view-' + name);
@@ -190,8 +216,12 @@ function switchDrill(type) {
 
 function switchBottomTab(tabName) {
   _setBottomTabActive(tabName);
-  if (tabName === 'drills') _switchViewOnly('drills-hub');
-  else if (tabName === 'more') _switchViewOnly('more-hub');
+  if (tabName === 'drills') {
+    if (!currentDrill) _switchViewOnly('drills-hub');
+    openDrillSheet();
+  } else if (tabName === 'more') {
+    _switchViewOnly('more-hub');
+  }
 }
 
 // ── CHECKLIST ──
@@ -4327,11 +4357,12 @@ function restoreNav() {
   const raw = location.hash.slice(1);
   _restoringNav = true;
 
-  // Default: mobile shows drills hub, desktop jumps straight to checklist
+  // Default: mobile shows drills hub + opens drill sheet, desktop jumps to checklist
   if (!raw) {
     if (window.innerWidth < 768) {
       _switchViewOnly('drills-hub');
       _setBottomTabActive('drills');
+      openDrillSheet();
     } else {
       switchDrill('checklist');
     }
@@ -4460,4 +4491,20 @@ document.addEventListener('DOMContentLoaded', () => {
   lookupAirport();
   restoreNav();
   window.addEventListener('hashchange', restoreNav);
+
+  // Swipe up on bottom nav to open drill sheet
+  const bottomNav = document.getElementById('cf-bottom-nav');
+  let _navSwipeStartY = 0;
+  bottomNav.addEventListener('touchstart', e => { _navSwipeStartY = e.touches[0].clientY; }, { passive: true });
+  bottomNav.addEventListener('touchend', e => {
+    if (_navSwipeStartY - e.changedTouches[0].clientY > 30) openDrillSheet();
+  }, { passive: true });
+
+  // Swipe down on drill sheet to close
+  const drillSheet = document.getElementById('drill-sheet');
+  let _sheetSwipeStartY = 0;
+  drillSheet.addEventListener('touchstart', e => { _sheetSwipeStartY = e.touches[0].clientY; }, { passive: true });
+  drillSheet.addEventListener('touchend', e => {
+    if (e.changedTouches[0].clientY - _sheetSwipeStartY > 60) closeDrillSheet();
+  }, { passive: true });
 });
