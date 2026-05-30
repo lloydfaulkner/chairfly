@@ -4076,6 +4076,8 @@
     grid-template-areas: "header" "main";
     grid-template-columns: 1fr;
     grid-template-rows: 60px 1fr;
+    height: 100vh;
+    overflow: hidden;
   }
   .cf-sidebar { display: none; }
   .cf-bottom-nav { display: flex; }

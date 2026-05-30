@@ -167,6 +167,7 @@ function closeAircraftSheet() {
   _unlockScroll();
   document.getElementById('cf-sheet-backdrop').classList.remove('open');
   document.getElementById('cf-aircraft-sheet').classList.remove('open');
+  window.scrollTo(0, 0);
 }
 
 function openDrillSheet() {
@@ -179,6 +180,7 @@ function closeDrillSheet() {
   _unlockScroll();
   document.getElementById('drill-sheet-backdrop').classList.remove('open');
   document.getElementById('drill-sheet').classList.remove('open');
+  window.scrollTo(0, 0);
 }
 
 function selectDrill(drill, mode) {
