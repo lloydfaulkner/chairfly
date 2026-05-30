@@ -4362,7 +4362,6 @@ function restoreNav() {
     if (window.innerWidth < 768) {
       _switchViewOnly('drills-hub');
       _setBottomTabActive('drills');
-      openDrillSheet();
     } else {
       switchDrill('checklist');
     }
