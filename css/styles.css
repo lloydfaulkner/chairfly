@@ -4554,7 +4554,7 @@
   z-index: 150;
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-  padding: 0 0 40px;
+  padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
 .drill-sheet.open { transform: translateY(0); }
@@ -4611,6 +4611,31 @@
   flex-wrap: wrap;
   gap: 8px;
   padding-bottom: 10px;
+}
+
+.drill-sheet-footer {
+  display: flex;
+  justify-content: center;
+  padding: 8px 20px 32px;
+}
+.drill-sheet-close-btn {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+.drill-sheet-close-btn:active {
+  color: var(--ink-2);
 }
 
 .drill-chip {
