@@ -4547,12 +4547,14 @@
 
 .drill-sheet {
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  bottom: 56px; left: 0; right: 0;
+  max-height: calc(100dvh - 56px);
+  overflow-y: auto;
   background: var(--paper-2);
   border-top: 1px solid var(--rule-strong);
   border-radius: 16px 16px 0 0;
   z-index: 150;
-  transform: translateY(100%);
+  transform: translateY(calc(100% + 56px));
   transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   padding: 0 0 40px;
   -webkit-tap-highlight-color: transparent;
