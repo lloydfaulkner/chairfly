@@ -4065,6 +4065,8 @@
 .cf-bottom-tab-caret {
   opacity: 0.5;
   vertical-align: middle;
+  position: relative;
+  top: -1px;
   margin-left: 2px;
 }
 
