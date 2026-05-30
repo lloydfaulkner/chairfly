@@ -2758,10 +2758,14 @@ function renderVspeedDrill() {
         <div class="alpha-setup-controls">
           <div class="alpha-setup-row">
             <span class="alpha-ctrl-label" style="min-width:46px">Mode</span>
-            <button class="alpha-len-btn alpha-len-btn--wide${!isRev && !isBoth && !isLabel ? ' active' : ''}" onclick="setVspeedDrillMode('forward')">Symbol</button>
-            <button class="alpha-len-btn alpha-len-btn--wide${isRev ? ' active' : ''}" onclick="setVspeedDrillMode('reverse')">Speed</button>
-            <button class="alpha-len-btn alpha-len-btn--wide${isLabel ? ' active' : ''}" onclick="setVspeedDrillMode('label')">Label</button>
-            <button class="alpha-len-btn alpha-len-btn--wide${isBoth ? ' active' : ''}" onclick="setVspeedDrillMode('both')">Random</button>
+            <button class="alpha-len-btn alpha-len-btn--wide${!isRev && !isBoth && !isLabel ? ' active' : ''}" onclick="setVspeedDrillMode('forward')" ${isBoth ? 'disabled' : ''}>Symbol</button>
+            <button class="alpha-len-btn alpha-len-btn--wide${isRev ? ' active' : ''}" onclick="setVspeedDrillMode('reverse')" ${isBoth ? 'disabled' : ''}>Speed</button>
+            <button class="alpha-len-btn alpha-len-btn--wide${isLabel ? ' active' : ''}" onclick="setVspeedDrillMode('label')" ${isBoth ? 'disabled' : ''}>Label</button>
+          </div>
+          <div class="alpha-setup-row">
+            <span class="alpha-ctrl-label" style="min-width:46px">Random</span>
+            <div class="alpha-toggle${isBoth ? ' alpha-toggle--on' : ''}" onclick="setVspeedDrillMode('${isBoth ? 'forward' : 'both'}')"></div>
+            <span class="alpha-toggle-note">${isBoth ? 'mix of Symbol, Speed &amp; Label' : ''}</span>
           </div>
           <div class="alpha-setup-row">
             <span class="alpha-ctrl-label" style="min-width:46px">Reps</span>${repOpts}
