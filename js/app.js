@@ -2452,12 +2452,14 @@ const vspeedState = {
   selected: null,
   score: { correct: 0, total: 0, streak: 0 },
   history: [],
-  drillMode: 'forward',   // 'forward' (symbol→speed) | 'reverse' (speed→symbol)
+  drillMode: 'forward',   // 'forward' (symbol→speed) | 'reverse' (speed→symbol) | 'label' (symbol→name) | 'both' (random mix of all three)
+  vspeedView: 'numbers',  // 'numbers' | 'situations'
   timerEnabled: false,
   timerSecs: 5,
   _timerRemaining: 0,
   _timerInterval: null,
   _questionStart: 0,
+  _modeSeq: [],           // pre-built type sequence for 'both' mode
 };
 
 function _buildVspeedPool() {
@@ -2492,6 +2494,49 @@ function _buildVspeedReverseDistractors(correctMeta, pool) {
   return others.slice(0, 3);
 }
 
+function _buildVspeedScenarioDistractors(correctMeta, pool) {
+  const others = pool.filter(m => m.key !== correctMeta.key);
+  _shuffleArray(others);
+  return others.slice(0, 3);
+}
+
+function _buildVspeedLabelDistractors(correctMeta, pool) {
+  const others = pool.filter(m => m.key !== correctMeta.key);
+  _shuffleArray(others);
+  return others.slice(0, 3);
+}
+
+function _pickPrompt(meta) {
+  const pool = [meta.scenario, ...(meta.prompts || [])];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+const _WHEN_ALTS = [2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000];
+function _resolvePrompt(template) {
+  const alt = _WHEN_ALTS[Math.floor(Math.random() * _WHEN_ALTS.length)];
+  return template.replace('{alt}', alt.toLocaleString() + ' ft');
+}
+
+// Builds a shuffled type sequence for Random mode: ≥1 of each, no type > 50%.
+function _buildRandomModeSequence(count) {
+  const types = ['forward', 'reverse', 'label'];
+  const maxPer = Math.floor(count / 2);
+  const counts = { forward: 1, reverse: 1, label: 1 };
+  const seq = [...types];
+  while (seq.length < count) {
+    const available = types.filter(t => counts[t] < maxPer);
+    const t = available[Math.floor(Math.random() * available.length)];
+    seq.push(t);
+    counts[t]++;
+  }
+  return _shuffleArray(seq);
+}
+
+function setVspeedView(v) {
+  vspeedState.vspeedView = v;
+  if (!vspeedState.started) renderVspeedDrill();
+}
+
 function _clearVspeedTimer() {
   if (vspeedState._timerInterval) { clearInterval(vspeedState._timerInterval); vspeedState._timerInterval = null; }
 }
@@ -2499,7 +2544,7 @@ function _clearVspeedTimer() {
 function initVspeedDrill() {
   _clearVspeedTimer();
   Object.assign(vspeedState, {
-    started: false, finished: false, drillProgress: 0, bag: [],
+    started: false, finished: false, drillProgress: 0, bag: [], _modeSeq: [],
     current: null, choices: [], answered: false, timedOut: false,
     selected: null, score: { correct: 0, total: 0, streak: 0 }, history: [],
   });
@@ -2509,11 +2554,14 @@ function initVspeedDrill() {
 function startVspeedDrill() {
   _clearVspeedTimer();
   const pool = vspeedState.drillMode === 'reverse' ? _buildVspeedReversePool() : _buildVspeedPool();
+  const modeSeq = vspeedState.drillMode === 'both'
+    ? _buildRandomModeSequence(vspeedState.drillCount)
+    : [];
   Object.assign(vspeedState, {
     started: true, finished: false, drillProgress: 0,
     score: { correct: 0, total: 0, streak: 0 }, history: [],
     bag: _shuffleArray([...pool]),
-    _lastKey: null,
+    _lastKey: null, _modeSeq: modeSeq,
   });
   _nextVspeedQuestion();
 }
@@ -2526,9 +2574,11 @@ function _nextVspeedQuestion() {
     renderVspeedDrill();
     return;
   }
-  const effectiveMode = vspeedState.drillMode === 'both'
-    ? (Math.random() < 0.5 ? 'forward' : 'reverse')
-    : vspeedState.drillMode;
+  const effectiveMode = vspeedState.vspeedView === 'situations'
+    ? 'when'
+    : vspeedState.drillMode === 'both'
+      ? vspeedState._modeSeq[vspeedState.drillProgress]
+      : vspeedState.drillMode;
   const pool = effectiveMode === 'reverse' ? _buildVspeedReversePool() : _buildVspeedPool();
   if (!vspeedState.bag.length || vspeedState.drillMode === 'both') {
     vspeedState.bag = _shuffleArray([...pool]);
@@ -2542,10 +2592,18 @@ function _nextVspeedQuestion() {
   const meta = vspeedState.bag.pop();
   vspeedState._lastKey = meta.key;
   const correctVal = ALL_AIRCRAFT[currentAircraft].speeds[meta.key];
+  const whenAnswerType = effectiveMode === 'when' ? (Math.random() < 0.5 ? 'symbol' : 'speed') : null;
+  const whenPrompt     = effectiveMode === 'when' ? _resolvePrompt(_pickPrompt(meta)) : null;
   const choices = effectiveMode === 'forward'
     ? _shuffleArray([correctVal, ..._buildVspeedDistractors(correctVal)])
-    : _shuffleArray([meta, ..._buildVspeedReverseDistractors(meta, pool)]);
-  Object.assign(vspeedState, { current: { meta, correctVal, effectiveMode }, choices, answered: false, timedOut: false, selected: null });
+    : effectiveMode === 'when'
+      ? whenAnswerType === 'speed'
+        ? _shuffleArray([correctVal, ..._buildVspeedDistractors(correctVal)])
+        : _shuffleArray([meta, ..._buildVspeedScenarioDistractors(meta, pool)])
+      : effectiveMode === 'label'
+        ? _shuffleArray([meta, ..._buildVspeedLabelDistractors(meta, pool)])
+        : _shuffleArray([meta, ..._buildVspeedReverseDistractors(meta, pool)]);
+  Object.assign(vspeedState, { current: { meta, correctVal, effectiveMode, whenAnswerType, whenPrompt }, choices, answered: false, timedOut: false, selected: null });
   renderVspeedDrill();
   vspeedState._questionStart = Date.now();
   if (vspeedState.timerEnabled) _startVspeedTimer();
@@ -2581,7 +2639,7 @@ function _vspeedTimeout() {
   vspeedState.timedOut = true;
   vspeedState.score.total++;
   vspeedState.score.streak = 0;
-  vspeedState.history.push({ meta: vspeedState.current.meta, correctVal: vspeedState.current.correctVal, chosen: null, ok: false, timedOut: true, effectiveMode: vspeedState.current.effectiveMode, elapsed: vspeedState.timerSecs });
+  vspeedState.history.push({ meta: vspeedState.current.meta, correctVal: vspeedState.current.correctVal, chosen: null, ok: false, timedOut: true, effectiveMode: vspeedState.current.effectiveMode, whenAnswerType: vspeedState.current.whenAnswerType, elapsed: vspeedState.timerSecs });
   vspeedState.drillProgress++;
   renderVspeedDrill();
 }
@@ -2593,13 +2651,18 @@ function answerVspeed(val) {
   vspeedState.answered = true;
   vspeedState.selected = val;
   const em = vspeedState.current.effectiveMode;
-  const correct = em === 'forward'
-    ? val === vspeedState.current.correctVal
-    : ALL_AIRCRAFT[currentAircraft].speeds[val] === vspeedState.current.correctVal;
+  let correct;
+  if (em === 'forward' || (em === 'when' && vspeedState.current.whenAnswerType === 'speed')) {
+    correct = val === vspeedState.current.correctVal;
+  } else if (em === 'label' || (em === 'when' && vspeedState.current.whenAnswerType === 'symbol')) {
+    correct = val === vspeedState.current.meta.key;
+  } else {
+    correct = ALL_AIRCRAFT[currentAircraft].speeds[val] === vspeedState.current.correctVal;
+  }
   vspeedState.score.total++;
   if (correct) { vspeedState.score.correct++; vspeedState.score.streak++; }
   else { vspeedState.score.streak = 0; }
-  vspeedState.history.push({ meta: vspeedState.current.meta, correctVal: vspeedState.current.correctVal, chosen: val, ok: correct, timedOut: false, effectiveMode: em, elapsed });
+  vspeedState.history.push({ meta: vspeedState.current.meta, correctVal: vspeedState.current.correctVal, chosen: val, ok: correct, timedOut: false, effectiveMode: em, whenAnswerType: vspeedState.current.whenAnswerType, elapsed });
   vspeedState.drillProgress++;
   renderVspeedDrill();
 }
@@ -2622,13 +2685,45 @@ function renderVspeedDrill() {
     ).join('');
     const exMeta = VSPEEDS_META[2]; // Vy
     const exVal  = ac.speeds[exMeta.key];
-    const isBoth = s.drillMode === 'both';
-    const isRev  = s.drillMode === 'reverse';
+    const isSit  = s.vspeedView === 'situations';
+    const pillHtml = `
+      <div class="vs-view-toggle">
+        <button class="vs-view-btn${!isSit ? ' active' : ''}" onclick="setVspeedView('numbers')">Numbers</button>
+        <button class="vs-view-btn${isSit ? ' active' : ''}" onclick="setVspeedView('situations')">Situations</button>
+      </div>`;
+
+    if (isSit) {
+      const sitCard = `<div class="alpha-setup-example">
+        <span class="alpha-setup-ex-word" style="font-size:12px;font-family:var(--font-sans);font-weight:400;max-width:160px;text-align:left;line-height:1.3">${exMeta.scenario.slice(0, 46)}&hellip;</span>
+        <span class="alpha-setup-ex-arrow">&rarr;</span>
+        <span class="alpha-setup-ex-char">${exMeta.symbol}</span>
+      </div>`;
+      el.innerHTML = `
+        <div class="alpha-drill" style="padding-top:16px">
+          ${pillHtml}
+          <div class="alpha-setup-desc">Read a scenario or ATC call and identify the V-speed it implies &mdash; as a symbol or a number, randomly. Builds the mental link between what you hear in the cockpit and what you do with the controls.</div>
+          <div class="alpha-preview-card">${sitCard}<div class="alpha-preview-caption">Tap the symbol or speed the situation calls for &middot; ${ac.name}</div></div>
+          <div class="alpha-setup-controls">
+            <div class="alpha-setup-row">
+              <span class="alpha-ctrl-label" style="min-width:46px">Reps</span>${repOpts}
+            </div>
+          </div>
+          <div class="vs-mode-desc"><strong>Drill configuration:</strong> You&rsquo;ll see a V-speed symbol. Tap the situation that describes when you&rsquo;d use it. ${s.drillCount} reps, untimed.</div>
+          <button class="alpha-start-btn" onclick="startVspeedDrill()">Start Drill</button>
+        </div>`;
+      return;
+    }
+
+    const isBoth  = s.drillMode === 'both';
+    const isRev   = s.drillMode === 'reverse';
+    const isLabel = s.drillMode === 'label';
     const exCaption = isBoth
-      ? `Random mix of both modes &middot; ${ac.name}`
+      ? `Symbol, speed, or name &mdash; random mix &middot; ${ac.name}`
       : isRev
         ? `Tap the symbol that matches the speed &middot; ${ac.name}`
-        : `Tap the speed that matches the symbol &middot; ${ac.name}`;
+        : isLabel
+          ? `Tap the name that matches the symbol &middot; ${ac.name}`
+          : `Tap the speed that matches the symbol &middot; ${ac.name}`;
     const exCard = isBoth
       ? `<div class="alpha-setup-example">
            <span class="alpha-setup-ex-char">${exMeta.symbol}</span>
@@ -2641,38 +2736,47 @@ function renderVspeedDrill() {
              <span class="alpha-setup-ex-arrow">&rarr;</span>
              <span class="alpha-setup-ex-char">${exMeta.symbol}</span>
            </div>`
-        : `<div class="alpha-setup-example">
-             <span class="alpha-setup-ex-char">${exMeta.symbol}</span>
-             <span class="alpha-setup-ex-arrow">&rarr;</span>
-             <span class="alpha-setup-ex-word">${exVal} KIAS</span>
-           </div>`;
+        : isLabel
+          ? `<div class="alpha-setup-example">
+               <span class="alpha-setup-ex-char">${VSPEEDS_META[4].symbol}</span>
+               <span class="alpha-setup-ex-arrow">&rarr;</span>
+               <span class="alpha-setup-ex-word">${VSPEEDS_META[4].label}</span>
+             </div>`
+          : `<div class="alpha-setup-example">
+               <span class="alpha-setup-ex-char">${exMeta.symbol}</span>
+               <span class="alpha-setup-ex-arrow">&rarr;</span>
+               <span class="alpha-setup-ex-word">${exVal} KIAS</span>
+             </div>`;
     const timerSecsOpts = [3, 5, 10].map(n =>
       `<button class="alpha-len-btn vs-rep-btn${n === s.timerSecs ? ' active' : ''}" onclick="setVspeedTimerSecs(${n})" style="visibility:${s.timerEnabled ? 'visible' : 'hidden'}">${n}s</button>`
     ).join('');
     el.innerHTML = `
       <div class="alpha-drill" style="padding-top:16px">
+        ${pillHtml}
         <div class="alpha-setup-desc">V-speeds tell you when to rotate, how to climb, and how fast to fly the pattern. Knowing them without thinking frees up your attention for everything else. This drill uses repetition to make them automatic. The goal is for the right number to surface before you even finish reading the question.</div>
         <div class="alpha-preview-card">${exCard}<div class="alpha-preview-caption">${exCaption}</div></div>
         <div class="alpha-setup-controls">
           <div class="alpha-setup-row">
-            <span class="alpha-ctrl-label">Mode</span>
-            <button class="alpha-len-btn alpha-len-btn--wide${!isRev && !isBoth ? ' active' : ''}" onclick="setVspeedDrillMode('forward')">Symbol</button>
+            <span class="alpha-ctrl-label" style="min-width:46px">Mode</span>
+            <button class="alpha-len-btn alpha-len-btn--wide${!isRev && !isBoth && !isLabel ? ' active' : ''}" onclick="setVspeedDrillMode('forward')">Symbol</button>
             <button class="alpha-len-btn alpha-len-btn--wide${isRev ? ' active' : ''}" onclick="setVspeedDrillMode('reverse')">Speed</button>
-            <button class="alpha-len-btn alpha-len-btn--wide${isBoth ? ' active' : ''}" onclick="setVspeedDrillMode('both')">Both</button>
+            <button class="alpha-len-btn alpha-len-btn--wide${isLabel ? ' active' : ''}" onclick="setVspeedDrillMode('label')">Label</button>
+            <button class="alpha-len-btn alpha-len-btn--wide${isBoth ? ' active' : ''}" onclick="setVspeedDrillMode('both')">Random</button>
           </div>
           <div class="alpha-setup-row">
-            <span class="alpha-ctrl-label">Reps</span>${repOpts}
+            <span class="alpha-ctrl-label" style="min-width:46px">Reps</span>${repOpts}
           </div>
           <div class="alpha-setup-row">
-            <span class="alpha-ctrl-label">Timer</span>
+            <span class="alpha-ctrl-label" style="min-width:46px">Timer</span>
             <div class="alpha-toggle${s.timerEnabled ? ' alpha-toggle--on' : ''}" onclick="setVspeedTimerEnabled(${!s.timerEnabled})"></div>
             ${timerSecsOpts}
           </div>
         </div>
         <div class="vs-mode-desc"><strong>Drill configuration:</strong> ${
-          isBoth ? 'Random mix &mdash; sometimes the symbol, sometimes the speed.' :
-          isRev  ? 'You\'ll see an airspeed. Tap the V-speed symbol it matches.' :
-                   'You\'ll see a V-speed symbol. Tap the airspeed it matches.'
+          isBoth  ? 'Random mix &mdash; symbol &rarr; speed, speed &rarr; symbol, or symbol &rarr; name.' :
+          isRev   ? 'You\'ll see an airspeed. Tap the V-speed symbol it matches.' :
+          isLabel ? 'You\'ll see a V-speed symbol. Tap the name it stands for.' :
+                    'You\'ll see a V-speed symbol. Tap the airspeed it matches.'
         } ${s.drillCount} reps, ${s.timerEnabled ? `${s.timerSecs} second${s.timerSecs === 1 ? '' : 's'} per question.` : 'untimed.'}</div>
         <button class="alpha-start-btn" onclick="startVspeedDrill()">Start Drill</button>
         ${!s.timerEnabled ? `<div class="vs-timer-note"><strong>Note:</strong> No timer is fine while you&rsquo;re still learning the numbers. Once they start to stick, turn it on. You want these automatic, not something you have to think about when you&rsquo;re busy in the pattern.</div>` : ''}
@@ -2686,11 +2790,32 @@ function renderVspeedDrill() {
     const histHtml = s.history.map(h => {
       let valHtml;
       if (h.timedOut) {
-        valHtml = `<span class="vs-history-timeout">Timed out &rarr; ${h.correctVal} KIAS</span>`;
+        const hint = h.effectiveMode === 'forward'   ? `${h.correctVal} KIAS`
+                   : h.effectiveMode === 'when'
+                     ? (h.whenAnswerType === 'speed' ? `${h.correctVal} KIAS` : h.meta.symbol)
+                   : h.effectiveMode === 'label'     ? h.meta.label
+                   : h.meta.symbol;
+        valHtml = `<span class="vs-history-timeout">Timed out &rarr; ${hint}</span>`;
       } else if (h.effectiveMode === 'forward') {
         valHtml = h.ok
           ? `${h.correctVal} KIAS`
           : `<s>${h.chosen} KIAS</s> &rarr; ${h.correctVal} KIAS`;
+      } else if (h.effectiveMode === 'label') {
+        const chosenMeta = VSPEEDS_META.find(m => m.key === h.chosen);
+        valHtml = h.ok
+          ? '&check;'
+          : `<s>${chosenMeta ? chosenMeta.label : '?'}</s> &rarr; ${h.meta.label}`;
+      } else if (h.effectiveMode === 'when') {
+        if (h.whenAnswerType === 'speed') {
+          valHtml = h.ok
+            ? `${h.correctVal} KIAS`
+            : `<s>${h.chosen} KIAS</s> &rarr; ${h.correctVal} KIAS`;
+        } else {
+          const chosenMeta = VSPEEDS_META.find(m => m.key === h.chosen);
+          valHtml = h.ok
+            ? h.meta.symbol
+            : `<s>${chosenMeta ? chosenMeta.symbol : '?'}</s> &rarr; ${h.meta.symbol}`;
+        }
       } else {
         const chosenMeta = VSPEEDS_META.find(m => m.key === h.chosen);
         valHtml = h.ok
@@ -2726,7 +2851,9 @@ function renderVspeedDrill() {
 
   // ── Active question ──
   const { meta, correctVal, effectiveMode } = s.current;
-  const isRev = effectiveMode === 'reverse';
+  const isRev   = effectiveMode === 'reverse';
+  const isWhen  = effectiveMode === 'when';
+  const isLabel = effectiveMode === 'label';
   const progressHtml = `<span class="alpha-progress">${s.drillProgress + 1} / ${s.drillCount}</span>`;
   const streakBadge = s.score.streak >= 3 ? `<span class="alpha-score-streak">&#128293;&nbsp;${s.score.streak}</span>` : '';
   const scoreHtml = `<div class="alpha-score"><span class="alpha-score-stat">${s.score.correct}/${s.drillProgress}</span>${streakBadge}</div>`;
@@ -2739,7 +2866,47 @@ function renderVspeedDrill() {
     </div>` : '';
 
   let cardHtml, choicesHtml;
-  if (!isRev) {
+  if (isLabel) {
+    cardHtml = `<div class="vs-card"><div class="vs-symbol">${meta.symbol}</div></div>`;
+    choicesHtml = s.choices.map(m => {
+      const isCorrect = m.key === meta.key;
+      let cls = 'vs-choice vs-choice--label';
+      if (s.answered) {
+        if (isCorrect)             cls += ' correct';
+        else if (m.key === s.selected) cls += ' wrong';
+        else                       cls += ' dim';
+      }
+      return `<button class="${cls}" onclick="answerVspeed('${m.key}')" ${s.answered ? 'disabled' : ''}>${m.label}</button>`;
+    }).join('');
+  } else if (isWhen) {
+    const { whenAnswerType, whenPrompt } = s.current;
+    cardHtml = `<div class="vs-card vs-card--prompt"><div class="vs-prompt-text">${whenPrompt}</div></div>`;
+    if (whenAnswerType === 'speed') {
+      choicesHtml = s.choices.map(v => {
+        let cls = 'vs-choice';
+        if (s.answered) {
+          if (v === correctVal)     cls += ' correct';
+          else if (v === s.selected) cls += ' wrong';
+          else                      cls += ' dim';
+        }
+        return `<button class="${cls}" onclick="answerVspeed(${v})" ${s.answered ? 'disabled' : ''}>${v}<span class="vs-choice-unit">KIAS</span></button>`;
+      }).join('');
+    } else {
+      choicesHtml = s.choices.map(m => {
+        const isCorrect = m.key === meta.key;
+        let cls = 'vs-choice vs-choice--sym';
+        if (s.answered) {
+          if (isCorrect)               cls += ' correct';
+          else if (m.key === s.selected) cls += ' wrong';
+          else                         cls += ' dim';
+        }
+        return `<button class="${cls}" onclick="answerVspeed('${m.key}')" ${s.answered ? 'disabled' : ''}>
+          <span class="vs-choice-sym-label">${m.symbol}</span>
+          <span class="vs-choice-sym-def">${m.label}</span>
+        </button>`;
+      }).join('');
+    }
+  } else if (!isRev) {
     cardHtml = `<div class="vs-card"><div class="vs-symbol">${meta.symbol}</div>${s.drillMode !== 'both' ? `<div class="vs-label">${meta.label}</div>` : ''}</div>`;
     choicesHtml = s.choices.map(v => {
       let cls = 'vs-choice';
@@ -2776,7 +2943,7 @@ function renderVspeedDrill() {
       <div class="alpha-drill-header">${backBtn}${progressHtml}${scoreHtml}</div>
       ${timerHtml}
       ${cardHtml}
-      <div class="vs-choices">${choicesHtml}</div>
+      <div class="vs-choices${isWhen ? ' vs-choices--when' : ''}">${choicesHtml}</div>
       ${nextBtn}
     </div>`;
 

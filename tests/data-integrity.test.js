@@ -121,6 +121,15 @@ describe('VSPEEDS_META', () => {
     }
   });
 
+  test('AllEntries_HaveNonEmptyScenario', () => {
+    for (const m of VSPEEDS_META) {
+      assert.ok(
+        typeof m.scenario === 'string' && m.scenario.trim().length > 0,
+        `VSPEEDS_META entry missing scenario: ${JSON.stringify(m)}`,
+      );
+    }
+  });
+
   test('NoDuplicateKeys', () => {
     const keys = VSPEEDS_META.map(m => m.key);
     assert.equal(new Set(keys).size, keys.length, 'VSPEEDS_META has duplicate keys');

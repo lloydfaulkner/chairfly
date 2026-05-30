@@ -1173,13 +1173,56 @@ const PHONETIC_ALPHABET = {
 };
 
 const VSPEEDS_META = [
-  { key: 'vr',         symbol: 'Vr',   label: 'Rotation speed' },
-  { key: 'vx',         symbol: 'Vx',   label: 'Best angle of climb' },
-  { key: 'vy',         symbol: 'Vy',   label: 'Best rate of climb' },
-  { key: 'vfe',        symbol: 'Vfe',  label: 'Max flaps extended' },
-  { key: 'bestGlide',  symbol: 'Vg',   label: 'Best glide' },
-  { key: 'approach',   symbol: 'Vapp', label: 'Normal approach' },
-  { key: 'shortFinal', symbol: 'Vref', label: 'Short final' },
+  { key: 'vr', symbol: 'Vr', label: 'Rotation speed',
+    scenario: 'On the takeoff roll, airspeed climbing — at what speed do you rotate the nose up and lift off?',
+    prompts: [
+      'You\'re accelerating down the runway. At what airspeed do you apply back pressure and break ground?',
+      'CFI: "Airspeed\'s alive — give me a callout when we hit rotation."',
+    ],
+  },
+  { key: 'vx', symbol: 'Vx', label: 'Best angle of climb',
+    scenario: 'Trees off the departure end. You need the most altitude gained per foot of ground covered.',
+    prompts: [
+      'Obstacle departure procedure in effect. Pitch for the steepest climb angle until clear.',
+      'CFI: "There\'s a ridge ahead — best angle until we\'re well above it."',
+    ],
+  },
+  { key: 'vy', symbol: 'Vy', label: 'Best rate of climb',
+    scenario: 'Departure end clear, no obstacles ahead. You want to reach cruise altitude as fast as possible.',
+    prompts: [
+      '"N4521G, climb and maintain {alt}, best rate if able."',
+      'CFI: "Let\'s get up to {alt} — pitch for best rate."',
+      'Clear of the pattern, no traffic conflicts. Get to {alt} as fast as the plane will go.',
+    ],
+  },
+  { key: 'vfe', symbol: 'Vfe', label: 'Max flaps extended',
+    scenario: 'Turning downwind to base and ready to slow down and extend flaps. Stay below this speed first.',
+    prompts: [
+      'You\'re slowing through the pattern and want to extend flaps. What do you confirm first?',
+      'CFI: "Check your airspeed against this limit before you touch those flaps."',
+    ],
+  },
+  { key: 'bestGlide', symbol: 'Vg', label: 'Best glide',
+    scenario: 'Engine quits. You need to stretch the glide as far as possible to reach a landing spot.',
+    prompts: [
+      'Prop stops turning over a farm field. You need maximum glide distance to the runway.',
+      'CFI: "Engine out — establish best glide immediately. What\'s the speed?"',
+    ],
+  },
+  { key: 'approach', symbol: 'Vapp', label: 'Normal approach',
+    scenario: 'Established on final, runway aligned, full flaps. Target this speed all the way to the flare.',
+    prompts: [
+      'Turning final, runway in sight. What speed do you hold from here to the flare?',
+      'CFI: "I want you stabilized by 500 feet AGL — what\'s your target speed on final?"',
+    ],
+  },
+  { key: 'shortFinal', symbol: 'Vref', label: 'Short final',
+    scenario: 'Over the numbers at 10 feet, about to flare — this is your crossing-the-threshold target.',
+    prompts: [
+      'You\'re 50 feet over the threshold. What speed do you want when you begin the flare?',
+      'CFI: "What speed do you want crossing the fence?"',
+    ],
+  },
 ];
 
 if (typeof module !== 'undefined') module.exports = { ALL_AIRCRAFT, RADIO_SCENARIOS, PHONETIC_ALPHABET, PHONETIC_NUMBERS, VSPEEDS_META };
