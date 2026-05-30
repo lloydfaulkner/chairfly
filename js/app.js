@@ -2902,7 +2902,7 @@ function renderVspeedDrill() {
         }
         return `<button class="${cls}" onclick="answerVspeed('${m.key}')" ${s.answered ? 'disabled' : ''}>
           <span class="vs-choice-sym-label">${m.symbol}</span>
-          <span class="vs-choice-sym-def">${m.label}</span>
+          ${s.answered ? `<span class="vs-choice-sym-def">${m.label}</span>` : ''}
         </button>`;
       }).join('');
     }
