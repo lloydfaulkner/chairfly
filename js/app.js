@@ -2765,7 +2765,7 @@ function renderVspeedDrill() {
           <div class="alpha-setup-row">
             <span class="alpha-ctrl-label" style="min-width:46px">Random</span>
             <div class="alpha-toggle${isBoth ? ' alpha-toggle--on' : ''}" onclick="setVspeedDrillMode('${isBoth ? 'forward' : 'both'}')"></div>
-            <span class="alpha-toggle-note">${isBoth ? 'mix of Symbol, Speed &amp; Label' : ''}</span>
+            <span class="alpha-toggle-note">${isBoth ? 'mix of Symbol, Speed, &amp; Label' : ''}</span>
           </div>
           <div class="alpha-setup-row">
             <span class="alpha-ctrl-label" style="min-width:46px">Reps</span>${repOpts}

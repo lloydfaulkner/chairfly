@@ -1714,7 +1714,7 @@
     .alpha-toggle--on { background: var(--terrain); }
     .alpha-toggle--on::after { transform: translateX(18px); }
     .alpha-toggle--disabled { opacity: 0.35; cursor: not-allowed; }
-    .alpha-toggle-note { font-family: var(--font-sans); font-size: 12px; color: var(--ink-3); margin-left: 10px; font-style: italic; }
+    .alpha-toggle-note { font-family: var(--font-sans); font-size: 12px; color: var(--ink-3); margin-left: 10px; font-style: italic; text-align: left; }
     .alpha-preview-card {
       background: var(--paper-2); border: 1px solid var(--rule);
       border-radius: 8px; padding: 16px 20px 14px;
