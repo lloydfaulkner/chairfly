@@ -421,8 +421,9 @@
     <div class="view" id="view-procedures">
 
       <div class="cl-mode-toggle" id="proc-mode-row" style="margin-bottom:16px">
-        <button class="cl-mode-btn active" onclick="setProcMode('procedures', this)">Procedures</button>
-        <button class="cl-mode-btn" onclick="setProcMode('vspeeds', this)">V-Speeds</button>
+        <button class="cl-mode-btn active" data-proc-mode="airport" onclick="setProcMode('airport', this)">Airport</button>
+        <button class="cl-mode-btn" data-proc-mode="airwork" onclick="setProcMode('airwork', this)">Airwork</button>
+        <button class="cl-mode-btn" data-proc-mode="vspeeds" onclick="setProcMode('vspeeds', this)">V-Speeds</button>
       </div>
 
       <div id="proc-main-mode">
@@ -456,35 +457,35 @@
 
           <div class="cf-eyebrow" style="margin-bottom: 8px;">Select Procedure</div>
           <div class="proc-select-list">
-            <div class="proc-select-card" onclick="startProcedure('normal_takeoff')">
+            <div class="proc-select-card" data-category="airport" onclick="startProcedure('normal_takeoff')">
               <div>
                 <div class="proc-select-card-title">Normal Takeoff</div>
                 <div class="proc-select-card-sub">Lineup &#8594; Rotation &#8594; Climb &middot; C172</div>
               </div>
               <div class="proc-select-arrow">&#8250;</div>
             </div>
-            <div class="proc-select-card" onclick="startProcedure('pattern_landing')">
+            <div class="proc-select-card" data-category="airport" onclick="startProcedure('pattern_landing')">
               <div>
                 <div class="proc-select-card-title">Pattern Entry &amp; Landing</div>
                 <div class="proc-select-card-sub">Downwind &#8594; Base &#8594; Final &#8594; Rollout &middot; C172</div>
               </div>
               <div class="proc-select-arrow">&#8250;</div>
             </div>
-            <div class="proc-select-card" onclick="startProcedure('slow_flight')">
+            <div class="proc-select-card" data-category="airwork" onclick="startProcedure('slow_flight')">
               <div>
                 <div class="proc-select-card-title">Slow Flight</div>
                 <div class="proc-select-card-sub">Entry &#8594; Maneuvering &#8594; Recovery &middot; C172</div>
               </div>
               <div class="proc-select-arrow">&#8250;</div>
             </div>
-            <div class="proc-select-card" onclick="startProcedure('power_off_stall')">
+            <div class="proc-select-card" data-category="airwork" onclick="startProcedure('power_off_stall')">
               <div>
                 <div class="proc-select-card-title">Power Off Stall</div>
                 <div class="proc-select-card-sub">Landing config &middot; Recognition &middot; Recovery &middot; C172</div>
               </div>
               <div class="proc-select-arrow">&#8250;</div>
             </div>
-            <div class="proc-select-card" onclick="startProcedure('power_on_stall')">
+            <div class="proc-select-card" data-category="airwork" onclick="startProcedure('power_on_stall')">
               <div>
                 <div class="proc-select-card-title">Power On Stall</div>
                 <div class="proc-select-card-sub">Takeoff config &middot; Recognition &middot; Recovery &middot; C172</div>
@@ -625,7 +626,8 @@
     </div>
     <div class="drill-sheet-desc">Fly the full pattern from memory.</div>
     <div class="drill-sheet-chips">
-      <button class="drill-chip drill-chip--orange" onclick="selectDrill('procedures','procedures')">Procedures</button>
+      <button class="drill-chip drill-chip--orange" onclick="selectDrill('procedures','airport')">Airport</button>
+      <button class="drill-chip drill-chip--orange" onclick="selectDrill('procedures','airwork')">Airwork</button>
       <button class="drill-chip drill-chip--orange" onclick="selectDrill('procedures','vspeeds')">V-Speeds</button>
     </div>
   </div>

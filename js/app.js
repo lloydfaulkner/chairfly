@@ -22,7 +22,7 @@ let currentDrill = null; // 'checklist'|'radio'|'procedures'|'emergency'
 let currentClMode = 'reference';
 let currentRadioMode = 'chips';
 let currentProcScreen = 'proc-screen-setup';
-let currentProcMode = 'procedures';
+let currentProcMode = 'airport';
 // Prevents updateHash() from writing the URL while we're parsing it on load/hashchange,
 // which would cause a feedback loop and corrupt the hash.
 let _restoringNav = false;
@@ -180,6 +180,8 @@ function selectDrill(drill, mode) {
     _setProcModeUI('vspeeds');
     if (!vspeedState.started && !vspeedState.finished) initVspeedDrill();
     updateHash();
+  } else if (drill === 'procedures' && (mode === 'airport' || mode === 'airwork')) {
+    filterProcedures(mode);
   }
 }
 
@@ -209,7 +211,7 @@ function switchDrill(type) {
   _setBottomTabActive('drills');
   if (type === 'checklist')        _switchViewOnly('checklist');
   else if (type === 'radio')       _switchViewOnly('radio');
-  else if (type === 'procedures')  { _switchViewOnly('procedures'); _setProcModeUI('procedures'); showProcScreen('proc-screen-setup'); }
+  else if (type === 'procedures')  { _switchViewOnly('procedures'); _setProcModeUI('airport'); showProcScreen('proc-screen-setup'); filterProcedures('airport'); }
   else if (type === 'emergency')   _switchViewOnly('emergency');
   updateHash();
 }
@@ -2475,6 +2477,18 @@ function prevProcStep() {
 
 function procBack() { showProcScreen('proc-screen-setup'); }
 
+function filterProcedures(category) {
+  document.querySelectorAll('.proc-select-card[data-category]').forEach(card => {
+    card.style.display = (!category || card.dataset.category === category) ? '' : 'none';
+  });
+  const eyebrow = document.querySelector('#proc-screen-setup .cf-eyebrow');
+  if (eyebrow) {
+    eyebrow.textContent = category === 'airport' ? 'Airport Procedures'
+                        : category === 'airwork'  ? 'Airwork'
+                        : 'Procedure Briefing';
+  }
+}
+
 function showProcScreen(id) {
   document.querySelectorAll('.proc-screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -2483,16 +2497,21 @@ function showProcScreen(id) {
 }
 
 function _setProcModeUI(mode) {
-  document.querySelectorAll('#proc-mode-row .cl-mode-btn').forEach(b => b.classList.remove('active'));
-  const idx = mode === 'vspeeds' ? 1 : 0;
-  document.querySelectorAll('#proc-mode-row .cl-mode-btn')[idx].classList.add('active');
-  document.getElementById('proc-main-mode').style.display = mode === 'procedures' ? '' : 'none';
+  document.querySelectorAll('#proc-mode-row .cl-mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.procMode === mode);
+  });
+  const isProcs = mode === 'airport' || mode === 'airwork';
+  document.getElementById('proc-main-mode').style.display = isProcs ? '' : 'none';
   document.getElementById('proc-vspeeds-mode').style.display = mode === 'vspeeds' ? '' : 'none';
   currentProcMode = mode;
 }
 
 function setProcMode(mode, btn) {
   _setProcModeUI(mode);
+  if (mode === 'airport' || mode === 'airwork') {
+    showProcScreen('proc-screen-setup');
+    filterProcedures(mode);
+  }
   if (mode === 'vspeeds' && !vspeedState.started && !vspeedState.finished) initVspeedDrill();
   updateHash();
 }
