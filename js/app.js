@@ -27,19 +27,8 @@ let currentProcMode = 'airport';
 // which would cause a feedback loop and corrupt the hash.
 let _restoringNav = false;
 
-let _scrollLockY = 0;
-function _lockScroll() {
-  _scrollLockY = window.scrollY;
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${_scrollLockY}px`;
-  document.body.style.width = '100%';
-}
-function _unlockScroll() {
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.width = '';
-  window.scrollTo(0, _scrollLockY);
-}
+function _lockScroll() {}
+function _unlockScroll() {}
 
 // ── DAY / NIGHT MODE ─────────────────────────────────────────────────────────
 // data-mode is set on <html> by the inline boot script in <head>.
