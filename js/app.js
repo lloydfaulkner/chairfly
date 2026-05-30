@@ -28,7 +28,7 @@ let currentProcMode = 'airport';
 let _restoringNav = false;
 
 function _stopBodyScroll(e) {
-  if (!e.target.closest('#drill-sheet, #cf-aircraft-sheet')) e.preventDefault();
+  e.preventDefault();
 }
 function _lockScroll() {
   document.addEventListener('touchmove', _stopBodyScroll, { passive: false });
