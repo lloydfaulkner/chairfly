@@ -12,7 +12,7 @@ let currentAircraft = 'cessna172ikl';
 
 let state = {
   checklist: { phase: 'preflight', completed: {} },
-  radio: { scenarioIdx: 0, builtCall: [], usedWords: new Set() },
+  radio: { scenarioIdx: 0, scenario: null, activeGroup: null, builtCall: [], builtCallKeys: [], usedWords: new Set() },
   emergency: { current: 0, answered: false, correct: 0, total: 0 }
 };
 
@@ -610,8 +610,11 @@ function initRadio() {
 }
 
 function renderRadioScenario() {
-  const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
+  const template = RADIO_SCENARIOS[state.radio.scenarioIdx];
+  const s = template.build ? template.build() : template;
+  state.radio.scenario = s;
   state.radio.builtCall = [];
+  state.radio.builtCallKeys = [];
   state.radio.usedWords = new Set();
   document.getElementById('scenario-type').textContent = s.type;
   document.getElementById('scenario-text').textContent = s.situation;
@@ -737,7 +740,7 @@ function clearRadioCall() {
 
 
 function checkRadioCall() {
-  const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
+  const s = state.radio.scenario;
   const isCorrect = radioCallMatches(state.radio.builtCall, s);
 
   const usedDistractors = state.radio.builtCall
@@ -775,33 +778,46 @@ function retryRadioCall() {
 }
 
 function revealRadioCall() {
-  const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
+  const s = state.radio.scenario;
   document.getElementById('feedback-header').textContent = '✗ Ideal call';
   document.getElementById('feedback-ideal').textContent = s.ideal;
   document.getElementById('feedback-note').textContent = s.note;
 }
 
 function newRadioScenario() {
-  const prev = state.radio.scenarioIdx;
-  let next;
-  do { next = Math.floor(Math.random() * RADIO_SCENARIOS.length); } while (next === prev && RADIO_SCENARIOS.length > 1);
-  state.radio.scenarioIdx = next;
+  const pool = state.radio.activeGroup
+    ? RADIO_SCENARIOS.filter(s => s.group === state.radio.activeGroup)
+    : RADIO_SCENARIOS;
+  const prevTemplate = RADIO_SCENARIOS[state.radio.scenarioIdx];
+  let template;
+  do {
+    template = pool[Math.floor(Math.random() * pool.length)];
+  } while (template === prevTemplate && pool.length > 1);
+  state.radio.scenarioIdx = RADIO_SCENARIOS.indexOf(template);
   renderRadioScenario();
+}
+
+function setRadioGroup(groupId) {
+  state.radio.activeGroup = state.radio.activeGroup === groupId ? null : groupId;
+  newRadioScenario();
 }
 
 function renderRadioScenarioList() {
   const list = document.getElementById('rd-scenario-list');
   if (!list) return;
-  list.innerHTML = RADIO_SCENARIOS.map((s, i) => `
-    <div class="rd-scenario-item${i === state.radio.scenarioIdx ? ' active' : ''}" onclick="selectScenario(${i})">
-      <span class="rd-scenario-num">${String(i + 1).padStart(2, '0')}</span>
-      <span>${s.type}</span>
-    </div>`).join('');
-}
-
-function selectScenario(idx) {
-  state.radio.scenarioIdx = idx;
-  renderRadioScenario();
+  const active = state.radio.activeGroup;
+  const allChip = `<div class="rd-cat-btn${!active ? ' active' : ''}" onclick="setRadioGroup(null)">
+    <span class="rd-cat-label">All</span>
+    <span class="rd-cat-sub">${RADIO_SCENARIOS.length} scenarios</span>
+  </div>`;
+  const groupChips = RADIO_SCENARIO_GROUPS.map(g => {
+    const count = RADIO_SCENARIOS.filter(s => s.group === g.id).length;
+    return `<div class="rd-cat-btn${active === g.id ? ' active' : ''}" onclick="setRadioGroup('${g.id}')">
+      <span class="rd-cat-label">${g.label}</span>
+      <span class="rd-cat-sub">${g.sub}</span>
+    </div>`;
+  }).join('');
+  list.innerHTML = `<div class="rd-cat-grid">${allChip}${groupChips}</div>`;
 }
 
 
@@ -4069,7 +4085,7 @@ function checkSpeechCall() {
     return;
   }
 
-  const s = RADIO_SCENARIOS[state.radio.scenarioIdx];
+  const s = state.radio.scenario;
   const result = scoreSpeechCall(speechState.transcript, s.ideal, s.words, s.speechOptional || []);
   const isGood = result.score >= 0.8;
   const pct = Math.round(result.score * 100);
