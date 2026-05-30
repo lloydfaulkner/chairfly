@@ -2,7 +2,7 @@ const ALL_AIRCRAFT = {
   c172: {
     name: 'C172 Skyhawk',
     label: 'C172',
-    speeds: { vr: 52, vx: 59, vy: 74, vfe: 85, approach: 70, shortFinal: 65, bestGlide: 65 },
+    speeds: { vr: 52, vx: 59, vy: 74, vfe: 85, approach: 70, shortFinal: 65, bestGlide: 65, vs0: 43, vs: 50, va: 99, vno: 122, vne: 151 },
     checklists: {
   preflight: {
     label: 'Preflight',
@@ -803,7 +803,7 @@ const ALL_AIRCRAFT = {
   cherokee140: {
     name: 'Cherokee 140',
     label: 'PA-28',
-    speeds: { vr: 48, vx: 66, vy: 75, vfe: 101, approach: 70, shortFinal: 59, bestGlide: 60 },
+    speeds: { vr: 48, vx: 66, vy: 75, vfe: 101, approach: 70, shortFinal: 59, bestGlide: 60, vs0: 41, vs: 50, va: 100, vno: 124, vne: 155 },
     checklists: {
       preflight: {
         label: 'Preflight',
@@ -1173,6 +1173,20 @@ const PHONETIC_ALPHABET = {
 };
 
 const VSPEEDS_META = [
+  { key: 'vs0', symbol: 'Vs0', label: 'Stall speed, full flaps',
+    scenario: 'Full flaps, power idle, wings level — you\'ve slowed to the bottom of the white arc. Below this speed the wing is stalled in landing configuration.',
+    prompts: [
+      'CFI: "We\'re going to slow to just above the stall, full flaps. What\'s the number at the bottom of the white arc?"',
+      'Power back, flaps down, slowing through the pattern — what\'s the minimum speed before the wing quits in this config?',
+    ],
+  },
+  { key: 'vs', symbol: 'Vs', label: 'Stall speed, clean',
+    scenario: 'Flaps up, power idle, wings level — you\'ve reached the bottom of the green arc. Below this in clean configuration the wing stops flying.',
+    prompts: [
+      'CFI: "Flaps up, throttle to idle, hold altitude — note the speed when she buffets."',
+      'You\'re demonstrating a power-off stall in clean config. The stall horn sounds just before this speed.',
+    ],
+  },
   { key: 'vr', symbol: 'Vr', label: 'Rotation speed',
     scenario: 'On the takeoff roll, airspeed climbing — at what speed do you rotate the nose up and lift off?',
     prompts: [
@@ -1221,6 +1235,28 @@ const VSPEEDS_META = [
     prompts: [
       'You\'re 50 feet over the threshold. What speed do you want when you begin the flare?',
       'CFI: "What speed do you want crossing the fence?"',
+    ],
+  },
+  { key: 'va', symbol: 'Va', label: 'Maneuvering speed',
+    scenario: 'Turbulence ahead. Above this speed a single full control deflection could overstress the airframe. Slow down before it gets rough.',
+    prompts: [
+      'CFI: "Picking up some chop — let\'s get down to Va before it gets worse."',
+      '"Moderate turbulence reported at your altitude." What speed protects the airframe from structural overstress?',
+      'You hit a sharp bump that jolts the plane. What speed do you want to be at or below in rough air?',
+    ],
+  },
+  { key: 'vno', symbol: 'Vno', label: 'Max structural cruise',
+    scenario: 'Top of the green arc. Above this speed fly only in smooth air — gusts can exceed the load limits even at normal cruise power.',
+    prompts: [
+      'CFI: "What\'s the top of the green arc — the speed above which you need smooth air?"',
+      'You\'re cruising above this speed when the ATIS reports moderate turbulence en route. What do you do first?',
+    ],
+  },
+  { key: 'vne', symbol: 'Vne', label: 'Never-exceed speed',
+    scenario: 'The red line on the airspeed indicator. Structural failure is possible above this speed under any conditions.',
+    prompts: [
+      'CFI: "What does the red line on the airspeed indicator represent?"',
+      'Nose-low unusual attitude recovery — you\'re accelerating fast. What speed must you not pass before pulling out?',
     ],
   },
 ];

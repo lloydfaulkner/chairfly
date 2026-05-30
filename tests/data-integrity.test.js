@@ -102,6 +102,12 @@ describe('ALL_AIRCRAFT_Speeds', () => {
 
     test(`${id}Speeds_ApproachAtOrBelowVfe_IsWithinFlapsLimit`, () =>
       assert.ok(s.approach <= s.vfe, `${id}: approach(${s.approach}) must be <= Vfe(${s.vfe})`));
+
+    test(`${id}Speeds_Vs0LessThanVs_IsAerodynamicallyOrdered`, () =>
+      assert.ok(s.vs0 < s.vs, `${id}: Vs0(${s.vs0}) must be < Vs(${s.vs})`));
+
+    test(`${id}Speeds_VnoLessThanVne_IsAerodynamicallyOrdered`, () =>
+      assert.ok(s.vno < s.vne, `${id}: Vno(${s.vno}) must be < Vne(${s.vne})`));
   }
 });
 
