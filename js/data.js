@@ -1056,98 +1056,617 @@ const GLOSSARY = {
 };
 
 
+// ── Radio scenario token pools ──────────────────────────────────────────────
+const _R_PICK = arr => arr[Math.floor(Math.random() * arr.length)];
+
+const _R_UA = [
+  { icao: 'KUZA', name: 'Rock Hill' },
+  { icao: 'KSVH', name: 'Statesville' },
+  { icao: 'KSPA', name: 'Spartanburg' },
+  { icao: 'KTTA', name: 'Sanford' },
+  { icao: 'KEQY', name: 'Monroe' },
+  { icao: 'KHBI', name: 'Asheboro' },
+  { icao: 'KAFP', name: 'Wadesboro' },
+  { icao: 'KLBT', name: 'Lumberton' },
+  { icao: 'KGMU', name: 'Greenville' },
+  { icao: 'KMRN', name: 'Morganton' },
+  { icao: 'KJNX', name: 'Smithfield' },
+  { icao: 'KLHZ', name: 'Louisburg' },
+  { icao: 'KOCW', name: 'Washington' },
+  { icao: 'KAIK', name: 'Aiken' },
+  { icao: 'KVUJ', name: 'Albemarle' },
+  { icao: 'KTBR', name: 'Statesboro' },
+  { icao: 'KGVL', name: 'Gainesville' },
+];
+
+const _R_CA = [
+  { icao: 'KRDU', name: 'RDU', long: 'Raleigh-Durham', ground: 'RDU Ground', tower: 'RDU Tower' },
+  { icao: 'KGSO', name: 'Greensboro', long: 'Piedmont Triad', ground: 'Greensboro Ground', tower: 'Greensboro Tower' },
+  { icao: 'KGSP', name: 'Greenville', long: 'Greenville-Spartanburg', ground: 'Greenville Ground', tower: 'Greenville Tower' },
+  { icao: 'KHKY', name: 'Hickory', long: 'Hickory Regional', ground: 'Hickory Ground', tower: 'Hickory Tower' },
+  { icao: 'KFLO', name: 'Florence', long: 'Florence Regional', ground: 'Florence Ground', tower: 'Florence Tower' },
+  { icao: 'KINT', name: 'Smith Reynolds', long: 'Smith Reynolds', ground: 'Smith Reynolds Ground', tower: 'Smith Reynolds Tower' },
+];
+
+const _R_APP = [
+  { name: 'Charlotte Approach', dep: 'Charlotte Departure' },
+  { name: 'Raleigh Approach', dep: 'Raleigh Departure' },
+  { name: 'Greensboro Approach', dep: 'Greensboro Departure' },
+];
+
+const _R_TAILS = [
+  { id: 'N4521G', phonetic: 'Cessna Four Five Two One Golf' },
+  { id: 'N7382B', phonetic: 'Cessna Seven Three Eight Two Bravo' },
+  { id: 'N2846T', phonetic: 'Cessna Two Eight Four Six Tango' },
+  { id: 'N5163K', phonetic: 'Cessna Five One Six Three Kilo' },
+  { id: 'N9274R', phonetic: 'Cessna Niner Two Seven Four Romeo' },
+  { id: 'N3851S', phonetic: 'Cessna Three Eight Five One Sierra' },
+];
+
+const _R_RWYS = [
+  { num: '4',  spoken: 'zero four' },
+  { num: '9',  spoken: 'zero niner' },
+  { num: '13', spoken: 'one three' },
+  { num: '18', spoken: 'one eight' },
+  { num: '22', spoken: 'two two' },
+  { num: '27', spoken: 'two seven' },
+  { num: '31', spoken: 'three one' },
+  { num: '32', spoken: 'three two' },
+  { num: '36', spoken: 'three six' },
+];
+
+const _R_ATIS_CODES = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel'];
+const _R_DIRS = ['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest'];
+const _R_DIST = ['five', 'eight', 'ten', 'twelve', 'fifteen'];
+
+const _R_CRUISE_ALTS = [
+  { ft: 2500, spoken: 'two thousand five hundred' },
+  { ft: 3000, spoken: 'three thousand' },
+  { ft: 3500, spoken: 'three thousand five hundred' },
+  { ft: 4000, spoken: 'four thousand' },
+  { ft: 4500, spoken: 'four thousand five hundred' },
+];
+
+const _R_CLIMB_ALTS = [
+  { ft: 1200, spoken: 'one thousand two hundred' },
+  { ft: 1500, spoken: 'one thousand five hundred' },
+  { ft: 1800, spoken: 'one thousand eight hundred' },
+  { ft: 2100, spoken: 'two thousand one hundred' },
+  { ft: 2400, spoken: 'two thousand four hundred' },
+];
+
+const _R_POS = ['Signature FBO', 'the FBO', 'transient parking', 'the main ramp', 'Million Air'];
+const _R_FF_DEST = ['Raleigh-Durham', 'Charlotte', 'Greenville-Spartanburg', 'Columbia', 'Asheville', 'Myrtle Beach'];
+
 const RADIO_SCENARIOS = [
-  {
-    type: 'Initial Callup — Class D',
-    situation: "You're departing from a towered airport. You need to call ground for taxi.",
-    data: [
-      { label: 'Airport', value: 'RDU Ground', gloss: 'Airport' },
-      { label: 'Tail', value: 'N4521G', gloss: 'N4521G' },
-      { label: 'Position', value: 'Signature FBO', gloss: 'Signature FBO' },
-      { label: 'ATIS', value: 'Info Alpha', gloss: 'with information Alpha' },
-    ],
-    ideal: 'RDU Ground, Cessna Four Five Two One Golf, at Signature, with information Alpha, VFR departure to the southeast, request taxi.',
-    words: ['RDU Ground', 'Cessna Four Five Two One Golf', 'at Signature', 'with information Alpha', 'VFR departure to the southeast', 'request taxi'],
-    speechOptional: ['to', 'the'],
-    acceptedVariants: [
-      ['RDU Ground', 'Cessna Four Five Two One Golf', 'with information Alpha', 'at Signature', 'VFR departure to the southeast', 'request taxi'],
-    ],
-    distractors: [
-      { text: 'N4521G', why: 'Use the spoken phonetic form — "Cessna Four Five Two One Golf" — not the raw N-number.' },
-      { text: 'request takeoff clearance', why: 'Ground control handles taxi only. Tower issues takeoff clearance when you\'re at the runway.' },
-      { text: 'over', why: '"Over" is not used in aviation radio calls — it\'s a civilian misconception from military/CB radio.' },
-    ],
-    rule: { repeats: false, why: 'Controlled field — tower knows which airport you\'re at. No need to repeat the name; it wastes airtime and sounds odd to ATC.' },
-    note: "Lead with WHO YOU'RE CALLING → WHO YOU ARE → WHERE YOU ARE → ATIS CODE → REQUEST. This is the universal format for any initial callup."
-  },
+  // ── CTAF (Uncontrolled) ──────────────────────────────────────────────────────
   {
     type: 'Pattern Entry — Uncontrolled',
-    situation: "You're inbound to Caldwell Airport (KCDW), 10 miles east at 3,500 ft. Uncontrolled field — announce on CTAF.",
-    data: [
-      { label: 'Airport', value: 'Caldwell', gloss: null },
-      { label: 'CTAF', value: '122.8', gloss: 'CTAF' },
-      { label: 'Runway', value: '27', gloss: 'Runway' },
-      { label: 'Position', value: '10 miles east', gloss: null },
-      { label: 'Altitude', value: '3,500 ft', gloss: null },
-      { label: 'Tail', value: 'N4521G', gloss: 'Tail' },
-    ],
-    ideal: 'Caldwell traffic, Cessna Four Five Two One Golf, ten miles east, three thousand five hundred, inbound landing runway two seven, Caldwell.',
-    words: ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'ten miles east', 'three thousand five hundred', 'inbound landing runway two seven', 'Caldwell'],
-    speechOptional: ['landing'],
-    acceptedVariants: [
-      ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'three thousand five hundred', 'ten miles east', 'inbound landing runway two seven', 'Caldwell'],
-    ],
-    distractors: [
-      { text: 'Caldwell tower', why: 'Uncontrolled fields have no tower. The correct suffix is "traffic" — it addresses all aircraft on frequency.' },
-      { text: 'with information Bravo', why: 'ATIS codes are only reported to controlled fields with towers. At uncontrolled airports, there\'s no ATIS to report.' },
-      { text: 'any traffic please advise', why: 'This phrase is not standard FAA phraseology and is actively discouraged — it clutters the frequency and doesn\'t add useful information.' },
-    ],
-    rule: { repeats: true, why: 'Uncontrolled field — multiple airports can share the same CTAF frequency. The trailing airport name confirms you and other traffic are talking about the same field.' },
-    note: "Uncontrolled calls: Airport + 'traffic' → who you are → position → altitude → intentions → airport name again. That final airport name confirms you're on the right frequency."
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      const dist = _R_PICK(_R_DIST);
+      const dir = _R_PICK(_R_DIRS);
+      const alt = _R_PICK(_R_CRUISE_ALTS);
+      return {
+        type: this.type, group: this.group,
+        situation: `You're inbound to ${ap.name} (${ap.icao}), ${dist} miles ${dir} at ${alt.ft} ft MSL. Uncontrolled field — announce on CTAF.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Position', value: `${dist} miles ${dir}`, gloss: null },
+          { label: 'Altitude', value: `${alt.ft} ft MSL`, gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, ${dist} miles ${dir}, ${alt.spoken}, inbound landing runway ${rwy.spoken}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `${dist} miles ${dir}`, alt.spoken, `inbound landing runway ${rwy.spoken}`, ap.name],
+        speechOptional: ['landing'],
+        distractors: [
+          { text: `${ap.name} tower`, why: 'Uncontrolled fields have no tower. Use "traffic" — it addresses all aircraft on the CTAF frequency.' },
+          { text: 'with information Golf', why: 'ATIS codes are only reported at towered airports. There\'s no ATIS at an uncontrolled field — don\'t say it.' },
+          { text: 'any traffic please advise', why: 'Not standard FAA phraseology — it clutters the frequency and adds no useful information. Self-announce your own position instead.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — multiple airports share the same CTAF frequencies. The trailing airport name confirms you and nearby traffic are on the same field.' },
+        note: 'Inbound structure: airport + "traffic" → who you are → position → altitude → intentions → airport again. That final repeat confirms you\'re on the right frequency.',
+      };
+    },
   },
   {
-    type: 'Checking In — Approach Control',
-    situation: "Tower: \"N4521G, contact Raleigh Approach, one two four point three five.\" You've switched over. Climbing through 1,800.",
-    data: [
-      { label: 'Facility', value: 'Raleigh Approach', gloss: null },
-      { label: 'Frequency', value: '124.35', gloss: 'Frequency' },
-      { label: 'Tail', value: 'N4521G', gloss: 'Tail' },
-      { label: 'Altitude', value: 'Climbing through 1,800', gloss: 'Altitude' },
-      { label: 'Squawk', value: '4521', gloss: 'Squawk' },
-    ],
-    ideal: 'Raleigh Approach, Cessna Four Five Two One Golf, out of one thousand eight hundred, climbing VFR.',
-    words: ['Raleigh Approach', 'Cessna Four Five Two One Golf', 'out of one thousand eight hundred', 'climbing VFR'],
-    acceptedVariants: [
-      ['Raleigh Approach', 'Cessna Four Five Two One Golf', 'climbing VFR', 'out of one thousand eight hundred'],
-    ],
-    distractors: [
-      { text: 'squawking four five two one', why: 'Don\'t repeat your squawk code when checking in — approach already sees it on radar. Saying it wastes airtime.' },
-      { text: 'at one thousand eight hundred', why: 'Say "out of" when climbing or descending — it tells approach you\'re in motion, not level. "At" implies you\'re established at that altitude.' },
-      { text: 'request flight following', why: 'This would be appropriate later once established — but your first call is just a check-in. Keep it short.' },
-    ],
-    rule: { repeats: false, why: 'Controlled airspace — approach has your squawk on radar and knows exactly who and where you are. No need to repeat the airport name.' },
-    note: "When checking in with approach, give: facility → callsign → current altitude (say 'out of' if climbing/descending) → intentions. They already have your squawk — don't repeat it."
+    type: 'Crosswind Call — CTAF',
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      return {
+        type: this.type, group: this.group,
+        situation: `You've turned crosswind departing runway ${rwy.num} at ${ap.name}. Announce your position on CTAF.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Leg', value: 'Crosswind', gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, crosswind runway ${rwy.spoken}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `crosswind runway ${rwy.spoken}`, ap.name],
+        distractors: [
+          { text: 'turning crosswind', why: 'Announce your position once established on the leg, not while still turning. You say where you are, not what you\'re doing.' },
+          { text: `${ap.name} unicom`, why: 'Use "traffic" for position reports — it addresses all aircraft on frequency. "Unicom" is for requesting services like fuel, not self-announcing.' },
+          { text: 'departing to the north', why: 'Save the departure call for when you\'re leaving the pattern. On crosswind you\'re still inside the traffic pattern.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — bookend every CTAF call with the airport name.' },
+        note: 'Crosswind is the first 90-degree turn after departure. Some busy airports skip it, but calling crosswind and downwind helps other traffic sequence in behind you.',
+      };
+    },
+  },
+  {
+    type: 'Downwind Call — CTAF',
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      const lr = _R_PICK(['left', 'right']);
+      return {
+        type: this.type, group: this.group,
+        situation: `You've turned ${lr} downwind for runway ${rwy.num} at ${ap.name}. Announce on CTAF.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Leg', value: `${lr.charAt(0).toUpperCase() + lr.slice(1)} downwind`, gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, ${lr} downwind runway ${rwy.spoken}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `${lr} downwind runway ${rwy.spoken}`, ap.name],
+        distractors: [
+          { text: 'turning downwind', why: 'Call once you\'re established on downwind, not mid-turn. Announce your position, not the maneuver.' },
+          { text: `${ap.name} tower`, why: 'Uncontrolled fields have no tower. Use "traffic" to address all aircraft on CTAF.' },
+          { text: 'with the airport in sight', why: 'Implied — don\'t clutter the call. Other traffic needs your position and leg, nothing more.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — bookend every CTAF call with the airport name.' },
+        note: 'Downwind is the busiest call in the pattern. You can optionally add your intention — "touch-and-go" or "full stop." Other aircraft use your downwind call to sequence behind you.',
+      };
+    },
   },
   {
     type: 'Base Leg Call — CTAF',
-    situation: "You're on left base for runway 27 at Caldwell Airport (KCDW), an uncontrolled field.",
-    data: [
-      { label: 'Airport', value: 'Caldwell', gloss: null },
-      { label: 'CTAF', value: '122.8', gloss: 'CTAF' },
-      { label: 'Leg', value: 'Left base', gloss: 'Leg' },
-      { label: 'Runway', value: '27', gloss: 'Runway' },
-      { label: 'Tail', value: 'N4521G', gloss: 'Tail' },
-    ],
-    ideal: 'Caldwell traffic, Cessna Four Five Two One Golf, left base runway two seven, Caldwell.',
-    words: ['Caldwell traffic', 'Cessna Four Five Two One Golf', 'left base runway two seven', 'Caldwell'],
-    distractors: [
-      { text: 'turning base', why: 'Say "left base" — not "turning base." You\'re announcing your current leg, not the maneuver. If you\'re still turning, wait until established.' },
-      { text: 'final approach', why: 'You\'re on base, not final. Announcing the wrong leg confuses other traffic who are trying to sequence behind you.' },
-      { text: 'souls on board two', why: 'Souls on board is emergency phraseology only — used when declaring a Mayday. Never used in normal pattern calls.' },
-    ],
-    rule: { repeats: true, why: 'Uncontrolled field — bookend every CTAF call with the airport name. Short pattern calls especially need it since there\'s less context for other traffic to work with.' },
-    note: "Keep pattern calls concise. Announce each leg: crosswind, downwind, base, final. Always bookend with the airport name so other traffic confirms they're on the right freq."
-  }
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      const lr = _R_PICK(['left', 'right']);
+      return {
+        type: this.type, group: this.group,
+        situation: `You're established on ${lr} base for runway ${rwy.num} at ${ap.name}. Announce on CTAF.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Leg', value: `${lr.charAt(0).toUpperCase() + lr.slice(1)} base`, gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, ${lr} base runway ${rwy.spoken}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `${lr} base runway ${rwy.spoken}`, ap.name],
+        distractors: [
+          { text: 'turning base', why: 'Announce once established on base, not while still in the turn. Call after the maneuver, not during it.' },
+          { text: 'final approach', why: 'You\'re on base, not final. Announcing the wrong leg misleads traffic trying to sequence behind you.' },
+          { text: 'souls on board two', why: 'Souls on board is emergency phraseology only — used when declaring a Mayday. Never used in normal pattern calls.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — short pattern calls especially need the bookend airport name since other traffic has less context.' },
+        note: 'Keep pattern calls concise. Announce each leg. Short final calls are most critical — crosswind and downwind give other traffic time to fit into the sequence.',
+      };
+    },
+  },
+  {
+    type: 'Final Approach Call — CTAF',
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      return {
+        type: this.type, group: this.group,
+        situation: `You've rolled out on final for runway ${rwy.num} at ${ap.name}. Announce on CTAF.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Leg', value: 'Final', gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, final runway ${rwy.spoken}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `final runway ${rwy.spoken}`, ap.name],
+        distractors: [
+          { text: 'turning final', why: 'Call once established on final, not while still in the turn. "Turning final" implies you\'re mid-maneuver and not yet aligned with the runway.' },
+          { text: 'gear down', why: 'Good internal checklist item, but never part of a radio call. Keep calls to position and intentions only.' },
+          { text: 'with the field in sight', why: 'Implied by the call — you wouldn\'t be on final without the runway in sight. Don\'t clutter the transmission.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — final is the last advisory other traffic gets before you commit to the runway.' },
+        note: 'Final is the most critical pattern call. Departing traffic and other landing aircraft need to know someone is on final before they enter the runway.',
+      };
+    },
+  },
+  {
+    type: 'Straight-in Approach — CTAF',
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      const dist = _R_PICK(_R_DIST);
+      return {
+        type: this.type, group: this.group,
+        situation: `You're ${dist} miles out on a straight-in to runway ${rwy.num} at ${ap.name}. Announce on CTAF.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Distance', value: `${dist} miles`, gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, ${dist}-mile straight-in runway ${rwy.spoken}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `${dist}-mile straight-in runway ${rwy.spoken}`, ap.name],
+        distractors: [
+          { text: `inbound landing runway ${rwy.spoken}`, why: '"Inbound landing" doesn\'t warn other traffic you\'re bypassing the pattern. "Straight-in" is the specific term — it tells them you\'re going direct to final.' },
+          { text: 'final approach', why: 'At several miles out you\'re not on final — you\'re on a straight-in. "Final" implies you\'re close in and committed.' },
+          { text: `${dist} miles out`, why: 'Distance alone doesn\'t describe your path. Specify "straight-in" and the runway so pattern traffic knows where you\'ll appear.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — straight-ins skip the standard pattern and need extra warning for aircraft already established downwind or base.' },
+        note: 'Straight-in approaches bypass the pattern and can conflict with aircraft in the downwind/base sequence. Announce early and monitor CTAF for conflicting traffic.',
+      };
+    },
+  },
+  {
+    type: 'Go-Around Call — CTAF',
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      return {
+        type: this.type, group: this.group,
+        situation: `You're on short final for runway ${rwy.num} at ${ap.name} and decide to go around. Announce on CTAF.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, going around runway ${rwy.spoken}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `going around runway ${rwy.spoken}`, ap.name],
+        distractors: [
+          { text: 'missed approach', why: '"Missed approach" is IFR instrument-approach terminology. At a VFR uncontrolled field say "going around" — using IFR phraseology here sounds wrong to other pilots.' },
+          { text: 'rejected landing', why: 'Not standard FAA phraseology. "Going around" is the correct and universally understood term for an aborted landing.' },
+          { text: 'climbing to pattern altitude', why: 'Keep the go-around call brief — you\'re busy flying. "Going around" and the runway number are all other traffic needs.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — other pattern traffic must know you\'re rejoining the pattern rather than landing.' },
+        note: 'Make the go-around call as soon as you\'re climbing. Fly the airplane first — the call can be brief. Runway-clear traffic holding to depart must know you\'re coming back around.',
+      };
+    },
+  },
+  {
+    type: 'Clear of Runway — CTAF',
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      return {
+        type: this.type, group: this.group,
+        situation: `You've just landed and cleared runway ${rwy.num} at ${ap.name}. Make the announcement.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, clear of runway ${rwy.spoken}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `clear of runway ${rwy.spoken}`, ap.name],
+        distractors: [
+          { text: 'landed', why: '"Landed" doesn\'t tell other traffic whether you\'re still on the runway surface. "Clear of runway" is the explicit release for waiting departure traffic.' },
+          { text: 'taxi to parking', why: 'The runway-clear call comes first. Taxi intent is secondary — the priority is releasing the runway to traffic holding for departure.' },
+          { text: 'clear', why: '"Clear" alone is ambiguous. Specify "clear of runway" with the runway number so waiting traffic knows which runway is available.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — the clear call releases aircraft holding at the hold short line for departure.' },
+        note: 'Make the runway-clear call as soon as you\'ve fully exited the runway — before stopping for the after-landing checklist. Others may be holding to depart.',
+      };
+    },
+  },
+  {
+    type: 'Touch-and-Go Downwind — CTAF',
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      const lr = _R_PICK(['left', 'right']);
+      return {
+        type: this.type, group: this.group,
+        situation: `You're doing touch-and-goes at ${ap.name} on runway ${rwy.num}. Announce ${lr} downwind with your intention.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Leg', value: `${lr.charAt(0).toUpperCase() + lr.slice(1)} downwind`, gloss: null },
+          { label: 'Intention', value: 'Touch-and-go', gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, ${lr} downwind runway ${rwy.spoken}, touch-and-go, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `${lr} downwind runway ${rwy.spoken}`, 'touch-and-go', ap.name],
+        distractors: [
+          { text: 'full stop', why: 'Full stop means you\'re done for the day. Say "touch-and-go" so other traffic knows you\'re staying in the pattern for another lap.' },
+          { text: 'practice approach', why: '"Practice approach" is used for instrument approach training. For VFR pattern work, "touch-and-go" is the correct term.' },
+          { text: 'low approach', why: 'A low approach means flying over the runway without touching down. A touch-and-go involves landing then immediately departing.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — bookend every CTAF call with the airport name.' },
+        note: 'Announcing your intention — touch-and-go, full stop, low approach — lets other traffic sequence around your pattern work. State it on the downwind or base call.',
+      };
+    },
+  },
+  {
+    type: 'Departing Traffic Pattern — CTAF',
+    group: 'ctaf',
+    build() {
+      const ap = _R_PICK(_R_UA);
+      const tail = _R_PICK(_R_TAILS);
+      const dir = _R_PICK(_R_DIRS);
+      return {
+        type: this.type, group: this.group,
+        situation: `You're climbing out from ${ap.name} and leaving the traffic pattern to the ${dir}. Announce on CTAF.`,
+        data: [
+          { label: 'Airport', value: ap.name, gloss: null },
+          { label: 'Departure', value: `To the ${dir}`, gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ap.name} traffic, ${tail.phonetic}, departing the pattern to the ${dir}, ${ap.name}.`,
+        words: [`${ap.name} traffic`, tail.phonetic, `departing the pattern to the ${dir}`, ap.name],
+        distractors: [
+          { text: 'departing VFR', why: '"VFR" alone doesn\'t tell other traffic where you\'re going. Include the direction so aircraft on crosswind or downwind know where you\'ll exit.' },
+          { text: 'leaving the area', why: 'Not standard phraseology. "Departing the pattern" with a direction is the correct call at uncontrolled fields.' },
+          { text: 'switching frequencies', why: 'Never announce a frequency change on CTAF — stay on frequency until well clear of the area. Others may need to reach you.' },
+        ],
+        rule: { repeats: true, why: 'Uncontrolled field — the departure call tells pattern traffic where you\'ll be exiting so they can sequence around you.' },
+        note: 'Make the departure call when leaving the pattern — typically after the crosswind or early downwind turn. A direction prevents conflicts with other departing or arriving traffic.',
+      };
+    },
+  },
+
+  // ── Class D (Tower & Ground) ─────────────────────────────────────────────────
+  {
+    type: 'Initial Callup — Ground Control',
+    group: 'class-d',
+    build() {
+      const ca = _R_PICK(_R_CA);
+      const tail = _R_PICK(_R_TAILS);
+      const pos = _R_PICK(_R_POS);
+      const atis = _R_PICK(_R_ATIS_CODES);
+      const dir = _R_PICK(_R_DIRS);
+      return {
+        type: this.type, group: this.group,
+        situation: `You're ready to taxi at ${ca.long} (${ca.icao}). Call ground control for taxi clearance.`,
+        data: [
+          { label: 'Airport', value: ca.ground, gloss: 'Airport' },
+          { label: 'Tail', value: tail.id, gloss: null },
+          { label: 'Position', value: pos, gloss: null },
+          { label: 'ATIS', value: `Info ${atis}`, gloss: 'with information Alpha' },
+          { label: 'Departure', value: `VFR ${dir}`, gloss: null },
+        ],
+        ideal: `${ca.ground}, ${tail.phonetic}, at ${pos}, with information ${atis}, VFR departure to the ${dir}, request taxi.`,
+        words: [ca.ground, tail.phonetic, `at ${pos}`, `with information ${atis}`, `VFR departure to the ${dir}`, 'request taxi'],
+        distractors: [
+          { text: tail.id, why: 'Use the phonetic callsign — not the raw N-number. "Cessna Four Five Two One Golf" is what ATC expects to hear.' },
+          { text: 'request takeoff clearance', why: 'Ground handles taxi only. Tower issues takeoff clearance at the runway threshold — they\'re two different controllers.' },
+          { text: 'over', why: '"Over" is not used in aviation radio calls. It\'s a civilian misconception from military and CB radio culture.' },
+        ],
+        rule: { repeats: false, why: 'Controlled field — the controller knows which airport you\'re at. Repeating the name wastes airtime.' },
+        note: 'Ground callup: who you\'re calling → who you are → where you are → ATIS code → departure info → request. Always lead with the facility, not yourself.',
+      };
+    },
+  },
+  {
+    type: 'Initial Contact — Tower (Ready to Depart)',
+    group: 'class-d',
+    build() {
+      const ca = _R_PICK(_R_CA);
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      return {
+        type: this.type, group: this.group,
+        situation: `You've taxied to the hold short line at ${ca.long}. Call tower ready for departure on runway ${rwy.num}.`,
+        data: [
+          { label: 'Facility', value: ca.tower, gloss: null },
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `${ca.tower}, ${tail.phonetic}, holding short runway ${rwy.spoken}, ready for takeoff, VFR.`,
+        words: [ca.tower, tail.phonetic, `holding short runway ${rwy.spoken}`, 'ready for takeoff', 'VFR'],
+        distractors: [
+          { text: 'request takeoff clearance', why: 'Say "ready for takeoff" — tower will issue the clearance. Don\'t request the specific clearance by name.' },
+          { text: ca.ground, why: 'You\'re talking to tower now, not ground. Calling the wrong facility causes confusion and the controller will redirect you.' },
+          { text: tail.id, why: 'Use the phonetic callsign at the tower callup — raw N-numbers are harder to hear and less professional.' },
+        ],
+        rule: { repeats: false, why: 'Controlled field — tower handles one airport. No trailing name needed.' },
+        note: 'Tower callup at the hold short: facility → callsign → which runway → "ready for takeoff" → VFR. Tower will respond with line up and wait or a direct takeoff clearance.',
+      };
+    },
+  },
+  {
+    type: 'Takeoff Clearance Readback',
+    group: 'class-d',
+    build() {
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      return {
+        type: this.type, group: this.group,
+        situation: `Tower says: "${tail.id}, runway ${rwy.num}, cleared for takeoff." Read it back correctly.`,
+        data: [
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Clearance', value: 'Cleared for takeoff', gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `Runway ${rwy.spoken}, cleared for takeoff, ${tail.phonetic}.`,
+        words: [`Runway ${rwy.spoken}`, 'cleared for takeoff', tail.phonetic],
+        distractors: [
+          { text: 'Roger, cleared for takeoff', why: '"Roger" means received — it\'s not a readback. You must repeat the clearance so ATC can catch any misunderstanding. FAA requires it.' },
+          { text: tail.id, why: 'Use the phonetic callsign on readbacks. Raw N-numbers are harder to understand and sound unprofessional.' },
+          { text: `Cleared for takeoff runway ${rwy.spoken}`, why: 'Correct content, wrong order. Lead with the runway number — it\'s the safety-critical piece that confirms you heard the right runway.' },
+        ],
+        rule: { repeats: false, why: 'Controlled field — tower expects a readback of the clearance and runway, not the airport name.' },
+        note: 'Readback order: runway → clearance → callsign. Starting with the runway number proves you heard it correctly. FAA requires a full readback of any runway clearance.',
+      };
+    },
+  },
+  {
+    type: 'Hold Short Readback',
+    group: 'class-d',
+    build() {
+      const tail = _R_PICK(_R_TAILS);
+      const rwy = _R_PICK(_R_RWYS);
+      return {
+        type: this.type, group: this.group,
+        situation: `Tower says: "${tail.id}, hold short of runway ${rwy.num}, traffic on final." Read it back.`,
+        data: [
+          { label: 'Runway', value: rwy.num, gloss: 'Runway' },
+          { label: 'Instruction', value: 'Hold short', gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+        ],
+        ideal: `Hold short runway ${rwy.spoken}, ${tail.phonetic}.`,
+        words: [`Hold short runway ${rwy.spoken}`, tail.phonetic],
+        distractors: [
+          { text: 'Roger', why: '"Roger" means received — not a readback. FAR 91.129 requires you to read back hold short instructions. This is the most critical readback in ground ops.' },
+          { text: 'Wilco', why: '"Wilco" means will comply, but you must also say the runway. Without the runway number, ATC can\'t confirm you heard the right one.' },
+          { text: 'Holding short', why: 'Incomplete — always include the runway number. "Holding short" without a runway is insufficient and unsafe.' },
+        ],
+        rule: { repeats: false, why: 'Controlled field — hold short readbacks are required by FAR 91.129 and are the most safety-critical radio exchange in ground operations.' },
+        note: 'Hold short readbacks are mandatory. Include the runway number every time — it\'s what prevents runway incursions. Never reply with just "Roger" or "Wilco."',
+      };
+    },
+  },
+  {
+    type: 'Initial Contact — Tower (Inbound)',
+    group: 'class-d',
+    build() {
+      const ca = _R_PICK(_R_CA);
+      const tail = _R_PICK(_R_TAILS);
+      const dist = _R_PICK(_R_DIST);
+      const dir = _R_PICK(_R_DIRS);
+      const atis = _R_PICK(_R_ATIS_CODES);
+      return {
+        type: this.type, group: this.group,
+        situation: `You're inbound to ${ca.long} (${ca.icao}), ${dist} miles ${dir}, with information ${atis}. First contact with tower.`,
+        data: [
+          { label: 'Facility', value: ca.tower, gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+          { label: 'Position', value: `${dist} miles ${dir}`, gloss: null },
+          { label: 'ATIS', value: `Info ${atis}`, gloss: 'with information Alpha' },
+        ],
+        ideal: `${ca.tower}, ${tail.phonetic}, ${dist} miles ${dir}, with information ${atis}, request landing.`,
+        words: [ca.tower, tail.phonetic, `${dist} miles ${dir}`, `with information ${atis}`, 'request landing'],
+        distractors: [
+          { text: 'request landing clearance', why: '"Request landing" is correct — don\'t presume the clearance by asking for "landing clearance." ATC will issue it when ready.' },
+          { text: 'any traffic please advise', why: 'Never used at controlled airports. Tower manages all traffic — you talk to the controller, not other aircraft.' },
+          { text: `${ca.name} traffic`, why: 'Use "tower" not "traffic." At a controlled field you\'re calling a controller, not self-announcing to all aircraft on frequency.' },
+        ],
+        rule: { repeats: false, why: 'Controlled field — tower handles one airport. No trailing name needed.' },
+        note: 'Inbound to Class D: tower → callsign → position → ATIS code → request. ATIS code tells the controller you have current weather — they may issue landing clearance immediately.',
+      };
+    },
+  },
+
+  // ── Approach / En Route ───────────────────────────────────────────────────────
+  {
+    type: 'Checking In — Approach Control',
+    group: 'approach',
+    build() {
+      const app = _R_PICK(_R_APP);
+      const tail = _R_PICK(_R_TAILS);
+      const alt = _R_PICK(_R_CLIMB_ALTS);
+      return {
+        type: this.type, group: this.group,
+        situation: `Tower handed you off to ${app.name}. You've switched frequencies and are climbing through ${alt.ft} ft. Check in.`,
+        data: [
+          { label: 'Facility', value: app.name, gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+          { label: 'Altitude', value: `Climbing through ${alt.ft} ft`, gloss: null },
+        ],
+        ideal: `${app.name}, ${tail.phonetic}, out of ${alt.spoken}, climbing VFR.`,
+        words: [app.name, tail.phonetic, `out of ${alt.spoken}`, 'climbing VFR'],
+        distractors: [
+          { text: 'squawking 4521', why: 'Don\'t announce your squawk when checking in — approach already sees it on radar. Saying it wastes airtime.' },
+          { text: `at ${alt.spoken}`, why: 'Say "out of" when climbing or descending — it signals you\'re in motion. "At" implies you\'re established level at that altitude.' },
+          { text: 'request flight following', why: 'Appropriate later — but your first call is just a check-in. Keep it short; approach has other traffic to manage.' },
+        ],
+        rule: { repeats: false, why: 'Controlled airspace — approach has your squawk on radar and knows your position. No airport name repeat.' },
+        note: 'Check-in format: facility → callsign → "out of" altitude → VFR. Four pieces, brief and complete. Use "out of" when climbing or descending, not "at."',
+      };
+    },
+  },
+  {
+    type: 'Flight Following Request',
+    group: 'approach',
+    build() {
+      const app = _R_PICK(_R_APP);
+      const tail = _R_PICK(_R_TAILS);
+      const alt = _R_PICK(_R_CRUISE_ALTS);
+      const dest = _R_PICK(_R_FF_DEST);
+      return {
+        type: this.type, group: this.group,
+        situation: `You've departed a local airport on a cross-country to ${dest}. Call ${app.name} to request VFR flight following at ${alt.ft} ft.`,
+        data: [
+          { label: 'Facility', value: app.name, gloss: null },
+          { label: 'Tail', value: tail.id, gloss: null },
+          { label: 'Altitude', value: `${alt.ft} ft`, gloss: null },
+          { label: 'Destination', value: dest, gloss: null },
+        ],
+        ideal: `${app.name}, ${tail.phonetic}, VFR, ${alt.spoken}, request flight following to ${dest}.`,
+        words: [app.name, tail.phonetic, 'VFR', alt.spoken, `request flight following to ${dest}`],
+        distractors: [
+          { text: 'squawking 1200', why: 'Approach will assign you a discrete squawk — don\'t announce 1200. They\'re going to change it anyway.' },
+          { text: 'request IFR clearance', why: 'Flight following is VFR service — you remain VFR and responsible for your own terrain and traffic separation. An IFR clearance is a completely different service.' },
+          { text: 'request radar traffic advisories', why: '"Flight following" is what pilots say. "Radar traffic advisories" is the bureaucratic name — using it sounds like you read it from a textbook.' },
+        ],
+        rule: { repeats: false, why: 'Controlled airspace — approach responds to your callsign directly. No airport name repeat.' },
+        note: 'Flight following: facility → callsign → VFR → altitude → destination. Approach will assign a squawk and advise if coverage isn\'t available in your area.',
+      };
+    },
+  },
+
+  // ── Emergency ────────────────────────────────────────────────────────────────
+  {
+    type: 'Mayday — Engine Failure',
+    group: 'emergency',
+    build() {
+      const tail = _R_PICK(_R_TAILS);
+      const ap = _R_PICK(_R_UA);
+      const dist = _R_PICK(['two', 'three', 'five', 'eight']);
+      const dir = _R_PICK(_R_DIRS);
+      const alt = _R_PICK(_R_CRUISE_ALTS);
+      return {
+        type: this.type, group: this.group,
+        situation: `Your engine quits near ${ap.name}. You're at ${alt.ft} ft MSL, one pilot on board. Declare the emergency.`,
+        data: [
+          { label: 'Tail', value: tail.id, gloss: null },
+          { label: 'Emergency', value: 'Engine failure', gloss: null },
+          { label: 'Position', value: `${dist} miles ${dir} of ${ap.name}`, gloss: null },
+          { label: 'Altitude', value: `${alt.ft} ft MSL`, gloss: null },
+          { label: 'Souls', value: '1 on board', gloss: null },
+        ],
+        ideal: `Mayday, Mayday, Mayday, ${tail.phonetic}, engine failure, ${dist} miles ${dir} of ${ap.name}, ${alt.spoken}, one soul on board.`,
+        words: ['Mayday, Mayday, Mayday', tail.phonetic, 'engine failure', `${dist} miles ${dir} of ${ap.name}`, alt.spoken, 'one soul on board'],
+        distractors: [
+          { text: 'Pan-Pan, Pan-Pan, Pan-Pan', why: 'Pan-Pan is urgency — serious but not immediately life-threatening. Engine failure is a Mayday — you\'re in immediate danger. Use the right word.' },
+          { text: 'Emergency, Emergency', why: 'Not the recognized international distress signal. Always say "Mayday, Mayday, Mayday" three times — that\'s what ATC and other pilots are trained to respond to.' },
+          { text: 'squawking 7700', why: 'Squawk 7700 on your transponder simultaneously — but don\'t announce it on the radio. You don\'t have airtime to spare. Do both at once.' },
+        ],
+        rule: { repeats: false, why: 'Emergency frequency — ATC will vector traffic away from you and track your position on radar.' },
+        note: 'Mayday structure: Mayday × 3 → callsign → nature → position → altitude → souls on board. Fly the airplane first. Squawk 7700 while you talk — two tasks at once.',
+      };
+    },
+  },
+];
+
+const RADIO_SCENARIO_GROUPS = [
+  { id: 'ctaf',      label: 'CTAF',      sub: 'Uncontrolled · Pattern' },
+  { id: 'class-d',   label: 'Class D',   sub: 'Tower & Ground' },
+  { id: 'approach',  label: 'En Route',  sub: 'Approach & Handoffs' },
+  { id: 'emergency', label: 'Emergency', sub: 'Mayday & Urgency' },
 ];
 
 const ATIS_AIRPORTS = [
@@ -1265,4 +1784,4 @@ const VSPEEDS_META = [
   },
 ];
 
-if (typeof module !== 'undefined') module.exports = { ALL_AIRCRAFT, RADIO_SCENARIOS, PHONETIC_ALPHABET, PHONETIC_NUMBERS, VSPEEDS_META };
+if (typeof module !== 'undefined') module.exports = { ALL_AIRCRAFT, RADIO_SCENARIOS, RADIO_SCENARIO_GROUPS, PHONETIC_ALPHABET, PHONETIC_NUMBERS, VSPEEDS_META };
