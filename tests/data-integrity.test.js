@@ -10,7 +10,7 @@ const KNOWN_ZONES = new Set([
   'static','controls','seats','tires',
 ]);
 
-const AIRCRAFT_IDS = ['c172ikl', 'cherokee140'];
+const AIRCRAFT_IDS = ['cessna172ikl', 'cherokee140'];
 
 // ── ALL_AIRCRAFT ─────────────────────────────────────────────────────────────
 

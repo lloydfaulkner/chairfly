@@ -1241,7 +1241,7 @@
   </header>
 
   <div class="aircraft-bar">
-    <button class="aircraft-btn active" onclick="switchAircraft('c172ikl', this)">C172 Skyhawk</button>
+    <button class="aircraft-btn active" onclick="switchAircraft('cessna172ikl', this)">C172 Skyhawk</button>
     <button class="aircraft-btn" onclick="switchAircraft('cherokee140', this)">Cherokee 140</button>
   </div>
 
@@ -1686,7 +1686,7 @@
 
 <script>
 const ALL_AIRCRAFT = {
-  c172ikl: {
+  cessna172ikl: {
     name: 'C172 Skyhawk',
     label: 'C172',
     speeds: { vr: 52, vx: 59, vy: 74, vfe: 85, approach: 70, shortFinal: 65, bestGlide: 65 },
@@ -1999,9 +1999,9 @@ const ALL_AIRCRAFT = {
   }
 };
 
-let CHECKLISTS = ALL_AIRCRAFT.c172ikl.checklists;
-let EMERGENCIES = ALL_AIRCRAFT.c172ikl.emergencies;
-let currentAircraft = 'c172ikl';
+let CHECKLISTS = ALL_AIRCRAFT.cessna172ikl.checklists;
+let EMERGENCIES = ALL_AIRCRAFT.cessna172ikl.emergencies;
+let currentAircraft = 'cessna172ikl';
 
 const GLOSSARY = {
   'RDU Ground': { term: 'Ground Control', def: 'The ATC frequency that controls aircraft movement on the ground — taxiways, ramps, and runways not in use. You call Ground to get your taxi clearance before heading to the runway. RDU is the ICAO identifier for Raleigh-Durham International Airport.' },
