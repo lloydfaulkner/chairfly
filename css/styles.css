@@ -2788,6 +2788,46 @@
       opacity: 0.7;
     }
 
+    /* Category selector chips */
+    .rd-cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .rd-cat-grid .rd-cat-btn:first-child {
+      grid-column: 1 / -1;
+    }
+    .rd-cat-btn {
+      background: #111f30;
+      border: 1px solid #2a4060;
+      border-radius: var(--radius-s);
+      padding: 10px 12px;
+      cursor: pointer;
+      text-align: left;
+      -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .rd-cat-btn:hover { background: #142438; }
+    .rd-cat-btn.active {
+      border-color: #00c8ff;
+      background: #0d2033;
+    }
+    .rd-cat-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #eef6ff;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .rd-cat-sub {
+      display: block;
+      font-size: 10px;
+      color: #9ab8d0;
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
     /* Dialog column */
     .rd-dialog-col {
       min-width: 0;
@@ -3883,40 +3923,21 @@
   .rd-sidebar { position: static; }
   .rd-sidebar-eyebrow { display: none; }
 
-  /* #rd-scenario-list is the actual item container — make IT the scroll strip.
-     (The earlier fix mistakenly targeted .rd-sidebar, which only contains
-      the eyebrow + this div as siblings — not the items themselves.) */
+  /* Category grid — compact 2-col strip above the dialog */
   #rd-scenario-list {
-    display: flex;
-    flex-direction: row;
-    gap: 6px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
     padding: 0 24px 12px;
     margin-bottom: 4px;
     border-bottom: 1px solid var(--rule);
   }
-  #rd-scenario-list::-webkit-scrollbar { display: none; }
-
-  /* Scenario items → compact horizontal chips */
-  .rd-scenario-item {
-    flex-shrink: 0;
-    white-space: nowrap;
-    padding: 6px 12px;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-s);
-    background: var(--paper-2);
-    font-size: 12px;
-    gap: 0;
+  .rd-cat-grid {
+    grid-template-columns: 1fr 1fr 1fr;
   }
-  .rd-scenario-item.active {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--paper);
+  .rd-cat-grid .rd-cat-btn:first-child {
+    grid-column: 1 / -1;
   }
-  /* Hide number prefix — text label is enough in chip mode */
-  .rd-scenario-num { display: none; }
+  .rd-cat-btn {
+    padding: 7px 10px;
+  }
 
   /* Dialog header: let title take full width so mode seg wraps below it */
   .rd-dialog-title { flex: 1 1 100%; }

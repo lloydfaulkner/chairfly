@@ -1,7 +1,7 @@
 // node --test tests/data-integrity.test.js   (Node 18+)
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { ALL_AIRCRAFT, RADIO_SCENARIOS, VSPEEDS_META } = require('../js/data.js');
+const { ALL_AIRCRAFT, RADIO_SCENARIOS, RADIO_SCENARIO_GROUPS, VSPEEDS_META } = require('../js/data.js');
 const { AIRPORTS } = require('../js/airports.js');
 
 const KNOWN_ZONES = new Set([
@@ -168,10 +168,11 @@ describe('RADIO_SCENARIOS', () => {
   });
 
   for (let i = 0; i < RADIO_SCENARIOS.length; i++) {
-    const s = RADIO_SCENARIOS[i];
-    const type = s.type || 'unknown';
+    const template = RADIO_SCENARIOS[i];
+    const type = template.type || 'unknown';
 
     test(`Scenario${i}_${type}_RequiredFields_AreAllPresent`, () => {
+      const s = template.build ? template.build() : template;
       assert.ok(s.type,             `scenario[${i}] missing type`);
       assert.ok(s.ideal,            `scenario[${i}] missing ideal`);
       assert.ok(Array.isArray(s.words) && s.words.length > 0, `scenario[${i}] missing words`);
@@ -182,6 +183,7 @@ describe('RADIO_SCENARIOS', () => {
     });
 
     test(`Scenario${i}_${type}Distractors_HaveTextAndWhy`, () => {
+      const s = template.build ? template.build() : template;
       for (const d of s.distractors) {
         assert.ok(d.text, `scenario[${i}] distractor missing text`);
         assert.ok(d.why,  `scenario[${i}] distractor missing why`);
@@ -189,6 +191,7 @@ describe('RADIO_SCENARIOS', () => {
     });
 
     test(`Scenario${i}_${type}Distractors_DoNotMatchAnyWordChip`, () => {
+      const s = template.build ? template.build() : template;
       const wordSet = new Set(s.words);
       for (const d of s.distractors) {
         assert.ok(
@@ -198,15 +201,39 @@ describe('RADIO_SCENARIOS', () => {
       }
     });
 
-    if (s.speechOptional) {
-      test(`Scenario${i}_${type}SpeechOptional_IsStringArray`, () => {
-        assert.ok(Array.isArray(s.speechOptional));
-        for (const w of s.speechOptional) {
-          assert.equal(typeof w, 'string', `scenario[${i}] speechOptional entry must be string`);
-        }
-      });
-    }
+    test(`Scenario${i}_${type}SpeechOptional_IfPresentIsStringArray`, () => {
+      const s = template.build ? template.build() : template;
+      if (!s.speechOptional) return;
+      assert.ok(Array.isArray(s.speechOptional));
+      for (const w of s.speechOptional) {
+        assert.equal(typeof w, 'string', `scenario[${i}] speechOptional entry must be string`);
+      }
+    });
   }
+});
+
+// ── RADIO_SCENARIO_GROUPS ────────────────────────────────────────────────────
+
+describe('RADIO_SCENARIO_GROUPS', () => {
+  test('IsNonEmptyArray', () => {
+    assert.ok(Array.isArray(RADIO_SCENARIO_GROUPS));
+    assert.ok(RADIO_SCENARIO_GROUPS.length > 0);
+  });
+
+  test('AllEntries_HaveIdLabelSub', () => {
+    for (const g of RADIO_SCENARIO_GROUPS) {
+      assert.ok(g.id,    `group missing id`);
+      assert.ok(g.label, `group missing label`);
+      assert.ok(g.sub,   `group missing sub`);
+    }
+  });
+
+  test('AllScenarios_HaveValidGroup', () => {
+    const groupIds = new Set(RADIO_SCENARIO_GROUPS.map(g => g.id));
+    for (const s of RADIO_SCENARIOS) {
+      assert.ok(groupIds.has(s.group), `scenario "${s.type}" has invalid group: "${s.group}"`);
+    }
+  });
 });
 
 // ── AIRPORTS ─────────────────────────────────────────────────────────────────
