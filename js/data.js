@@ -1663,10 +1663,10 @@ const RADIO_SCENARIOS = [
 ];
 
 const RADIO_SCENARIO_GROUPS = [
-  { id: 'ctaf',      label: 'CTAF',      sub: 'Uncontrolled · Pattern' },
-  { id: 'class-d',   label: 'Class D',   sub: 'Tower & Ground' },
-  { id: 'approach',  label: 'En Route',  sub: 'Approach & Handoffs' },
-  { id: 'emergency', label: 'Emergency', sub: 'Mayday & Urgency' },
+  { id: 'ctaf',      label: 'CTAF',      dropdownLabel: 'Uncontrolled (CTAF)',        sub: 'Uncontrolled · Pattern' },
+  { id: 'class-d',   label: 'Class D',   dropdownLabel: 'Towered Airport (Class D)',  sub: 'Tower & Ground' },
+  { id: 'approach',  label: 'En Route',  dropdownLabel: 'Approach & En Route',        sub: 'Approach & Handoffs' },
+  { id: 'emergency', label: 'Emergency', dropdownLabel: 'Emergency (Mayday)',         sub: 'Mayday & Urgency' },
 ];
 
 const ATIS_AIRPORTS = [

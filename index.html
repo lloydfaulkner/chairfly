@@ -173,6 +173,9 @@
       </div>
 
       <div id="radio-calls-mode">
+        <div class="rd-instructions" id="radio-instructions">
+          Build calls by tapping words, or speak it out loud, and get instant feedback. Perfect for accessible, rapid scenario practice.
+        </div>
         <div class="rd-layout">
           <aside class="rd-sidebar">
             <div class="cf-eyebrow rd-sidebar-eyebrow">CATEGORY</div>
@@ -186,10 +189,7 @@
 
             <div class="rd-dialog-card">
               <div class="rd-turn rd-turn--context">
-                <div class="rd-turn-role">
-                  <span class="rd-role-lbl">SITUATION</span>
-                  <span class="rd-turn-num">#1</span>
-                </div>
+                <div class="rd-turn-role"></div>
                 <div class="rd-turn-body">
                   <p class="rd-situation" id="scenario-text"></p>
                   <div class="rd-data-strip" id="scenario-data"></div>
@@ -199,13 +199,12 @@
 
               <div class="rd-turn rd-turn--you">
                 <div class="rd-turn-role">
-                  <span class="rd-role-lbl rd-role-you">YOU &middot; 21G</span>
-                  <span class="rd-turn-num">#2</span>
+                  <span class="rd-role-lbl rd-role-you">Make the call</span>
                 </div>
                 <div class="rd-turn-body">
                   <div class="radio-input-toggle">
-                    <button class="radio-input-btn active" id="rbtn-chips" onclick="setRadioInputMode('chips')">Word Chips</button>
-                    <button class="radio-input-btn" id="rbtn-speak" onclick="setRadioInputMode('speak')">🎙 Speak It</button>
+                    <button class="radio-input-btn active" id="rbtn-chips" onclick="setRadioInputMode('chips')">Build the Call</button>
+                    <button class="radio-input-btn" id="rbtn-speak" onclick="setRadioInputMode('speak')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>Speak It</button>
                   </div>
                   <div id="radio-chip-area">
                     <div class="radio-output" id="radio-output"><span class="placeholder">Tap words below to build your radio call...</span></div>
@@ -226,16 +225,17 @@
                   </div>
 
                   <div class="rd-build-actions">
-                    <button class="cf-btn cf-btn--primary cf-btn--sm" id="radio-check-btn" onclick="checkRadioCallActive()">Check Call</button>
-                    <button class="cf-btn cf-btn--ghost cf-btn--sm" id="radio-clear-btn" onclick="clearRadioCallActive()">Clear</button>
-                    <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="newRadioScenario()">↻ New Scenario</button>
+                    <button class="cf-btn cf-btn--primary cf-btn--sm" id="radio-check-btn" onclick="checkRadioCallActive()">✓&nbsp;&nbsp;Check Call</button>
+                    <button class="rd-clear-link" id="radio-clear-btn" onclick="clearRadioCallActive()">Clear</button>
+                    <button class="rd-hint-link" id="radio-hint-btn" onclick="openHintSheet()" aria-label="Show hint and explanation">? Hint</button>
+                    <div class="rd-new-scenario-wrap">
+                      <button class="rd-new-scenario-btn" id="radio-new-scenario-btn" onclick="newRadioScenario()"><span class="rd-new-icon">⇄</span>New Scenario</button>
+                    </div>
                   </div>
                 </div>
                 <div></div>
               </div>
             </div>
-
-            <div class="rd-rule-row" id="scenario-rule"></div>
 
             <div class="feedback-panel" id="radio-feedback">
               <div class="feedback-header" id="feedback-header"></div>
@@ -243,16 +243,6 @@
                 <div class="feedback-ideal" id="feedback-ideal"></div>
                 <div class="feedback-note" id="feedback-note"></div>
               </div>
-            </div>
-
-            <div class="rd-phrasebook">
-              <div class="cf-eyebrow" style="margin-bottom:12px">&#8618; PHRASEOLOGY &middot; WHO YOU ARE</div>
-              <p class="rd-phrase-formula">
-                <span class="rd-phrase-slot">[WHO YOU CALL]</span>, <span class="rd-phrase-you">Skyhawk seven-three-eight-two-Kilo</span>, <span class="rd-phrase-slot">[WHERE YOU ARE]</span>, <span class="rd-phrase-slot">[WHAT YOU WANT]</span>.
-              </p>
-              <p class="rd-phrase-readback">
-                Read back what&rsquo;s clearance: <span class="rd-phrase-key">runway, headings, frequency, altitude</span>, hold-shorts. End with your callsign.
-              </p>
             </div>
 
             <div id="radio-builder-header" style="display:none"></div>
@@ -661,6 +651,17 @@
   <div class="cf-sheet-speeds" id="cf-sheet-speeds"></div>
   <div class="cf-sheet-section-label">Switch Aircraft</div>
   <div class="cf-sheet-switch-btns" id="cf-sheet-switch-btns"></div>
+</div>
+
+<!-- HINT SHEET -->
+<div class="verdict-overlay" id="hint-overlay" onclick="closeHintSheet()" style="display:none"></div>
+<div class="verdict-sheet" id="hint-sheet" role="dialog" aria-modal="true" style="display:none">
+  <div class="verdict-handle"></div>
+  <div class="verdict-header">
+    <div class="verdict-title">Hint</div>
+    <button class="verdict-close" onclick="closeHintSheet()" aria-label="Close">&#x2715;</button>
+  </div>
+  <div class="hint-sheet-body" id="hint-sheet-body"></div>
 </div>
 
 <!-- VERDICT SHEET -->

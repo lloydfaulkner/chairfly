@@ -631,8 +631,10 @@ function closeInfo() {
 
 // ── RADIO ──
 function initRadio() {
-  state.radio.scenarioIdx = Math.floor(Math.random() * RADIO_SCENARIOS.length);
-  renderRadioScenario();
+  state.radio.activeGroup = RADIO_SCENARIO_GROUPS[0].id;
+  const instrEl = document.getElementById('radio-instructions');
+  if (instrEl) instrEl.classList.add('show');
+  newRadioScenario();
 }
 
 function renderRadioScenario() {
@@ -645,20 +647,6 @@ function renderRadioScenario() {
   document.getElementById('scenario-type').textContent = s.type;
   document.getElementById('scenario-text').textContent = s.situation;
 
-  // Rule badge — collapsed by default
-  const ruleEl = document.getElementById('scenario-rule');
-  if (s.rule) {
-    ruleEl.innerHTML = `
-      <button class="hint-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">▸ Hint</button>
-      <div class="hint-content">
-        <span class="rule-badge ${s.rule.repeats ? 'repeats' : 'no-repeats'}">
-          ${s.rule.repeats ? '↩ Ends with airport name' : '✕ Does not repeat airport name'}
-        </span>
-        <span class="rule-why">${s.rule.why}</span>
-      </div>`;
-  } else {
-    ruleEl.innerHTML = '';
-  }
 
   // Render data cards with optional gloss icons
   const dataDiv = document.getElementById('scenario-data');
@@ -702,11 +690,19 @@ function renderRadioScenario() {
         state.radio.builtCallKeys.splice(idx, 1);
       }
       el.classList.remove('used');
+      // Enable button if no chips left
+      if (state.radio.builtCall.length === 0) {
+        const newScenarioBtn = document.getElementById('radio-new-scenario-btn');
+        if (newScenarioBtn) newScenarioBtn.disabled = false;
+      }
     } else {
       el.classList.add('used');
       state.radio.builtCall.push(el.dataset.word);
       if (!state.radio.builtCallKeys) state.radio.builtCallKeys = [];
       state.radio.builtCallKeys.push(key);
+      // Disable button as soon as user adds a chip
+      const newScenarioBtn = document.getElementById('radio-new-scenario-btn');
+      if (newScenarioBtn) newScenarioBtn.disabled = true;
     }
     updateRadioOutput();
   };
@@ -784,6 +780,15 @@ function checkRadioCall() {
     bodyHtml += `<p style="margin-top:10px;font-size:13px;color:var(--ink-3)">${s.note}</p>`;
   }
 
+  // Show call template only if correct
+  if (isCorrect) {
+    bodyHtml += buildCallTemplateHtml(s);
+  }
+
+  // Enable New Scenario button now that they've checked their call
+  const newScenarioBtn = document.getElementById('radio-new-scenario-btn');
+  if (newScenarioBtn) newScenarioBtn.disabled = false;
+
   openVerdictSheet(
     isCorrect ? 'correct' : 'wrong',
     isCorrect ? '✓ Correct sequence' : '✗ Not quite',
@@ -825,28 +830,46 @@ function newRadioScenario() {
 
 function setRadioGroup(groupId) {
   state.radio.activeGroup = groupId;
-  newRadioScenario();
-}
-
-function setRadioGroupFromSelect(val) {
-  state.radio.activeGroup = val || null;
-  newRadioScenario();
+  renderRadioScenarioList();
 }
 
 function renderRadioScenarioList() {
   const list = document.getElementById('rd-scenario-list');
   if (!list) return;
+  const isAny = state.radio.activeGroup === null;
   const active = state.radio.activeGroup;
+  const toggleTarget = isAny ? `'${RADIO_SCENARIO_GROUPS[0].id}'` : 'null';
   const options = RADIO_SCENARIO_GROUPS.map(g =>
-    `<option value="${g.id}"${active === g.id ? ' selected' : ''}>${g.label}</option>`
+    `<option value="${g.id}"${active === g.id ? ' selected' : ''}>${g.dropdownLabel}</option>`
   ).join('');
   list.innerHTML = `
-    <div class="rd-type-row">
-      <button class="rd-any-btn${!active ? ' active' : ''}" onclick="setRadioGroup(null)">Any</button>
-      <select class="rd-type-select" onchange="setRadioGroupFromSelect(this.value)"${!active ? ' disabled' : ''}>
-        ${options}
-      </select>
+    <div class="rd-type-controls">
+      <div class="rd-control-col rd-control-col--type">
+        <span class="rd-control-label">Call Type</span>
+        <select class="rd-type-select"${isAny ? ' disabled' : ''}>${options}</select>
+      </div>
+      <div class="rd-control-col">
+        <span class="rd-control-label">Any</span>
+        <button class="rd-any-toggle${isAny ? ' rd-any-toggle--on' : ''}" onclick="setRadioGroup(${toggleTarget})" aria-label="Toggle any type"></button>
+      </div>
+      <button class="rd-new-icon-btn" onclick="newRadioScenario()" aria-label="New scenario">⇄</button>
     </div>`;
+  const sel = list.querySelector('.rd-type-select');
+  if (sel) sel.addEventListener('change', () => {
+    const selectedGroup = sel.value;
+    const currentGroup = state.radio.scenario?.group;
+    if (selectedGroup !== currentGroup) {
+      state.radio.activeGroup = selectedGroup;
+      newRadioScenario();
+    } else {
+      setRadioGroup(selectedGroup);
+    }
+  });
+
+  const g = RADIO_SCENARIO_GROUPS.find(grp => grp.id === active);
+  const lbl = g ? `New ${g.label} Scenario` : 'New Scenario';
+  const bottomBtn = document.getElementById('radio-new-scenario-btn');
+  if (bottomBtn) bottomBtn.innerHTML = `<span class="rd-new-icon">⇄</span>${lbl}`;
 }
 
 
@@ -3565,6 +3588,11 @@ function setRadioMode(mode, btn) {
   document.getElementById('radio-calls-mode').style.display = mode === 'chips' ? '' : 'none';
   document.getElementById('radio-atis-mode').style.display = mode === 'atis' ? '' : 'none';
   document.getElementById('radio-alpha-mode').style.display = mode === 'alpha' ? '' : 'none';
+  const instrEl = document.getElementById('radio-instructions');
+  if (instrEl) {
+    if (mode === 'chips') instrEl.classList.add('show');
+    else instrEl.classList.remove('show');
+  }
   if (mode === 'atis' && !atisState.generated) newATIS();
   if (mode === 'alpha' && !alphaState.started && !alphaState.sequence.length) initAlphaDrill();
   currentRadioMode = mode;
@@ -4025,6 +4053,9 @@ function clearRadioCallActive() {
     document.getElementById('radio-feedback').classList.remove('show');
     document.getElementById('mic-status').textContent = '';
   }
+  // Enable New Scenario button when clearing, so user can skip if desired
+  const newScenarioBtn = document.getElementById('radio-new-scenario-btn');
+  if (newScenarioBtn) newScenarioBtn.disabled = false;
 }
 
 // ══════════════════════════════════════
@@ -4126,6 +4157,10 @@ function checkSpeechCall() {
     <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-bottom:8px">${pct}% phonetic match</div>
     <div class="speech-score" style="margin-bottom:12px">${wordHtml}</div>
     <p style="font-size:13px;color:var(--ink-3)">${s.note}</p>`;
+
+  // Enable New Scenario button now that they've checked their call
+  const newScenarioBtn = document.getElementById('radio-new-scenario-btn');
+  if (newScenarioBtn) newScenarioBtn.disabled = false;
 
   openVerdictSheet(
     isGood ? 'correct' : 'wrong',
@@ -4551,6 +4586,51 @@ function closeVerdictSheet() {
   }, { once: true });
 }
 
+function buildCallTemplateHtml(s) {
+  if (!s || !s.rule) return '';
+  const callType = s.rule?.repeats ? 'CTAF' : 'Controlled';
+  const patternText = s.rule?.repeats
+    ? '[Airport], [callsign], [position] runway [runway], [airport].'
+    : '[Airport], [callsign], [position] runway [runway].';
+  return `<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--rule)">
+    <div style="font-family:var(--font-sans);font-size:12px;letter-spacing:0.08em;color:var(--accent2);text-transform:uppercase;margin-bottom:10px">Call Template for ${callType}</div>
+    <p style="font-size:13px;line-height:1.6;color:var(--ink);margin:0;font-family:var(--font-mono)">${patternText}</p>
+  </div>`;
+}
+
+function openHintSheet() {
+  const s = state.radio.scenario;
+  if (!s || !s.rule) return;
+
+  const body = document.getElementById('hint-sheet-body');
+  const callType = s.rule?.repeats ? 'CTAF' : 'Controlled';
+  const patternText = s.rule?.repeats
+    ? '[Airport], [callsign], [position] runway [runway], [airport].'
+    : '[Airport], [callsign], [position] runway [runway].';
+  body.innerHTML = `
+    <div style="padding: 20px;">
+      <div style="font-family: var(--font-sans); font-size: 12px; letter-spacing: 0.08em; color: var(--accent2); text-transform: uppercase; margin-bottom: 14px;">${callType} Call Template</div>
+      <p style="font-size: 14px; line-height: 1.8; color: var(--ink); margin: 0; font-family: var(--font-mono);">${patternText}</p>
+    </div>`;
+
+  const overlay = document.getElementById('hint-overlay');
+  const sheet = document.getElementById('hint-sheet');
+  overlay.style.display = 'block';
+  sheet.style.display = 'block';
+  setTimeout(() => {
+    overlay.classList.add('open');
+    sheet.classList.add('open');
+  }, 0);
+}
+
+function closeHintSheet() {
+  const overlay = document.getElementById('hint-overlay');
+  const sheet = document.getElementById('hint-sheet');
+  overlay.style.display = 'none';
+  overlay.classList.remove('open');
+  sheet.classList.remove('open');
+}
+
 function verdictTryAgain() {
   closeVerdictSheet();
   if (verdictState.onTryAgain) verdictState.onTryAgain();
@@ -4559,6 +4639,40 @@ function verdictTryAgain() {
 function verdictNext() {
   closeVerdictSheet();
   if (verdictState.onNext) verdictState.onNext();
+}
+
+function isAndroid() {
+  return /android/i.test(navigator.userAgent);
+}
+
+function updateSpeechNote() {
+  const offlineNote = document.getElementById('rd-offline-note');
+  if (!offlineNote || !('webkitSpeechRecognition' in window)) return;
+
+  const isAndroidDevice = isAndroid();
+  const isOnline = navigator.onLine;
+
+  if (isAndroidDevice) {
+    if (isOnline) {
+      offlineNote.textContent = ' Word chips work offline — Speak It requires internet.';
+    } else {
+      offlineNote.textContent = ' Offline. Word chips work — Speak It requires internet.';
+    }
+    // Disable Speak It button if Android and offline
+    const speakBtn = document.getElementById('rbtn-speak');
+    if (speakBtn) {
+      speakBtn.disabled = !isOnline;
+      speakBtn.title = !isOnline ? 'Speak It requires internet on Android' : '';
+    }
+  } else {
+    // iOS or other devices with on-device speech
+    offlineNote.textContent = ' Works offline.';
+    const speakBtn = document.getElementById('rbtn-speak');
+    if (speakBtn) {
+      speakBtn.disabled = false;
+      speakBtn.title = '';
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -4570,6 +4684,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initChecklist();
   initRadio();
   initEmergency();
+  // Update speech availability note based on device and connection
+  updateSpeechNote();
+  window.addEventListener('online', updateSpeechNote);
+  window.addEventListener('offline', updateSpeechNote);
   lookupAirport();
   restoreNav();
   window.addEventListener('hashchange', restoreNav);
@@ -4591,3 +4709,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.changedTouches[0].clientY - _sheetSwipeStartY > 60) closeDrillSheet();
   }, { passive: true });
 });
+
+// Export for testing
+if (typeof module !== 'undefined') module.exports = { isAndroid, buildCallTemplateHtml };
