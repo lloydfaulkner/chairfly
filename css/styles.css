@@ -4205,7 +4205,7 @@
 /* ── Verdict Sheet ─────────────────────────────────────────────────────────── */
 .verdict-overlay {
   position: fixed;
-  top: env(safe-area-inset-top, 0px);
+  top: 60px;
   left: 0; right: 0; bottom: 0;
   background: oklch(0% 0 0 / 0.45);
   z-index: 199;
@@ -4324,7 +4324,8 @@
 /* ── Aircraft Spec Sheet ─────────────────────────────────────────────────── */
 .cf-sheet-backdrop {
   position: fixed;
-  inset: 0;
+  top: 60px;
+  left: 0; right: 0; bottom: 0;
   background: oklch(0% 0 0 / 0.45);
   z-index: 199;
   opacity: 0;
@@ -4562,7 +4563,7 @@
 /* ── Drill Picker Sheet ──────────────────────────────────────────────────────── */
 .drill-sheet-backdrop {
   position: fixed;
-  top: env(safe-area-inset-top, 0px);
+  top: 60px;
   left: 0; right: 0; bottom: 0;
   background: oklch(0% 0 0 / 0.5);
   z-index: 149;
