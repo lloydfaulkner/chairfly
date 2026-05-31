@@ -180,7 +180,7 @@ function _dbgSnap(label) {
     });
     document.body.appendChild(el);
   }
-  el.textContent = lines.join('\n');
+  el.textContent += (el.textContent ? '\n---\n' : '') + lines.join('\n');
 }
 
 function openDrillSheet() {
