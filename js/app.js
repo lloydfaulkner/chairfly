@@ -159,9 +159,11 @@ function closeAircraftSheet() {
 
 function openDrillSheet() {
   const sheet = document.getElementById('drill-sheet');
+  const backdrop = document.getElementById('drill-sheet-backdrop');
   sheet.style.display = '';
+  backdrop.style.display = '';
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    document.getElementById('drill-sheet-backdrop').classList.add('open');
+    backdrop.classList.add('open');
     sheet.classList.add('open');
   }));
 }
@@ -169,9 +171,9 @@ function openDrillSheet() {
 function closeDrillSheet() {
   const backdrop = document.getElementById('drill-sheet-backdrop');
   const sheet = document.getElementById('drill-sheet');
-  // Remove backdrop instantly — no fade — so iOS has no time to adapt status bar
   backdrop.style.transition = 'none';
   backdrop.classList.remove('open');
+  backdrop.style.display = 'none';
   requestAnimationFrame(() => { backdrop.style.transition = ''; });
   sheet.classList.remove('open');
   sheet.addEventListener('transitionend', () => {
