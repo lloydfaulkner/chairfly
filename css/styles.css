@@ -92,6 +92,19 @@
       background: var(--paper);
     }
 
+    /* Keeps iOS status bar light when any fixed dark overlay is active.
+       position:fixed puts this on the GPU compositor layer so z-index 300
+       beats the backdrop (149) at the hardware level, not just in paint order. */
+    #status-bar-shield {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: env(safe-area-inset-top, 0px);
+      background: #f3ede0;
+      background: var(--paper);
+      z-index: 300;
+      pointer-events: none;
+    }
+
     body {
       background: var(--paper);
       color: var(--ink);
