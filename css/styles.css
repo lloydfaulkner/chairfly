@@ -87,6 +87,11 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+    html {
+      background: #f3ede0;
+      background: var(--paper);
+    }
+
     body {
       background: var(--paper);
       color: var(--ink);

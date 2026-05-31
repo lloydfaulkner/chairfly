@@ -163,8 +163,10 @@ function openDrillSheet() {
 }
 
 function closeDrillSheet() {
+  const sheet = document.getElementById('drill-sheet');
   document.getElementById('drill-sheet-backdrop').classList.remove('open');
-  document.getElementById('drill-sheet').classList.remove('open');
+  sheet.classList.remove('open');
+  sheet.addEventListener('transitionend', () => window.scrollTo(0, 0), { once: true });
 }
 
 function selectDrill(drill, mode) {
