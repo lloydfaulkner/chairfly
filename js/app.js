@@ -4532,10 +4532,6 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreNav();
   window.addEventListener('hashchange', restoreNav);
 
-  // Body should never scroll — all scrolling lives in #app (cf-main).
-  // iOS sometimes shifts window.scrollY during fixed-element animations;
-  // snap it back immediately whenever it drifts.
-  window.addEventListener('scroll', () => { if (window.scrollY !== 0) window.scrollTo(0, 0); }, { passive: true });
 
   // Swipe up on bottom nav to open drill sheet
   const bottomNav = document.getElementById('cf-bottom-nav');

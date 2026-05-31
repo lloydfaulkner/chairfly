@@ -3383,6 +3383,8 @@
 
 /* ── Top bar ── */
 .cf-topbar {
+  position: relative;
+  z-index: 155;
   display: flex;
   align-items: center;
   padding: 0 28px;
@@ -4565,7 +4567,7 @@
   background: var(--paper-2);
   border-top: 1px solid var(--rule-strong);
   border-radius: 16px 16px 0 0;
-  z-index: 150;
+  z-index: 160;
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   will-change: transform;
