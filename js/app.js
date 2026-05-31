@@ -832,18 +832,15 @@ function renderRadioScenarioList() {
   const list = document.getElementById('rd-scenario-list');
   if (!list) return;
   const active = state.radio.activeGroup;
-  const allChip = `<div class="rd-cat-btn${!active ? ' active' : ''}" onclick="setRadioGroup(null)">
-    <span class="rd-cat-label">All</span>
-    <span class="rd-cat-sub">${RADIO_SCENARIOS.length} scenarios</span>
-  </div>`;
-  const groupChips = RADIO_SCENARIO_GROUPS.map(g => {
-    const count = RADIO_SCENARIOS.filter(s => s.group === g.id).length;
-    return `<div class="rd-cat-btn${active === g.id ? ' active' : ''}" onclick="setRadioGroup('${g.id}')">
-      <span class="rd-cat-label">${g.label}</span>
-      <span class="rd-cat-sub">${g.sub}</span>
+  const chip = (id, label, isActive) =>
+    `<div class="rd-cat-btn${isActive ? ' active' : ''}" onclick="setRadioGroup(${id === null ? 'null' : `'${id}'`})">
+      <span class="rd-cat-label">${label}</span>
     </div>`;
-  }).join('');
-  list.innerHTML = `<div class="rd-cat-grid">${allChip}${groupChips}</div>`;
+  const chips = [
+    chip(null, 'All', !active),
+    ...RADIO_SCENARIO_GROUPS.map(g => chip(g.id, g.label, active === g.id)),
+  ].join('');
+  list.innerHTML = `<p class="rd-cat-hint">Tap a group · randomizes from that type</p><div class="rd-cat-grid">${chips}</div>`;
 }
 
 
