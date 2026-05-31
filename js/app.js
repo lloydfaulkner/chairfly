@@ -157,58 +157,25 @@ function closeAircraftSheet() {
   document.getElementById('cf-aircraft-sheet').classList.remove('open');
 }
 
-function _dbgSnap(label) {
-  const vv = window.visualViewport;
-  const bd = document.getElementById('drill-sheet-backdrop');
-  const sh = document.getElementById('drill-sheet');
-  const lines = [
-    label,
-    `win.scrollY=${window.scrollY}`,
-    `app.scrollTop=${document.getElementById('app').scrollTop}`,
-    `vv.offsetTop=${vv ? vv.offsetTop.toFixed(1) : 'n/a'}`,
-    `vv.height=${vv ? vv.height.toFixed(1) : 'n/a'}`,
-    `bd.opacity=${bd ? getComputedStyle(bd).opacity : 'n/a'}`,
-    `bd.class="${bd ? bd.className : 'n/a'}"`,
-    `sh.display=${sh ? (sh.style.display || 'css') : 'n/a'}`,
-  ];
-  let el = document.getElementById('_dbg');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = '_dbg';
-    Object.assign(el.style, {
-      position: 'fixed', top: '60px', left: '0', right: '0', zIndex: '9999',
-      background: 'rgba(0,0,0,0.85)', color: '#0f0', fontFamily: 'monospace',
-      fontSize: '11px', padding: '6px 10px', lineHeight: '1.5',
-      whiteSpace: 'pre', pointerEvents: 'none',
-    });
-    document.body.appendChild(el);
-  }
-  el.textContent += (el.textContent ? '\n---\n' : '') + lines.join('\n');
-}
-
 function openDrillSheet() {
-  _dbgSnap('OPEN-before');
   const sheet = document.getElementById('drill-sheet');
   sheet.style.display = '';
   requestAnimationFrame(() => requestAnimationFrame(() => {
     document.getElementById('drill-sheet-backdrop').classList.add('open');
     sheet.classList.add('open');
-    _dbgSnap('OPEN-after');
   }));
 }
 
 function closeDrillSheet() {
-  _dbgSnap('CLOSE-before');
+  const backdrop = document.getElementById('drill-sheet-backdrop');
   const sheet = document.getElementById('drill-sheet');
-  document.getElementById('drill-sheet-backdrop').classList.remove('open');
+  // Remove backdrop instantly — no fade — so iOS has no time to adapt status bar
+  backdrop.style.transition = 'none';
+  backdrop.classList.remove('open');
+  requestAnimationFrame(() => { backdrop.style.transition = ''; });
   sheet.classList.remove('open');
   sheet.addEventListener('transitionend', () => {
     sheet.style.display = 'none';
-    _dbgSnap('CLOSE-transitionend');
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.getElementById('app').scrollTop = 0;
-    setTimeout(() => _dbgSnap('CLOSE-after-reset'), 100);
   }, { once: true });
 }
 
