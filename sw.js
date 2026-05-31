@@ -1,4 +1,4 @@
-const CACHE = 'chairfly-COMMIT_SHA';
+const CACHE = 'chairfly-COMMIT_SHA'; // baseline: e276287
 const PRECACHE = [
   '/',
   '/index.html',
