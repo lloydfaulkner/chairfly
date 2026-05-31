@@ -824,7 +824,12 @@ function newRadioScenario() {
 }
 
 function setRadioGroup(groupId) {
-  state.radio.activeGroup = state.radio.activeGroup === groupId ? null : groupId;
+  state.radio.activeGroup = groupId;
+  newRadioScenario();
+}
+
+function setRadioGroupFromSelect(val) {
+  state.radio.activeGroup = val || null;
   newRadioScenario();
 }
 
@@ -832,15 +837,16 @@ function renderRadioScenarioList() {
   const list = document.getElementById('rd-scenario-list');
   if (!list) return;
   const active = state.radio.activeGroup;
-  const chip = (id, label, isActive) =>
-    `<div class="rd-cat-btn${isActive ? ' active' : ''}" onclick="setRadioGroup(${id === null ? 'null' : `'${id}'`})">
-      <span class="rd-cat-label">${label}</span>
+  const options = RADIO_SCENARIO_GROUPS.map(g =>
+    `<option value="${g.id}"${active === g.id ? ' selected' : ''}>${g.label}</option>`
+  ).join('');
+  list.innerHTML = `
+    <div class="rd-type-row">
+      <button class="rd-any-btn${!active ? ' active' : ''}" onclick="setRadioGroup(null)">Any</button>
+      <select class="rd-type-select" onchange="setRadioGroupFromSelect(this.value)"${!active ? ' disabled' : ''}>
+        ${options}
+      </select>
     </div>`;
-  const chips = [
-    chip(null, 'Any', !active),
-    ...RADIO_SCENARIO_GROUPS.map(g => chip(g.id, g.label, active === g.id)),
-  ].join('');
-  list.innerHTML = `<p class="rd-cat-hint"><span aria-hidden="true">↻</span> Tap a group to get a new scenario from that type.</p><div class="rd-cat-grid">${chips}</div>`;
 }
 
 
