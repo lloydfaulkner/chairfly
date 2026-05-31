@@ -4,8 +4,8 @@
   "description": "Interactive checklist, radio, and procedure trainer for C172 and Cherokee 140",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0f1a",
-  "theme_color": "#00c8ff",
+  "background_color": "#f3ede0",
+  "theme_color": "#f3ede0",
   "icons": [
     {
       "src": "icons/icon-192.png",
