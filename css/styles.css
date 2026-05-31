@@ -4550,6 +4550,7 @@
   z-index: 149;
   opacity: 0;
   pointer-events: none;
+  touch-action: none;
   transition: opacity 0.25s, pointer-events 0s 0.25s;
 }
 .drill-sheet-backdrop.open {
