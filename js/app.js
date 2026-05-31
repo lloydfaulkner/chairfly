@@ -4500,15 +4500,24 @@ function openVerdictSheet(status, title, body, onTryAgain, onNext) {
   const sheet = document.getElementById('verdict-sheet');
   sheet.dataset.status = status;
   document.getElementById('verdict-try-again-btn').style.display = onTryAgain ? '' : 'none';
-  document.getElementById('verdict-overlay').classList.add('open');
-  sheet.classList.add('open');
+  const overlay = document.getElementById('verdict-overlay');
+  overlay.style.display = '';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.classList.add('open');
+    sheet.classList.add('open');
+  }));
 }
 
 function closeVerdictSheet() {
-  document.getElementById('verdict-overlay').classList.remove('open');
-  document.getElementById('verdict-sheet').classList.remove('open');
-  const nextBtn = document.getElementById('proc-next-btn');
-  if (nextBtn) nextBtn.classList.add('show');
+  const overlay = document.getElementById('verdict-overlay');
+  const sheet = document.getElementById('verdict-sheet');
+  overlay.style.display = 'none';
+  overlay.classList.remove('open');
+  sheet.classList.remove('open');
+  sheet.addEventListener('transitionend', () => {
+    const nextBtn = document.getElementById('proc-next-btn');
+    if (nextBtn) nextBtn.classList.add('show');
+  }, { once: true });
 }
 
 function verdictTryAgain() {
