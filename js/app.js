@@ -158,8 +158,12 @@ function closeAircraftSheet() {
 }
 
 function openDrillSheet() {
-  document.getElementById('drill-sheet-backdrop').classList.add('open');
-  document.getElementById('drill-sheet').classList.add('open');
+  const sheet = document.getElementById('drill-sheet');
+  sheet.style.display = '';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.getElementById('drill-sheet-backdrop').classList.add('open');
+    sheet.classList.add('open');
+  }));
 }
 
 function closeDrillSheet() {
@@ -167,6 +171,7 @@ function closeDrillSheet() {
   document.getElementById('drill-sheet-backdrop').classList.remove('open');
   sheet.classList.remove('open');
   sheet.addEventListener('transitionend', () => {
+    sheet.style.display = 'none';
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.getElementById('app').scrollTop = 0;
