@@ -834,13 +834,13 @@ function renderRadioScenarioList() {
   const active = state.radio.activeGroup;
   const chip = (id, label, isActive) =>
     `<div class="rd-cat-btn${isActive ? ' active' : ''}" onclick="setRadioGroup(${id === null ? 'null' : `'${id}'`})">
-      <span class="rd-cat-label">${label}</span>
+      <span class="rd-cat-label"><span class="rd-cat-icon" aria-hidden="true">↻</span>${label}</span>
     </div>`;
   const chips = [
-    chip(null, 'All', !active),
+    chip(null, 'Any', !active),
     ...RADIO_SCENARIO_GROUPS.map(g => chip(g.id, g.label, active === g.id)),
   ].join('');
-  list.innerHTML = `<p class="rd-cat-hint">Tap a group · randomizes from that type</p><div class="rd-cat-grid">${chips}</div>`;
+  list.innerHTML = `<p class="rd-cat-hint">Tap a group to get a new scenario from that type.</p><div class="rd-cat-grid">${chips}</div>`;
 }
 
 

@@ -2791,7 +2791,7 @@
     /* Category selector chips */
     .rd-cat-hint {
       font-family: var(--font-sans);
-      font-size: 11px;
+      font-size: 13px;
       color: var(--ink-3);
       margin-bottom: 8px;
     }
@@ -2811,8 +2811,8 @@
     }
     .rd-cat-btn:hover { background: var(--paper-3); }
     .rd-cat-btn.active {
-      background: var(--ink);
-      border-color: var(--ink);
+      background: var(--hazard-soft);
+      border-color: var(--hazard);
     }
     .rd-cat-label {
       display: block;
@@ -2821,7 +2821,8 @@
       font-weight: 600;
       color: var(--ink-2);
     }
-    .rd-cat-btn.active .rd-cat-label { color: var(--paper); }
+    .rd-cat-btn.active .rd-cat-label { color: var(--hazard); }
+    .rd-cat-icon { font-size: 11px; margin-right: 3px; opacity: 0.6; }
     .rd-cat-sub { display: none; }
 
     /* Dialog column */
