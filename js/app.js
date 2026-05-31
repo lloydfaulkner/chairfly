@@ -159,14 +159,17 @@ function closeAircraftSheet() {
 
 function _dbgSnap(label) {
   const vv = window.visualViewport;
+  const bd = document.getElementById('drill-sheet-backdrop');
+  const sh = document.getElementById('drill-sheet');
   const lines = [
     label,
     `win.scrollY=${window.scrollY}`,
-    `html.scrollTop=${document.documentElement.scrollTop}`,
-    `body.scrollTop=${document.body.scrollTop}`,
     `app.scrollTop=${document.getElementById('app').scrollTop}`,
     `vv.offsetTop=${vv ? vv.offsetTop.toFixed(1) : 'n/a'}`,
     `vv.height=${vv ? vv.height.toFixed(1) : 'n/a'}`,
+    `bd.opacity=${bd ? getComputedStyle(bd).opacity : 'n/a'}`,
+    `bd.class="${bd ? bd.className : 'n/a'}"`,
+    `sh.display=${sh ? (sh.style.display || 'css') : 'n/a'}`,
   ];
   let el = document.getElementById('_dbg');
   if (!el) {
