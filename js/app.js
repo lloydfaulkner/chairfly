@@ -280,8 +280,6 @@ function selectPhase(phase) {
 // ── INLINE WHY? QUIZ (Before Start phase) ──────────────────────────────────
 // clQuizState[phase][idx] = { status: 'idle'|'open'|'correct'|'wrong', choices: [] }
 let clQuizState = {};
-let clAutoAdvance = localStorage.getItem('cl-auto-advance') !== 'false';
-let _clAdvanceCountdown = null; // { phase, answeredIdx, nextIdx, remaining, timeout, interval }
 
 
 let _quizAllPool = null;
@@ -339,7 +337,6 @@ function _pregenPhaseChoices(phase) {
 }
 
 function openItemQuiz(phase, idx) {
-  _cancelAdvanceCountdown();
   if (!clQuizState[phase]) clQuizState[phase] = {};
   const cur = clQuizState[phase][idx] || { status: 'idle' };
   if (cur.status !== 'idle' && cur.status !== 'skipped') return;
@@ -365,39 +362,17 @@ function closeItemQuiz(phase, idx) {
   renderChecklist();
 }
 
-function setClAutoAdvance(val) {
-  clAutoAdvance = val;
-  localStorage.setItem('cl-auto-advance', val);
-  renderChecklist();
-}
-
-function _cancelAdvanceCountdown() {
-  if (!_clAdvanceCountdown) return;
-  clearTimeout(_clAdvanceCountdown.timeout);
-  clearInterval(_clAdvanceCountdown.interval);
-  _clAdvanceCountdown = null;
-}
-
-function _autoAdvanceNext(phase, answeredIdx) {
-  if (!clAutoAdvance) return;
+function nextItemQuiz(phase, idx) {
   const items = CHECKLISTS[phase].items;
   const qs = clQuizState[phase] || {};
-  const nextIdx = items.findIndex((_, i) => i > answeredIdx && (!qs[i] || qs[i].status === 'idle' || qs[i].status === 'skipped'));
+  const nextIdx = items.findIndex((_, i) => i > idx && (!qs[i] || qs[i].status === 'idle' || qs[i].status === 'skipped'));
   if (nextIdx === -1) return;
-  _cancelAdvanceCountdown();
-  const SECS = 3;
-  _clAdvanceCountdown = { phase, answeredIdx, nextIdx, remaining: SECS };
-  _clAdvanceCountdown.interval = setInterval(() => {
-    if (!_clAdvanceCountdown) return;
-    _clAdvanceCountdown.remaining--;
-    renderChecklist();
-  }, 1000);
-  _clAdvanceCountdown.timeout = setTimeout(() => {
-    _cancelAdvanceCountdown();
-    openItemQuiz(phase, nextIdx);
+  if (clQuizState[phase] && clQuizState[phase][idx]) clQuizState[phase][idx].collapsed = true;
+  openItemQuiz(phase, nextIdx);
+  requestAnimationFrame(() => {
     document.querySelector(`#checklist-items li:nth-child(${nextIdx + 1})`)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, SECS * 1000);
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 function answerItemQuiz(phase, idx, isCorrect) {
@@ -405,7 +380,6 @@ function answerItemQuiz(phase, idx, isCorrect) {
   clQuizState[phase][idx].status = isCorrect ? 'correct' : 'wrong';
   clQuizState[phase][idx].collapsed = false;
   renderChecklist();
-  _autoAdvanceNext(phase, idx);
 }
 
 function toggleQuizResult(phase, idx) {
@@ -436,7 +410,6 @@ function submitPreflightQuiz(phase, idx) {
   qs.status = (allCorrectSelected && noWrongSelected) ? 'correct' : 'wrong';
   qs.collapsed = false;
   renderChecklist();
-  _autoAdvanceNext(phase, idx);
 }
 
 function _renderPreflightQuizItem(phase, item, idx) {
@@ -487,9 +460,9 @@ function _renderPreflightQuizItem(phase, item, idx) {
         if (!c.correct && c.selected) return `<div class="cl-qitem-check-result cl-qitem-check-result--wrong">✗ ${c.text}</div>`;
         return '';
       }).filter(Boolean).join('');
-      const cdA = (_clAdvanceCountdown && _clAdvanceCountdown.phase === phase && _clAdvanceCountdown.answeredIdx === idx)
-        ? `<div class="cl-advance-countdown">Moving to next item in ${_clAdvanceCountdown.remaining}s</div>` : '';
-      bodyExtra = `<div class="cl-qitem-result-panel">${verdict}${rows ? `<div class="cl-qitem-check-results">${rows}</div>` : ''}<div class="cl-qitem-why">${item.why}</div>${cdA}</div>`;
+      const hasNext = CHECKLISTS[phase].items.some((_, i) => i > idx && (!qs[i] || qs[i].status === 'idle' || qs[i].status === 'skipped'));
+      const nextBtn = hasNext ? `<button class="cl-qitem-next" onclick="event.stopPropagation();nextItemQuiz('${phase}',${idx})">Next ›</button>` : '';
+      bodyExtra = `<div class="cl-qitem-result-panel">${verdict}${rows ? `<div class="cl-qitem-check-results">${rows}</div>` : ''}<div class="cl-qitem-why">${item.why}</div>${nextBtn}</div>`;
     }
   }
 
@@ -543,9 +516,10 @@ function _renderQuizItem(phase, item, idx) {
     if (!qs.collapsed) {
       const correctText = qs.choices ? qs.choices.find(c => c.isCorrect).text : '';
       const wrongNote = status === 'wrong' ? `<div class="cl-qitem-correct-note">Correct answer: ${correctText}</div>` : '';
-      const cdB = (_clAdvanceCountdown && _clAdvanceCountdown.phase === phase && _clAdvanceCountdown.answeredIdx === idx)
-        ? `<div class="cl-advance-countdown">Moving to next item in ${_clAdvanceCountdown.remaining}s</div>` : '';
-      bodyExtra = `<div class="cl-qitem-result-panel">${wrongNote}<div class="cl-qitem-why">${item.why}</div>${cdB}</div>`;
+      const qs2 = clQuizState[phase] || {};
+      const hasNext2 = CHECKLISTS[phase].items.some((_, i) => i > idx && (!qs2[i] || qs2[i].status === 'idle' || qs2[i].status === 'skipped'));
+      const nextBtn2 = hasNext2 ? `<button class="cl-qitem-next" onclick="event.stopPropagation();nextItemQuiz('${phase}',${idx})">Next ›</button>` : '';
+      bodyExtra = `<div class="cl-qitem-result-panel">${wrongNote}<div class="cl-qitem-why">${item.why}</div>${nextBtn2}</div>`;
     }
   }
 
@@ -583,11 +557,6 @@ function renderChecklist() {
   const preflightNote = document.getElementById('cl-preflight-note');
   if (preflightNote) preflightNote.style.display = phase === 'preflight' ? '' : 'none';
   ul.innerHTML = list.items.map((item, i) => _renderQuizItem(phase, item, i)).join('');
-
-  const toggleRow = document.getElementById('cl-auto-advance-row');
-  if (toggleRow) {
-    toggleRow.innerHTML = `<span class="alpha-ctrl-label">Auto-Advance</span><div class="alpha-toggle${clAutoAdvance ? ' alpha-toggle--on' : ''}" onclick="setClAutoAdvance(${!clAutoAdvance})"></div>`;
-  }
 
   const anyAnswered = Object.values(qs).some(s => s && (s.status === 'correct' || s.status === 'wrong'));
   const reviewBtn = document.getElementById('cl-review-all-btn');
