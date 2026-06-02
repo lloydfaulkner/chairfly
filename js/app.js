@@ -370,7 +370,7 @@ function nextItemQuiz(phase, idx) {
   if (clQuizState[phase] && clQuizState[phase][idx]) clQuizState[phase][idx].collapsed = true;
   openItemQuiz(phase, nextIdx);
   requestAnimationFrame(() => {
-    document.querySelector(`#checklist-items li:nth-child(${nextIdx + 1})`)
+    document.querySelector(`#checklist-items li:nth-child(${idx + 1})`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
