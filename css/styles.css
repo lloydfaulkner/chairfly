@@ -1250,6 +1250,7 @@
       line-height: 1.5; margin-bottom: 10px;
     }
     .cl-auto-advance-row { margin-bottom: 12px; }
+    .cl-advance-countdown { font-family: var(--font-sans); font-size: 11px; color: var(--ink-3); margin-top: 8px; font-style: italic; }
     .cl-item--quiz-skipped { cursor: pointer; }
 
     /* Status dot replacing the checkbox */

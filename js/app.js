@@ -281,6 +281,7 @@ function selectPhase(phase) {
 // clQuizState[phase][idx] = { status: 'idle'|'open'|'correct'|'wrong', choices: [] }
 let clQuizState = {};
 let clAutoAdvance = localStorage.getItem('cl-auto-advance') !== 'false';
+let _clAdvanceCountdown = null; // { phase, answeredIdx, nextIdx, remaining, timeout, interval }
 
 
 let _quizAllPool = null;
@@ -338,6 +339,7 @@ function _pregenPhaseChoices(phase) {
 }
 
 function openItemQuiz(phase, idx) {
+  _cancelAdvanceCountdown();
   if (!clQuizState[phase]) clQuizState[phase] = {};
   const cur = clQuizState[phase][idx] || { status: 'idle' };
   if (cur.status !== 'idle' && cur.status !== 'skipped') return;
@@ -369,17 +371,33 @@ function setClAutoAdvance(val) {
   renderChecklist();
 }
 
+function _cancelAdvanceCountdown() {
+  if (!_clAdvanceCountdown) return;
+  clearTimeout(_clAdvanceCountdown.timeout);
+  clearInterval(_clAdvanceCountdown.interval);
+  _clAdvanceCountdown = null;
+}
+
 function _autoAdvanceNext(phase, answeredIdx) {
   if (!clAutoAdvance) return;
   const items = CHECKLISTS[phase].items;
   const qs = clQuizState[phase] || {};
-  const next = items.findIndex((_, i) => i > answeredIdx && (!qs[i] || qs[i].status === 'idle' || qs[i].status === 'skipped'));
-  if (next === -1) return;
-  setTimeout(() => {
-    openItemQuiz(phase, next);
-    const el = document.querySelector(`#checklist-items li:nth-child(${next + 1})`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 600);
+  const nextIdx = items.findIndex((_, i) => i > answeredIdx && (!qs[i] || qs[i].status === 'idle' || qs[i].status === 'skipped'));
+  if (nextIdx === -1) return;
+  _cancelAdvanceCountdown();
+  const SECS = 3;
+  _clAdvanceCountdown = { phase, answeredIdx, nextIdx, remaining: SECS };
+  _clAdvanceCountdown.interval = setInterval(() => {
+    if (!_clAdvanceCountdown) return;
+    _clAdvanceCountdown.remaining--;
+    renderChecklist();
+  }, 1000);
+  _clAdvanceCountdown.timeout = setTimeout(() => {
+    _cancelAdvanceCountdown();
+    openItemQuiz(phase, nextIdx);
+    document.querySelector(`#checklist-items li:nth-child(${nextIdx + 1})`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, SECS * 1000);
 }
 
 function answerItemQuiz(phase, idx, isCorrect) {
@@ -469,7 +487,9 @@ function _renderPreflightQuizItem(phase, item, idx) {
         if (!c.correct && c.selected) return `<div class="cl-qitem-check-result cl-qitem-check-result--wrong">✗ ${c.text}</div>`;
         return '';
       }).filter(Boolean).join('');
-      bodyExtra = `<div class="cl-qitem-result-panel">${verdict}${rows ? `<div class="cl-qitem-check-results">${rows}</div>` : ''}<div class="cl-qitem-why">${item.why}</div></div>`;
+      const cdA = (_clAdvanceCountdown && _clAdvanceCountdown.phase === phase && _clAdvanceCountdown.answeredIdx === idx)
+        ? `<div class="cl-advance-countdown">Moving to next item in ${_clAdvanceCountdown.remaining}s</div>` : '';
+      bodyExtra = `<div class="cl-qitem-result-panel">${verdict}${rows ? `<div class="cl-qitem-check-results">${rows}</div>` : ''}<div class="cl-qitem-why">${item.why}</div>${cdA}</div>`;
     }
   }
 
@@ -523,7 +543,9 @@ function _renderQuizItem(phase, item, idx) {
     if (!qs.collapsed) {
       const correctText = qs.choices ? qs.choices.find(c => c.isCorrect).text : '';
       const wrongNote = status === 'wrong' ? `<div class="cl-qitem-correct-note">Correct answer: ${correctText}</div>` : '';
-      bodyExtra = `<div class="cl-qitem-result-panel">${wrongNote}<div class="cl-qitem-why">${item.why}</div></div>`;
+      const cdB = (_clAdvanceCountdown && _clAdvanceCountdown.phase === phase && _clAdvanceCountdown.answeredIdx === idx)
+        ? `<div class="cl-advance-countdown">Moving to next item in ${_clAdvanceCountdown.remaining}s</div>` : '';
+      bodyExtra = `<div class="cl-qitem-result-panel">${wrongNote}<div class="cl-qitem-why">${item.why}</div>${cdB}</div>`;
     }
   }
 
