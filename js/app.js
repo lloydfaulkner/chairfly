@@ -280,6 +280,7 @@ function selectPhase(phase) {
 // ── INLINE WHY? QUIZ (Before Start phase) ──────────────────────────────────
 // clQuizState[phase][idx] = { status: 'idle'|'open'|'correct'|'wrong', choices: [] }
 let clQuizState = {};
+let clAutoAdvance = localStorage.getItem('cl-auto-advance') !== 'false';
 
 
 let _quizAllPool = null;
@@ -362,11 +363,31 @@ function closeItemQuiz(phase, idx) {
   renderChecklist();
 }
 
+function setClAutoAdvance(val) {
+  clAutoAdvance = val;
+  localStorage.setItem('cl-auto-advance', val);
+  renderChecklist();
+}
+
+function _autoAdvanceNext(phase, answeredIdx) {
+  if (!clAutoAdvance) return;
+  const items = CHECKLISTS[phase].items;
+  const qs = clQuizState[phase] || {};
+  const next = items.findIndex((_, i) => i > answeredIdx && (!qs[i] || qs[i].status === 'idle' || qs[i].status === 'skipped'));
+  if (next === -1) return;
+  setTimeout(() => {
+    openItemQuiz(phase, next);
+    const el = document.querySelector(`#checklist-items li:nth-child(${next + 1})`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 600);
+}
+
 function answerItemQuiz(phase, idx, isCorrect) {
   if (!clQuizState[phase] || !clQuizState[phase][idx]) return;
   clQuizState[phase][idx].status = isCorrect ? 'correct' : 'wrong';
   clQuizState[phase][idx].collapsed = false;
   renderChecklist();
+  _autoAdvanceNext(phase, idx);
 }
 
 function toggleQuizResult(phase, idx) {
@@ -397,6 +418,7 @@ function submitPreflightQuiz(phase, idx) {
   qs.status = (allCorrectSelected && noWrongSelected) ? 'correct' : 'wrong';
   qs.collapsed = false;
   renderChecklist();
+  _autoAdvanceNext(phase, idx);
 }
 
 function _renderPreflightQuizItem(phase, item, idx) {
@@ -540,6 +562,15 @@ function renderChecklist() {
   if (preflightNote) preflightNote.style.display = phase === 'preflight' ? '' : 'none';
   ul.innerHTML = list.items.map((item, i) => _renderQuizItem(phase, item, i)).join('');
 
+  const toggleRow = document.getElementById('cl-auto-advance-row');
+  if (toggleRow) {
+    toggleRow.innerHTML = `<span class="alpha-ctrl-label">Auto-Advance</span><div class="alpha-toggle${clAutoAdvance ? ' alpha-toggle--on' : ''}" onclick="setClAutoAdvance(${!clAutoAdvance})"></div>`;
+  }
+
+  const anyAnswered = Object.values(qs).some(s => s && (s.status === 'correct' || s.status === 'wrong'));
+  const reviewBtn = document.getElementById('cl-review-all-btn');
+  if (reviewBtn) reviewBtn.style.display = anyAnswered ? '' : 'none';
+
   // Update sidebar memory hook from first item with a phrase acronym tip
   const hookCard = document.getElementById('cl-memory-hook');
   const hookBody = document.getElementById('cl-hook-body');
@@ -552,6 +583,15 @@ function renderChecklist() {
       hookCard.style.display = 'none';
     }
   }
+}
+
+function reviewAllAnswers() {
+  const phase = state.checklist.phase;
+  const qs = clQuizState[phase] || {};
+  Object.values(qs).forEach(s => {
+    if (s && (s.status === 'correct' || s.status === 'wrong')) s.collapsed = false;
+  });
+  renderChecklist();
 }
 
 function toggleItem(idx) {
