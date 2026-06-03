@@ -3188,8 +3188,7 @@ function initSeqRecall() {
   seqState.order = new Array(list.items.length).fill(-1);
   seqState.placed = new Set();
   const hasBucketsInit = list.items.some(it => it.bucket);
-  const freeCountInit = hasBucketsInit ? list.items.filter(it => it.bucket === 'free').length : 0;
-  seqState.freeSelections = new Array(freeCountInit).fill('');
+  seqState.freeSelections = new Set();
   seqState.freeChecked = false;
   seqState.freeCorrect = false;
   seqState.freeSlotResults = [];
@@ -3273,9 +3272,15 @@ function tapChip(origIdx) {
   }
 }
 
-function seqFreeSelect(idx, value) {
+function toggleFreeItem(action) {
   if (seqState.freeCorrect) return;
-  seqState.freeSelections[idx] = value;
+  const list = CHECKLISTS[seqState.phase];
+  const freeCount = list.items.filter(it => it.bucket === 'free').length;
+  if (seqState.freeSelections.has(action)) {
+    seqState.freeSelections.delete(action);
+  } else if (seqState.freeSelections.size < freeCount) {
+    seqState.freeSelections.add(action);
+  }
   seqState.freeChecked = false;
   seqState.freeSlotResults = [];
   renderSeqRecall();
@@ -3284,13 +3289,9 @@ function seqFreeSelect(idx, value) {
 function checkFreeItems() {
   const list = CHECKLISTS[seqState.phase];
   const freeSet = new Set(list.items.filter(it => it.bucket === 'free').map(it => it.action));
-  const selCounts = {};
-  seqState.freeSelections.forEach(s => { if (s) selCounts[s] = (selCounts[s] || 0) + 1; });
-  seqState.freeSlotResults = seqState.freeSelections.map(sel =>
-    Boolean(sel) && freeSet.has(sel) && selCounts[sel] === 1
-  );
+  const selected = seqState.freeSelections;
   seqState.freeChecked = true;
-  seqState.freeCorrect = seqState.freeSlotResults.every(Boolean);
+  seqState.freeCorrect = selected.size === freeSet.size && [...selected].every(s => freeSet.has(s));
   if (seqState.freeCorrect) {
     const orderedCount = list.items.filter(it => it.bucket === 'ordered').length;
     if (seqState.placed.size === orderedCount) {
@@ -3302,9 +3303,7 @@ function checkFreeItems() {
 }
 
 function retryFreeItems() {
-  const list = CHECKLISTS[seqState.phase];
-  const freeCount = list.items.filter(it => it.bucket === 'free').length;
-  seqState.freeSelections = new Array(freeCount).fill('');
+  seqState.freeSelections = new Set();
   seqState.freeChecked = false;
   seqState.freeCorrect = false;
   seqState.freeSlotResults = [];
@@ -3375,28 +3374,28 @@ function renderSeqRecall() {
   if (seqState.done) {
     poolHtml = '';
   } else if (hasBuckets) {
-    // Free section — dropdowns
+    // Free section — multi-select list
+    const orderedActions = new Set(list.items.filter(it => it.bucket === 'ordered').map(it => it.action));
     const universeActions = [...new Set(
       Object.values(CHECKLISTS).flatMap(cl => cl.items).map(it => it.action)
-    )].sort();
-    const allFreeSelected = seqState.freeSelections.every(s => s !== '');
-    const freeRowsHtml = seqState.freeSelections.map((sel, i) => {
-      const isCorrect = seqState.freeChecked && seqState.freeSlotResults[i];
-      const isWrong = seqState.freeChecked && !seqState.freeSlotResults[i];
-      return `<div class="seq-free-row${isCorrect ? ' seq-free-row--correct' : isWrong ? ' seq-free-row--wrong' : ''}">
-        <span class="seq-free-num">${i + 1}</span>
-        <select class="seq-free-select" onchange="seqFreeSelect(${i}, this.value)"${seqState.freeCorrect ? ' disabled' : ''}>
-          <option value="">— pick one —</option>
-          ${universeActions.map(a => `<option value="${a}"${sel === a ? ' selected' : ''}>${a}</option>`).join('')}
-        </select>
-        ${seqState.freeChecked ? `<span class="seq-free-badge">${isCorrect ? '✓' : '✗'}</span>` : ''}
-      </div>`;
+    )].filter(a => !orderedActions.has(a)).sort();
+    const freeSet = new Set(freeItems.map(it => it.action));
+    const freeCount = freeItems.length;
+    const selCount = seqState.freeSelections.size;
+    const freeListHtml = universeActions.map(a => {
+      const isSelected = seqState.freeSelections.has(a);
+      const isCorrect = seqState.freeChecked && isSelected && freeSet.has(a);
+      const isWrong = seqState.freeChecked && isSelected && !freeSet.has(a);
+      const isMissed = seqState.freeChecked && !isSelected && freeSet.has(a);
+      return `<button class="seq-free-item${isSelected ? ' seq-free-item--selected' : ''}${isCorrect ? ' seq-free-item--correct' : ''}${isWrong ? ' seq-free-item--wrong' : ''}${isMissed ? ' seq-free-item--missed' : ''}"
+                onclick="toggleFreeItem('${a.replace(/'/g, "\\'")}')"
+                ${seqState.freeCorrect ? 'disabled' : ''}>${a}</button>`;
     }).join('');
     const freeFooterHtml = seqState.freeCorrect
       ? `<span class="seq-free-ok">All correct</span>`
       : seqState.freeChecked
       ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryFreeItems()">Try Again</button>`
-      : `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()"${allFreeSelected ? '' : ' disabled'}>Check</button>`;
+      : `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()"${selCount === freeCount ? '' : ' disabled'}>Check</button>`;
 
     // Ordered chips
     const orderedChipsHtml = seqState.shuffled
@@ -3418,10 +3417,10 @@ function renderSeqRecall() {
     poolHtml = `
       <div class="seq-pool-card">
         <div class="seq-pool-card-header">
-          <span class="seq-pool-eyebrow">↓ SELECT — ANY ORDER</span>
-          <span class="seq-pool-left-count">${freeCompleted} / ${freeItems.length}</span>
+          <span class="seq-pool-eyebrow">↓ SELECT ${freeCount} ITEMS — ANY ORDER</span>
+          <span class="seq-pool-left-count">${selCount} / ${freeCount}</span>
         </div>
-        <div class="seq-free-rows">${freeRowsHtml}</div>
+        <div class="seq-free-list">${freeListHtml}</div>
         <div class="seq-pool-footer">${freeFooterHtml}</div>
       </div>
       <div class="seq-pool-card seq-ordered-pool">
