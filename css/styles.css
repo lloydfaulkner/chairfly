@@ -2671,6 +2671,14 @@
       border-color: var(--hazard) !important;
       color: var(--hazard) !important;
     }
+    .seq-chip--locked {
+      opacity: 0.3;
+      cursor: default;
+    }
+    .seq-chip--next-ordered {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
 
     .seq-pool-footer {
       margin-top: 14px;

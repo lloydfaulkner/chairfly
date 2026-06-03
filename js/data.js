@@ -231,7 +231,7 @@ const ALL_AIRCRAFT = {
           'Other aircraft use your beacon to identify your position in the runup area.',
           'FAA regulations require the beacon on whenever the aircraft is being refueled.',
         ],
-        tip: 'Beacon = engine running. It\'s the first thing on before start, last thing off after shutdown.', zone: 'beacon' },
+        tip: 'Beacon = engine running. It\'s the first thing on before start, last thing off after shutdown.', zone: 'beacon', bucket: 'ordered' },
       { action: 'Throttle', value: '1/4–1/2 INCH OPEN', note: 'Slightly open for start',
         why: 'A fully closed throttle can make the engine difficult to start and prone to loading up. A slightly open throttle provides the right fuel/air mix for initial combustion. Too much throttle and the engine may race uncontrollably after starting.',
         answerVariants: [
@@ -246,7 +246,7 @@ const ALL_AIRCRAFT = {
           'The throttle position determines starter engagement speed; incorrect position delays crank.',
           'Throttle cracked open prevents the choke from activating and flooding the engine.',
         ],
-        tip: 'About the width of two fingers pushed in from fully closed. You\'ll develop a feel for it.', zone: 'throttle' },
+        tip: 'About the width of two fingers pushed in from fully closed. You\'ll develop a feel for it.', zone: 'throttle', bucket: 'free' },
       { action: 'Mixture', value: 'RICH', note: 'Full rich for sea level; lean as needed at altitude',
         why: 'Rich mixture provides maximum fuel for start. Carbureted engines like the C172 need a rich mixture for cold starts. At higher density altitudes (mountains, hot days) you\'ll lean slightly even for start — but full rich at sea level is standard.',
         answerVariants: [
@@ -261,7 +261,7 @@ const ALL_AIRCRAFT = {
           'Rich mixture at start lubricates the cylinder walls before oil pressure builds.',
           'The mixture must be rich so the EGT stabilizes quickly during the first few seconds of operation.',
         ],
-        tip: 'Red knob, full IN = rich. Remember: red = fuel (rich). You lean it OUT to reduce fuel.', zone: 'mixture' },
+        tip: 'Red knob, full IN = rich. Remember: red = fuel (rich). You lean it OUT to reduce fuel.', zone: 'mixture', bucket: 'free' },
       { action: 'Carb Heat', value: 'COLD', note: 'Off during start — only use in flight if icing suspected',
         why: 'Carb heat on during start reduces engine power and can disrupt the fuel/air mixture needed for starting. It also bypasses the air filter, allowing unfiltered air into the engine. Off for start — on in flight if you suspect carb ice.',
         answerVariants: [
@@ -277,7 +277,7 @@ const ALL_AIRCRAFT = {
           'Warm air from carb heat causes the fuel to vaporize too quickly before ignition.',
           'Carb heat bypass valve must be cold for the primer injectors to function correctly.',
         ],
-        tip: 'Carb heat = warm unfiltered air. Only useful when you suspect ice. On the ground = off.', zone: 'carbheat' },
+        tip: 'Carb heat = warm unfiltered air. Only useful when you suspect ice. On the ground = off.', zone: 'carbheat', bucket: 'free' },
       { action: 'Prime (if cold)', value: '2–6 STROKES', note: 'Warm engine needs less; don\'t over-prime',
         why: 'The primer injects raw fuel directly into the intake manifold, making cold starts easier when fuel vaporization is poor. Over-priming floods the engine with excess fuel, making start very difficult. Warm engines need zero priming.',
         answerVariants: [
@@ -292,7 +292,7 @@ const ALL_AIRCRAFT = {
           'The primer is used to clear vapor lock from the fuel lines before engaging the starter.',
           'Priming is required to activate the electric fuel pump on carbureted engines during cold starts.',
         ],
-        tip: 'Rule of thumb: cold outside = more primes. Warm engine or hot day = none. If it\'s flooded, mixture to idle-cutoff, throttle full open, crank to clear it.', zone: 'primer' },
+        tip: 'Rule of thumb: cold outside = more primes. Warm engine or hot day = none. If it\'s flooded, mixture to idle-cutoff, throttle full open, crank to clear it.', zone: 'primer', bucket: 'free' },
       { action: 'Primer', value: 'IN & LOCKED', note: 'Must be locked in before start',
         why: 'An unlocked primer allows air to bypass the carburetor, causing a lean stumble or rough running. Engine vibration can also cause an unlocked primer to work itself in or out, creating unpredictable fuel flow.',
         answerVariants: [
@@ -307,7 +307,7 @@ const ALL_AIRCRAFT = {
           'An unlocked primer can snag on the yoke, causing inadvertent fuel injection mid-flight.',
           'The primer must be locked so the fuel flow gauge reads accurately during start.',
         ],
-        tip: 'Push IN fully, then twist clockwise to lock. You should feel a positive stop. Tug it — it should not come out.', zone: 'primer' },
+        tip: 'Push IN fully, then twist clockwise to lock. You should feel a positive stop. Tug it — it should not come out.', zone: 'primer', bucket: 'free' },
       { action: 'Propeller Area', value: 'CLEAR', note: 'Call "CLEAR PROP" audibly before engaging starter',
         why: 'The propeller is invisible when spinning. Anyone near the prop arc when the engine starts will be seriously injured or killed. You call "CLEAR PROP" out loud and check visually before touching the starter.',
         answerVariants: [
@@ -323,7 +323,7 @@ const ALL_AIRCRAFT = {
           'The call is a signal for passengers to cover their ears before engine noise begins.',
           'Required so nearby aircraft crews know you\'re starting and can hold position.',
         ],
-        tip: 'Open the window, lean out, look both ways, then call it. Don\'t call it just to hear yourself — actually look.', zone: 'oil' },
+        tip: 'Open the window, lean out, look both ways, then call it. Don\'t call it just to hear yourself — actually look.', zone: 'oil', bucket: 'ordered' },
       { action: 'Master Switch', value: 'ON', note: 'Both ALT and BAT switches',
         why: 'The master switch has two halves: BAT (battery) powers the electrical system, ALT (alternator) connects the alternator to the bus. Both must be on. Some pilots turn BAT on first to confirm voltage before connecting the alternator.',
         answerVariants: [
@@ -339,7 +339,7 @@ const ALL_AIRCRAFT = {
           'Both switches must be on to allow the magnetos to receive the starter signal.',
           'The master switch arms the ignition circuit — starter won\'t engage without it.',
         ],
-        tip: 'It\'s a split rocker — left side ALT, right side BAT. Flip both up together for ON.', zone: 'master' },
+        tip: 'It\'s a split rocker — left side ALT, right side BAT. Flip both up together for ON.', zone: 'master', bucket: 'ordered' },
       { action: 'Ignition', value: 'START', note: 'Release when engine catches; don\'t crank more than 10s',
         why: 'The ignition switch has positions: OFF, R, L, BOTH, START. START engages the starter motor. Release to BOTH as soon as the engine catches — running the starter on a live engine damages it. Never crank more than 10 seconds without a 30-second rest.',
         answerVariants: [
@@ -354,7 +354,7 @@ const ALL_AIRCRAFT = {
           'Continuous cranking at over 10 seconds can overheat the magneto points.',
           'The ignition must return to BOTH so the fuel pump can take over from the starter solenoid.',
         ],
-        tip: 'Your hand should be spring-loaded to release. The moment you hear the engine catch, let go.', zone: 'ignition' },
+        tip: 'Your hand should be spring-loaded to release. The moment you hear the engine catch, let go.', zone: 'ignition', bucket: 'ordered' },
       { action: 'Oil Pressure', value: 'CHECK (30s)', note: 'Should show pressure within 30 seconds — abort if not',
         why: 'Oil pressure rising confirms that oil is circulating before heat and friction build up. No pressure within 30 seconds means the oil pump may have failed or oil is severely low — continuing risks catastrophic engine damage within minutes.',
         answerVariants: [
@@ -370,7 +370,7 @@ const ALL_AIRCRAFT = {
           'Checking oil pressure at 30 seconds confirms the oil filter hasn\'t bypassed since the last change.',
           'Oil pressure must be confirmed before the alternator can come online and begin charging.',
         ],
-        tip: 'Watch the gauge immediately after start. Green arc = good. No movement after 30s = shut down immediately.', zone: 'sixpack' },
+        tip: 'Watch the gauge immediately after start. Green arc = good. No movement after 30s = shut down immediately.', zone: 'sixpack', bucket: 'ordered' },
     ]
   },
   runup: {

@@ -3186,6 +3186,7 @@ function initSeqRecall() {
     .map((item, i) => ({ ...item, origIdx: i }))
     .sort(() => Math.random() - 0.5);
   seqState.order = new Array(list.items.length).fill(-1);
+  seqState.placed = new Set();
   seqState.checked = false;
   seqState.dragSrc = null;
   seqState._selectedPool = null;
@@ -3212,12 +3213,29 @@ function fmtSeqTime(s) {
 
 function tapChip(origIdx) {
   if (seqState.done) return;
-  if (origIdx === seqState.nextSlot) {
-    // Correct tap — advance the slot
+  const list = CHECKLISTS[seqState.phase];
+  const item = list.items[origIdx];
+  const hasBuckets = list.items.some(it => it.bucket);
+
+  if (hasBuckets) {
+    if (item.bucket === 'ordered') {
+      const nextOrderedIdx = list.items
+        .findIndex((it, i) => it.bucket === 'ordered' && !seqState.placed.has(i));
+      if (nextOrderedIdx !== origIdx) {
+        seqState.miss++;
+        seqState.shakingIdx = origIdx;
+        renderSeqRecall();
+        setTimeout(() => {
+          seqState.shakingIdx = null;
+          const chip = document.querySelector('.seq-chip--shake');
+          if (chip) chip.classList.remove('seq-chip--shake');
+        }, 600);
+        return;
+      }
+    }
     seqState.ok++;
-    seqState.nextSlot++;
-    const total = CHECKLISTS[seqState.phase].items.length;
-    if (seqState.nextSlot === total) {
+    seqState.placed.add(origIdx);
+    if (seqState.placed.size === list.items.length) {
       seqState.done = true;
       clearInterval(seqState._timer);
       setTimeout(renderSeqRecall, 600);
@@ -3225,15 +3243,26 @@ function tapChip(origIdx) {
       renderSeqRecall();
     }
   } else {
-    // Wrong tap — shake that chip
-    seqState.miss++;
-    seqState.shakingIdx = origIdx;
-    renderSeqRecall();
-    setTimeout(() => {
-      seqState.shakingIdx = null;
-      const chip = document.querySelector('.seq-chip--shake');
-      if (chip) chip.classList.remove('seq-chip--shake');
-    }, 600);
+    if (origIdx === seqState.nextSlot) {
+      seqState.ok++;
+      seqState.nextSlot++;
+      if (seqState.nextSlot === list.items.length) {
+        seqState.done = true;
+        clearInterval(seqState._timer);
+        setTimeout(renderSeqRecall, 600);
+      } else {
+        renderSeqRecall();
+      }
+    } else {
+      seqState.miss++;
+      seqState.shakingIdx = origIdx;
+      renderSeqRecall();
+      setTimeout(() => {
+        seqState.shakingIdx = null;
+        const chip = document.querySelector('.seq-chip--shake');
+        if (chip) chip.classList.remove('seq-chip--shake');
+      }, 600);
+    }
   }
 }
 
@@ -3242,15 +3271,22 @@ function renderSeqRecall() {
   const list = CHECKLISTS[phase];
   const total = list.items.length;
   const nextSlot = seqState.nextSlot;
+  const hasBuckets = list.items.some(it => it.bucket);
+  const placed = seqState.placed || new Set();
+  const nextOrderedIdx = hasBuckets
+    ? list.items.findIndex((it, i) => it.bucket === 'ordered' && !placed.has(i))
+    : -1;
   const ok = seqState.ok;
   const miss = seqState.miss;
   const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
-  const pct = Math.round((nextSlot / total) * 100);
+  const completedCount = hasBuckets ? placed.size : nextSlot;
+  const pct = Math.round(completedCount / total * 100);
 
   // Slot rows
   const slotsHtml = list.items.map((item, i) => {
-    const filled = i < nextSlot;
-    const isNext = i === nextSlot && !seqState.done;
+    const filled = hasBuckets ? placed.has(i) : i < nextSlot;
+    const isNextOrdered = hasBuckets && item.bucket === 'ordered' && !filled && nextOrderedIdx === i;
+    const isNext = hasBuckets ? isNextOrdered : i === nextSlot && !seqState.done;
     return `<div class="seq-slot-row${isNext ? ' seq-slot-row--next' : ''}">
       <span class="seq-row-idx">${String(i + 1).padStart(2, '0')}</span>
       <div class="seq-row-check${filled ? ' seq-row-check--done' : ''}">
@@ -3263,7 +3299,7 @@ function renderSeqRecall() {
                ${item.value ? `<span class="seq-row-call">· ${item.value}</span>` : ''}
              </div>`
           : isNext
-          ? `<span class="seq-row-next-hint">→ WHAT'S NEXT?</span>`
+          ? `<span class="seq-row-next-hint">→ NEXT IN SEQUENCE</span>`
           : `<span class="seq-row-placeholder"></span>`}
       </div>
       <div></div>
@@ -3276,15 +3312,20 @@ function renderSeqRecall() {
       <div class="seq-done-disc">✓</div>
       <div style="flex:1">
         <div class="seq-done-title">Nailed it.</div>
-        <div class="seq-done-sub">${nextSlot} / ${total} in ${fmtSeqTime(seqState.elapsed)} · ${accuracy}% accuracy. Logged to your record.</div>
+        <div class="seq-done-sub">${completedCount} / ${total} in ${fmtSeqTime(seqState.elapsed)} · ${accuracy}% accuracy. Logged to your record.</div>
       </div>
       <button class="cf-btn cf-btn--solid cf-btn--sm" onclick="initSeqRecall()">Try again</button>
     </div>` : '';
 
   // Chip pool
-  const remaining = seqState.shuffled.filter(it => it.origIdx >= nextSlot).length;
+  const remaining = hasBuckets
+    ? total - placed.size
+    : seqState.shuffled.filter(it => it.origIdx >= nextSlot).length;
   const seqActionCounts = {};
   list.items.forEach(li => { seqActionCounts[li.action] = (seqActionCounts[li.action] || 0) + 1; });
+  const hintText = hasBuckets
+    ? 'Tap free items in any order · tap sequence items in order'
+    : 'Tap chips in the correct order to fill each slot.';
   const poolHtml = seqState.done
     ? ``
     : `<div class="seq-pool-card">
@@ -3294,16 +3335,19 @@ function renderSeqRecall() {
         </div>
         <div class="seq-chips">
           ${seqState.shuffled.map(it => {
-            const placed = it.origIdx < nextSlot;
+            const chipPlaced = hasBuckets ? placed.has(it.origIdx) : it.origIdx < nextSlot;
             const shaking = seqState.shakingIdx === it.origIdx;
+            const isOrderedChip = hasBuckets && list.items[it.origIdx].bucket === 'ordered';
+            const isNextRequired = it.origIdx === nextOrderedIdx;
+            const locked = isOrderedChip && !isNextRequired && !chipPlaced;
             const chipLabel = seqActionCounts[it.action] > 1 && it.value ? `${it.action} — ${it.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}` : it.action;
-            return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}"
+            return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}${locked ? ' seq-chip--locked' : ''}${isNextRequired && !chipPlaced ? ' seq-chip--next-ordered' : ''}"
                       onclick="tapChip(${it.origIdx})"
-                      ${placed ? 'disabled' : ''}>${chipLabel}</button>`;
+                      ${chipPlaced ? 'disabled' : ''}>${chipLabel}</button>`;
           }).join('')}
         </div>
         <div class="seq-pool-footer">
-          <span class="seq-pool-hint">Tap chips in the correct order to fill each slot.</span>
+          <span class="seq-pool-hint">${hintText}</span>
         </div>
       </div>`;
 
@@ -3334,7 +3378,7 @@ function renderSeqRecall() {
     </div>
     <div class="seq-progress-row">
       <div class="seq-progress-bar"><div class="seq-progress-fill" style="width:${pct}%"></div></div>
-      <span class="seq-progress-count">${nextSlot} / ${total}</span>
+      <span class="seq-progress-count">${completedCount} / ${total}</span>
     </div>
     <div class="seq-grid">
       <div class="seq-slot-col">
