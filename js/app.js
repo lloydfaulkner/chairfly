@@ -3187,6 +3187,12 @@ function initSeqRecall() {
     .sort(() => Math.random() - 0.5);
   seqState.order = new Array(list.items.length).fill(-1);
   seqState.placed = new Set();
+  const hasBucketsInit = list.items.some(it => it.bucket);
+  const freeCountInit = hasBucketsInit ? list.items.filter(it => it.bucket === 'free').length : 0;
+  seqState.freeSelections = new Array(freeCountInit).fill('');
+  seqState.freeChecked = false;
+  seqState.freeCorrect = false;
+  seqState.freeSlotResults = [];
   seqState.checked = false;
   seqState.dragSrc = null;
   seqState._selectedPool = null;
@@ -3235,7 +3241,8 @@ function tapChip(origIdx) {
     }
     seqState.ok++;
     seqState.placed.add(origIdx);
-    if (seqState.placed.size === list.items.length) {
+    const orderedCount = list.items.filter(it => it.bucket === 'ordered').length;
+    if (seqState.placed.size === orderedCount && seqState.freeCorrect) {
       seqState.done = true;
       clearInterval(seqState._timer);
       setTimeout(renderSeqRecall, 600);
@@ -3266,6 +3273,44 @@ function tapChip(origIdx) {
   }
 }
 
+function seqFreeSelect(idx, value) {
+  if (seqState.freeCorrect) return;
+  seqState.freeSelections[idx] = value;
+  seqState.freeChecked = false;
+  seqState.freeSlotResults = [];
+  renderSeqRecall();
+}
+
+function checkFreeItems() {
+  const list = CHECKLISTS[seqState.phase];
+  const freeSet = new Set(list.items.filter(it => it.bucket === 'free').map(it => it.action));
+  const selCounts = {};
+  seqState.freeSelections.forEach(s => { if (s) selCounts[s] = (selCounts[s] || 0) + 1; });
+  seqState.freeSlotResults = seqState.freeSelections.map(sel =>
+    Boolean(sel) && freeSet.has(sel) && selCounts[sel] === 1
+  );
+  seqState.freeChecked = true;
+  seqState.freeCorrect = seqState.freeSlotResults.every(Boolean);
+  if (seqState.freeCorrect) {
+    const orderedCount = list.items.filter(it => it.bucket === 'ordered').length;
+    if (seqState.placed.size === orderedCount) {
+      seqState.done = true;
+      clearInterval(seqState._timer);
+    }
+  }
+  renderSeqRecall();
+}
+
+function retryFreeItems() {
+  const list = CHECKLISTS[seqState.phase];
+  const freeCount = list.items.filter(it => it.bucket === 'free').length;
+  seqState.freeSelections = new Array(freeCount).fill('');
+  seqState.freeChecked = false;
+  seqState.freeCorrect = false;
+  seqState.freeSlotResults = [];
+  renderSeqRecall();
+}
+
 function renderSeqRecall() {
   const phase = seqState.phase;
   const list = CHECKLISTS[phase];
@@ -3279,12 +3324,17 @@ function renderSeqRecall() {
   const ok = seqState.ok;
   const miss = seqState.miss;
   const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
-  const completedCount = hasBuckets ? placed.size : nextSlot;
+
+  const freeItems = hasBuckets ? list.items.filter(it => it.bucket === 'free') : [];
+  const freeCompleted = hasBuckets && seqState.freeCorrect ? freeItems.length : 0;
+  const completedCount = hasBuckets ? freeCompleted + placed.size : nextSlot;
   const pct = Math.round(completedCount / total * 100);
 
   // Slot rows
   const slotsHtml = list.items.map((item, i) => {
-    const filled = hasBuckets ? placed.has(i) : i < nextSlot;
+    const filled = hasBuckets
+      ? (item.bucket === 'free' ? seqState.freeCorrect : placed.has(i))
+      : i < nextSlot;
     const isNextOrdered = hasBuckets && item.bucket === 'ordered' && !filled && nextOrderedIdx === i;
     const isNext = hasBuckets ? isNextOrdered : i === nextSlot && !seqState.done;
     return `<div class="seq-slot-row${isNext ? ' seq-slot-row--next' : ''}">
@@ -3317,39 +3367,95 @@ function renderSeqRecall() {
       <button class="cf-btn cf-btn--solid cf-btn--sm" onclick="initSeqRecall()">Try again</button>
     </div>` : '';
 
-  // Chip pool
-  const remaining = hasBuckets
-    ? total - placed.size
-    : seqState.shuffled.filter(it => it.origIdx >= nextSlot).length;
+  // Pool
   const seqActionCounts = {};
   list.items.forEach(li => { seqActionCounts[li.action] = (seqActionCounts[li.action] || 0) + 1; });
-  const hintText = hasBuckets
-    ? 'Tap free items in any order · tap sequence items in order'
-    : 'Tap chips in the correct order to fill each slot.';
-  const poolHtml = seqState.done
-    ? ``
-    : `<div class="seq-pool-card">
+
+  let poolHtml;
+  if (seqState.done) {
+    poolHtml = '';
+  } else if (hasBuckets) {
+    // Free section — dropdowns
+    const universeActions = [...new Set(
+      Object.values(CHECKLISTS).flatMap(cl => cl.items).map(it => it.action)
+    )].sort();
+    const allFreeSelected = seqState.freeSelections.every(s => s !== '');
+    const freeRowsHtml = seqState.freeSelections.map((sel, i) => {
+      const isCorrect = seqState.freeChecked && seqState.freeSlotResults[i];
+      const isWrong = seqState.freeChecked && !seqState.freeSlotResults[i];
+      return `<div class="seq-free-row${isCorrect ? ' seq-free-row--correct' : isWrong ? ' seq-free-row--wrong' : ''}">
+        <span class="seq-free-num">${i + 1}</span>
+        <select class="seq-free-select" onchange="seqFreeSelect(${i}, this.value)"${seqState.freeCorrect ? ' disabled' : ''}>
+          <option value="">— pick one —</option>
+          ${universeActions.map(a => `<option value="${a}"${sel === a ? ' selected' : ''}>${a}</option>`).join('')}
+        </select>
+        ${seqState.freeChecked ? `<span class="seq-free-badge">${isCorrect ? '✓' : '✗'}</span>` : ''}
+      </div>`;
+    }).join('');
+    const freeFooterHtml = seqState.freeCorrect
+      ? `<span class="seq-free-ok">All correct</span>`
+      : seqState.freeChecked
+      ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryFreeItems()">Try Again</button>`
+      : `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()"${allFreeSelected ? '' : ' disabled'}>Check</button>`;
+
+    // Ordered chips
+    const orderedChipsHtml = seqState.shuffled
+      .filter(it => list.items[it.origIdx].bucket === 'ordered')
+      .map(it => {
+        const chipPlaced = placed.has(it.origIdx);
+        const shaking = seqState.shakingIdx === it.origIdx;
+        const isNextRequired = it.origIdx === nextOrderedIdx;
+        const locked = !isNextRequired && !chipPlaced;
+        const chipLabel = seqActionCounts[it.action] > 1 && it.value
+          ? `${it.action} — ${it.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}`
+          : it.action;
+        return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}${locked ? ' seq-chip--locked' : ''}${isNextRequired && !chipPlaced ? ' seq-chip--next-ordered' : ''}"
+                  onclick="tapChip(${it.origIdx})"
+                  ${chipPlaced ? 'disabled' : ''}>${chipLabel}</button>`;
+      }).join('');
+    const orderedRemaining = list.items.filter(it => it.bucket === 'ordered').length - placed.size;
+
+    poolHtml = `
+      <div class="seq-pool-card">
+        <div class="seq-pool-card-header">
+          <span class="seq-pool-eyebrow">↓ SELECT — ANY ORDER</span>
+          <span class="seq-pool-left-count">${freeCompleted} / ${freeItems.length}</span>
+        </div>
+        <div class="seq-free-rows">${freeRowsHtml}</div>
+        <div class="seq-pool-footer">${freeFooterHtml}</div>
+      </div>
+      <div class="seq-pool-card seq-ordered-pool">
+        <div class="seq-pool-card-header">
+          <span class="seq-pool-eyebrow">↓ TAP IN SEQUENCE</span>
+          <span class="seq-pool-left-count">${orderedRemaining} LEFT</span>
+        </div>
+        <div class="seq-chips">${orderedChipsHtml}</div>
+        <div class="seq-pool-footer">
+          <span class="seq-pool-hint">Tap the highlighted chip next.</span>
+        </div>
+      </div>`;
+  } else {
+    const remaining = seqState.shuffled.filter(it => it.origIdx >= nextSlot).length;
+    poolHtml = `<div class="seq-pool-card">
         <div class="seq-pool-card-header">
           <span class="seq-pool-eyebrow">↓ TAP THE NEXT ITEM</span>
           <span class="seq-pool-left-count">${remaining} LEFT</span>
         </div>
         <div class="seq-chips">
           ${seqState.shuffled.map(it => {
-            const chipPlaced = hasBuckets ? placed.has(it.origIdx) : it.origIdx < nextSlot;
+            const chipPlaced = it.origIdx < nextSlot;
             const shaking = seqState.shakingIdx === it.origIdx;
-            const isOrderedChip = hasBuckets && list.items[it.origIdx].bucket === 'ordered';
-            const isNextRequired = it.origIdx === nextOrderedIdx;
-            const locked = isOrderedChip && !isNextRequired && !chipPlaced;
             const chipLabel = seqActionCounts[it.action] > 1 && it.value ? `${it.action} — ${it.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}` : it.action;
-            return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}${locked ? ' seq-chip--locked' : ''}${isNextRequired && !chipPlaced ? ' seq-chip--next-ordered' : ''}"
+            return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}"
                       onclick="tapChip(${it.origIdx})"
                       ${chipPlaced ? 'disabled' : ''}>${chipLabel}</button>`;
           }).join('')}
         </div>
         <div class="seq-pool-footer">
-          <span class="seq-pool-hint">${hintText}</span>
+          <span class="seq-pool-hint">Tap chips in the correct order to fill each slot.</span>
         </div>
       </div>`;
+  }
 
   document.getElementById('seq-content').innerHTML = `
     <div class="seq-page-header">
