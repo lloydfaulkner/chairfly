@@ -231,7 +231,7 @@ const ALL_AIRCRAFT = {
           'Other aircraft use your beacon to identify your position in the runup area.',
           'FAA regulations require the beacon on whenever the aircraft is being refueled.',
         ],
-        tip: 'Beacon = engine running. It\'s the first thing on before start, last thing off after shutdown.', zone: 'beacon', bucket: 'ordered' },
+        tip: 'Beacon = engine running. It\'s the first thing on before start, last thing off after shutdown.', zone: 'beacon', bucket: 'gate' },
       { action: 'Throttle', value: '1/4–1/2 INCH OPEN', note: 'Slightly open for start',
         why: 'A fully closed throttle can make the engine difficult to start and prone to loading up. A slightly open throttle provides the right fuel/air mix for initial combustion. Too much throttle and the engine may race uncontrollably after starting.',
         answerVariants: [

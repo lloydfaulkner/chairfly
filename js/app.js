@@ -3192,6 +3192,18 @@ function initSeqRecall() {
   seqState.freeChecked = false;
   seqState.freeCorrect = false;
   seqState.freeSlotResults = [];
+  const gateItem = list.items.find(it => it.bucket === 'gate');
+  if (gateItem) {
+    const freePool = list.items.filter(it => it.bucket === 'free');
+    const distractors = [...freePool].sort(() => Math.random() - 0.5).slice(0, 3).map(it => it.action);
+    seqState.gateOptions = [gateItem.action, ...distractors].sort(() => Math.random() - 0.5);
+  } else {
+    seqState.gateOptions = [];
+  }
+  seqState.gateAnswer = '';
+  seqState.gateChecked = false;
+  seqState.gateCorrect = false;
+  seqState.pickerOpen = false;
   seqState.checked = false;
   seqState.dragSrc = null;
   seqState._selectedPool = null;
@@ -3241,7 +3253,7 @@ function tapChip(origIdx) {
     seqState.ok++;
     seqState.placed.add(origIdx);
     const orderedCount = list.items.filter(it => it.bucket === 'ordered').length;
-    if (seqState.placed.size === orderedCount && seqState.freeCorrect) {
+    if (seqState.placed.size === orderedCount && seqState.freeCorrect && seqState.gateCorrect) {
       seqState.done = true;
       clearInterval(seqState._timer);
       setTimeout(renderSeqRecall, 600);
@@ -3294,7 +3306,7 @@ function checkFreeItems() {
   seqState.freeCorrect = selected.size === freeSet.size && [...selected].every(s => freeSet.has(s));
   if (seqState.freeCorrect) {
     const orderedCount = list.items.filter(it => it.bucket === 'ordered').length;
-    if (seqState.placed.size === orderedCount) {
+    if (seqState.placed.size === orderedCount && seqState.gateCorrect) {
       seqState.done = true;
       clearInterval(seqState._timer);
     }
@@ -3307,6 +3319,28 @@ function retryFreeItems() {
   seqState.freeChecked = false;
   seqState.freeCorrect = false;
   seqState.freeSlotResults = [];
+  renderSeqRecall();
+}
+
+function selectGateAnswer(action) {
+  if (seqState.gateCorrect) return;
+  const list = CHECKLISTS[seqState.phase];
+  const gateItem = list.items.find(it => it.bucket === 'gate');
+  seqState.gateAnswer = action;
+  seqState.gateChecked = true;
+  seqState.gateCorrect = action === gateItem.action;
+  renderSeqRecall();
+}
+
+function retryGateAnswer() {
+  seqState.gateAnswer = '';
+  seqState.gateChecked = false;
+  seqState.gateCorrect = false;
+  renderSeqRecall();
+}
+
+function togglePicker() {
+  seqState.pickerOpen = !seqState.pickerOpen;
   renderSeqRecall();
 }
 
@@ -3374,14 +3408,29 @@ function renderSeqRecall() {
   if (seqState.done) {
     poolHtml = '';
   } else if (hasBuckets) {
-    // Free section — multi-select list
-    const orderedActions = new Set(list.items.filter(it => it.bucket === 'ordered').map(it => it.action));
-    const universeActions = [...new Set(
-      Object.values(CHECKLISTS).flatMap(cl => cl.items).map(it => it.action)
-    )].filter(a => !orderedActions.has(a)).sort();
+    const gateItem = list.items.find(it => it.bucket === 'gate');
     const freeSet = new Set(freeItems.map(it => it.action));
     const freeCount = freeItems.length;
     const selCount = seqState.freeSelections.size;
+
+    // ── Section 1: gate (multiple choice) ──
+    const gateOptHtml = seqState.gateOptions.map(opt => {
+      const isSel = seqState.gateAnswer === opt;
+      const isCorrect = seqState.gateChecked && opt === gateItem.action;
+      const isWrong = seqState.gateChecked && isSel && opt !== gateItem.action;
+      return `<button class="seq-gate-opt${isCorrect ? ' seq-gate-opt--correct' : ''}${isWrong ? ' seq-gate-opt--wrong' : ''}${isSel && !seqState.gateChecked ? ' seq-gate-opt--selected' : ''}"
+                onclick="selectGateAnswer('${opt.replace(/'/g, "\\'")}')"
+                ${seqState.gateCorrect ? 'disabled' : ''}>${opt}</button>`;
+    }).join('');
+    const gateFooter = seqState.gateChecked && !seqState.gateCorrect
+      ? `<div class="seq-pool-footer"><button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryGateAnswer()">Try Again</button></div>`
+      : '';
+
+    // ── Section 2: free (accordion picker) ──
+    const sec2Locked = !seqState.gateCorrect;
+    const universeActions = [...new Set(
+      Object.values(CHECKLISTS).flatMap(cl => cl.items).map(it => it.action)
+    )].filter(a => a !== (gateItem && gateItem.action)).sort();
     const freeListHtml = universeActions.map(a => {
       const isSelected = seqState.freeSelections.has(a);
       const isCorrect = seqState.freeChecked && isSelected && freeSet.has(a);
@@ -3391,13 +3440,30 @@ function renderSeqRecall() {
                 onclick="toggleFreeItem('${a.replace(/'/g, "\\'")}')"
                 ${seqState.freeCorrect ? 'disabled' : ''}>${a}</button>`;
     }).join('');
-    const freeFooterHtml = seqState.freeCorrect
-      ? `<span class="seq-free-ok">All correct</span>`
-      : seqState.freeChecked
-      ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryFreeItems()">Try Again</button>`
-      : `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()"${selCount === freeCount ? '' : ' disabled'}>Check</button>`;
+    const previewHtml = selCount === 0
+      ? `<span class="seq-picker-empty">Nothing selected yet — tap Open to choose</span>`
+      : [...seqState.freeSelections].map(a => {
+          const isCorrect = seqState.freeChecked && freeSet.has(a);
+          const isWrong = seqState.freeChecked && !freeSet.has(a);
+          return `<span class="seq-picker-tag${isCorrect ? ' seq-picker-tag--correct' : ''}${isWrong ? ' seq-picker-tag--wrong' : ''}">${a}</span>`;
+        }).join('');
+    const sec2Body = sec2Locked
+      ? `<div class="seq-card-lock">Complete section 1 first</div>`
+      : seqState.pickerOpen
+      ? `<div class="seq-free-list">${freeListHtml}</div>
+         <div class="seq-pool-footer">
+           <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">Done ▲</button>
+         </div>`
+      : `<div class="seq-picker-preview">${previewHtml}</div>
+         <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
+           <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">${selCount === 0 ? 'Open ▼' : 'Edit ▼'}</button>
+           ${selCount === freeCount && !seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()">Check</button>` : ''}
+           ${seqState.freeChecked && !seqState.freeCorrect ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryFreeItems()">Try Again</button>` : ''}
+           ${seqState.freeCorrect ? `<span class="seq-free-ok">All correct</span>` : ''}
+         </div>`;
 
-    // Ordered chips
+    // ── Section 3: ordered chips ──
+    const sec3Locked = !seqState.freeCorrect;
     const orderedChipsHtml = seqState.shuffled
       .filter(it => list.items[it.origIdx].bucket === 'ordered')
       .map(it => {
@@ -3410,28 +3476,35 @@ function renderSeqRecall() {
           : it.action;
         return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}${locked ? ' seq-chip--locked' : ''}${isNextRequired && !chipPlaced ? ' seq-chip--next-ordered' : ''}"
                   onclick="tapChip(${it.origIdx})"
-                  ${chipPlaced ? 'disabled' : ''}>${chipLabel}</button>`;
+                  ${chipPlaced || sec3Locked ? 'disabled' : ''}>${chipLabel}</button>`;
       }).join('');
     const orderedRemaining = list.items.filter(it => it.bucket === 'ordered').length - placed.size;
+    const sec3Body = sec3Locked
+      ? `<div class="seq-card-lock">Complete section 2 first</div>`
+      : `<div class="seq-chips">${orderedChipsHtml}</div>
+         <div class="seq-pool-footer"><span class="seq-pool-hint">Tap the highlighted chip next.</span></div>`;
 
     poolHtml = `
       <div class="seq-pool-card">
         <div class="seq-pool-card-header">
-          <span class="seq-pool-eyebrow">↓ SELECT ${freeCount} ITEMS — ANY ORDER</span>
+          <span class="seq-pool-eyebrow">① WHAT MUST HAPPEN FIRST?</span>
+        </div>
+        <div class="seq-gate-options">${gateOptHtml}</div>
+        ${gateFooter}
+      </div>
+      <div class="seq-pool-card seq-ordered-pool${sec2Locked ? ' seq-card--locked' : ''}">
+        <div class="seq-pool-card-header">
+          <span class="seq-pool-eyebrow">② SETUP ITEMS — ANY ORDER</span>
           <span class="seq-pool-left-count">${selCount} / ${freeCount}</span>
         </div>
-        <div class="seq-free-list">${freeListHtml}</div>
-        <div class="seq-pool-footer">${freeFooterHtml}</div>
+        ${sec2Body}
       </div>
-      <div class="seq-pool-card seq-ordered-pool">
+      <div class="seq-pool-card seq-ordered-pool${sec3Locked ? ' seq-card--locked' : ''}">
         <div class="seq-pool-card-header">
-          <span class="seq-pool-eyebrow">↓ TAP IN SEQUENCE</span>
+          <span class="seq-pool-eyebrow">③ TAP IN SEQUENCE</span>
           <span class="seq-pool-left-count">${orderedRemaining} LEFT</span>
         </div>
-        <div class="seq-chips">${orderedChipsHtml}</div>
-        <div class="seq-pool-footer">
-          <span class="seq-pool-hint">Tap the highlighted chip next.</span>
-        </div>
+        ${sec3Body}
       </div>`;
   } else {
     const remaining = seqState.shuffled.filter(it => it.origIdx >= nextSlot).length;
