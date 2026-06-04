@@ -3499,12 +3499,12 @@ function renderSeqRecall() {
       ? `<div class="seq-free-list">${freeListHtml}</div>
          <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
            <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">Done ▲</button>
-           ${selCount === freeCount && !seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()">Check</button>` : ''}
+           ${!seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()" ${selCount !== freeCount ? 'disabled' : ''}>Check</button>` : ''}
          </div>`
       : `<div class="seq-picker-preview">${previewHtml}</div>
          <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
            <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">${selCount === 0 ? 'Open ▼' : 'Edit ▼'}</button>
-           ${selCount === freeCount && !seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()">Check</button>` : ''}
+           ${!seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()" ${selCount !== freeCount ? 'disabled' : ''}>Check</button>` : ''}
            ${seqState.freeChecked && !seqState.freeCorrect ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryFreeItems()">Try Again</button>` : ''}
            ${seqState.freeChecked && !seqState.freeCorrect ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="showFreeAnswers()">Show Answers</button>` : ''}
            ${seqState.freeCorrect ? `<span class="seq-free-ok">All correct</span>` : ''}
