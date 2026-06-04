@@ -2702,7 +2702,7 @@
     .seq-free-item--missed  { border-color: var(--kb-accent) !important; color: var(--kb-accent) !important; }
     .seq-free-item:disabled { opacity: 0.5; cursor: default; }
     .seq-free-ok { font-size: 13px; font-weight: 700; color: var(--terrain); }
-    .seq-pool-count-hint { font-size: 12px; color: var(--ink-3); align-self: center; }
+    .seq-pool-count-hint { font-size: 12px; color: var(--ink-3); align-self: center; margin-left: 6px; }
 
     .seq-gate-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
     .seq-gate-opt { padding: 8px 14px; background: var(--paper); color: var(--ink-2); border: 1px solid var(--rule-strong); border-radius: var(--radius-s); font-size: 13px; font-weight: 600; cursor: pointer; }

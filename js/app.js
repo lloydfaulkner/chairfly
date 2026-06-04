@@ -3499,12 +3499,12 @@ function renderSeqRecall() {
       ? `<div class="seq-free-list">${freeListHtml}</div>
          <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
            <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">Done ▲</button>
-           ${!seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()" ${selCount !== freeCount ? 'disabled' : ''}>Check</button>${selCount !== freeCount ? `<span class="seq-pool-count-hint">${selCount} / ${freeCount} selected</span>` : ''}` : ''}
+           ${!seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()" ${selCount !== freeCount ? 'disabled' : ''}>Check</button><span class="seq-pool-count-hint">${selCount} / ${freeCount} selected</span>` : ''}
          </div>`
       : `<div class="seq-picker-preview">${previewHtml}</div>
          <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
            <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">${selCount === 0 ? 'Open ▼' : 'Edit ▼'}</button>
-           ${!seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()" ${selCount !== freeCount ? 'disabled' : ''}>Check</button>${selCount !== freeCount ? `<span class="seq-pool-count-hint">${selCount} / ${freeCount} selected</span>` : ''}` : ''}
+           ${!seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()" ${selCount !== freeCount ? 'disabled' : ''}>Check</button><span class="seq-pool-count-hint">${selCount} / ${freeCount} selected</span>` : ''}
            ${seqState.freeChecked && !seqState.freeCorrect ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryFreeItems()">Try Again</button>` : ''}
            ${seqState.freeChecked && !seqState.freeCorrect ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="showFreeAnswers()">Show Answers</button>` : ''}
            ${seqState.freeCorrect ? `<span class="seq-free-ok">All correct</span>` : ''}
