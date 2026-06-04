@@ -3322,6 +3322,16 @@ function retryFreeItems() {
   renderSeqRecall();
 }
 
+function showFreeAnswers() {
+  const list = CHECKLISTS[seqState.phase];
+  const freeSet = new Set(list.items.filter(it => it.bucket === 'free').map(it => it.action));
+  seqState.freeSelections = freeSet;
+  seqState.freeChecked = true;
+  seqState.freeCorrect = true;
+  seqState.pickerOpen = false;
+  renderSeqRecall();
+}
+
 function selectGateAnswer(action) {
   if (seqState.gateCorrect) return;
   const list = CHECKLISTS[seqState.phase];
@@ -3451,14 +3461,16 @@ function renderSeqRecall() {
       ? `<div class="seq-card-lock">Complete section 1 first</div>`
       : seqState.pickerOpen
       ? `<div class="seq-free-list">${freeListHtml}</div>
-         <div class="seq-pool-footer">
+         <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
            <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">Done ▲</button>
+           <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="showFreeAnswers()">Show Answers</button>
          </div>`
       : `<div class="seq-picker-preview">${previewHtml}</div>
          <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
            <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">${selCount === 0 ? 'Open ▼' : 'Edit ▼'}</button>
            ${selCount === freeCount && !seqState.freeChecked ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="checkFreeItems()">Check</button>` : ''}
            ${seqState.freeChecked && !seqState.freeCorrect ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="retryFreeItems()">Try Again</button>` : ''}
+           ${seqState.freeChecked && !seqState.freeCorrect ? `<button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="showFreeAnswers()">Show Answers</button>` : ''}
            ${seqState.freeCorrect ? `<span class="seq-free-ok">All correct</span>` : ''}
          </div>`;
 
