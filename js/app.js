@@ -3327,8 +3327,8 @@ function toggleFreeItem(action) {
 }
 
 function _scrollToFirstSection() {
-  const card = document.querySelector('#seq-content .seq-pool-card');
-  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const el = document.getElementById('seq-content');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function checkFreeItems() {

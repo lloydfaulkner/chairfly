@@ -4282,8 +4282,8 @@
   .phase-btn { flex-shrink: 0; white-space: nowrap; }
 
   /* Recall: window is the scroll container on mobile (cf-main overflow-y: visible).
-     Reserve room for the fixed 60px topbar so scrollIntoView shows the card header. */
-  #view-checklist .seq-pool-card { scroll-margin-top: 68px; }
+     Reserve room for the fixed 60px topbar so scrollIntoView shows the recall header. */
+  #seq-content { scroll-margin-top: 68px; }
 }
 
 /* ── Hub views (drills / aircraft / more) ── */
