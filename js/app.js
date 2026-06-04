@@ -3328,7 +3328,16 @@ function toggleFreeItem(action) {
 
 function _scrollToFirstSection() {
   const el = document.getElementById('seq-content');
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!el) return;
+  const main = document.getElementById('app');
+  if (getComputedStyle(main).overflowY === 'auto') {
+    // Desktop: cf-main is the scroll container, scrollIntoView works correctly.
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    // Mobile: window scrolls; fixed 60px topbar needs an explicit offset.
+    const top = el.getBoundingClientRect().top + window.pageYOffset - 68;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  }
 }
 
 function checkFreeItems() {
