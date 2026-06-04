@@ -2014,6 +2014,7 @@
       color: #fff;
     }
     .cf-btn--primary:hover { opacity: 0.9; }
+    .cf-btn--primary:disabled { opacity: 0.35; cursor: default; }
 
     /* ── Page header ──────────────────────────────────────────────────── */
     .cl-page-header {
