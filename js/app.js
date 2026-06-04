@@ -3369,17 +3369,17 @@ function renderSeqRecall() {
   const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
 
   const freeItems = hasBuckets ? list.items.filter(it => it.bucket === 'free') : [];
+  const gateCompleted = hasBuckets && seqState.gateCorrect ? 1 : 0;
   const freeCompleted = hasBuckets && seqState.freeCorrect ? freeItems.length : 0;
-  const completedCount = hasBuckets ? freeCompleted + placed.size : nextSlot;
+  const completedCount = hasBuckets ? gateCompleted + freeCompleted + placed.size : nextSlot;
   const pct = Math.round(completedCount / total * 100);
 
   // Slot rows
   const slotsHtml = list.items.map((item, i) => {
     const filled = hasBuckets
-      ? (item.bucket === 'free' ? seqState.freeCorrect : placed.has(i))
+      ? (item.bucket === 'gate' ? seqState.gateCorrect : item.bucket === 'free' ? seqState.freeCorrect : placed.has(i))
       : i < nextSlot;
-    const isNextOrdered = hasBuckets && item.bucket === 'ordered' && !filled && nextOrderedIdx === i;
-    const isNext = hasBuckets ? isNextOrdered : i === nextSlot && !seqState.done;
+    const isNext = hasBuckets ? false : i === nextSlot && !seqState.done;
     return `<div class="seq-slot-row${isNext ? ' seq-slot-row--next' : ''}">
       <span class="seq-row-idx">${String(i + 1).padStart(2, '0')}</span>
       <div class="seq-row-check${filled ? ' seq-row-check--done' : ''}">
@@ -3481,12 +3481,10 @@ function renderSeqRecall() {
       .map(it => {
         const chipPlaced = placed.has(it.origIdx);
         const shaking = seqState.shakingIdx === it.origIdx;
-        const isNextRequired = it.origIdx === nextOrderedIdx;
-        const locked = !isNextRequired && !chipPlaced;
         const chipLabel = seqActionCounts[it.action] > 1 && it.value
           ? `${it.action} — ${it.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}`
           : it.action;
-        return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}${locked ? ' seq-chip--locked' : ''}${isNextRequired && !chipPlaced ? ' seq-chip--next-ordered' : ''}"
+        return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}"
                   onclick="tapChip(${it.origIdx})"
                   ${chipPlaced || sec3Locked ? 'disabled' : ''}>${chipLabel}</button>`;
       }).join('');
@@ -3571,6 +3569,19 @@ function renderSeqRecall() {
       <span class="seq-progress-count">${completedCount} / ${total}</span>
     </div>
     <div class="seq-grid">
+      ${hasBuckets ? `
+      <aside class="seq-pool-col">
+        ${poolHtml}
+        <div class="seq-pool-actions">
+          <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="initSeqRecall()">Restart</button>
+        </div>
+      </aside>
+      <div class="seq-slot-col">
+        <div class="seq-col-eyebrow">↓ THE CHECKLIST · IN ORDER</div>
+        <div class="seq-slot-list">${slotsHtml}</div>
+        ${doneBanner}
+      </div>
+      ` : `
       <div class="seq-slot-col">
         <div class="seq-col-eyebrow">↓ THE CHECKLIST · IN ORDER</div>
         <div class="seq-slot-list">${slotsHtml}</div>
@@ -3582,6 +3593,7 @@ function renderSeqRecall() {
           <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="initSeqRecall()">Restart</button>
         </div>
       </aside>
+      `}
     </div>`;
 }
 
