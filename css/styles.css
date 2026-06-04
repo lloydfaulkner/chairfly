@@ -2695,22 +2695,18 @@
       transition: background 0.1s, border-color 0.1s, color 0.1s;
     }
     .seq-free-item:hover:not(:disabled) { border-color: var(--ink-3); color: var(--ink); }
-    .seq-free-item--selected {
-      background: var(--sky-soft);
-      border-color: var(--sky);
-      color: var(--sky);
-    }
-    .seq-free-item--correct { border-color: var(--terrain) !important; color: var(--terrain) !important; background: var(--terrain-soft) !important; }
-    .seq-free-item--wrong   { border-color: var(--hazard)  !important; color: var(--hazard)  !important; background: var(--hazard-soft)  !important; }
+    .seq-free-item--selected { background: var(--paper-2); border-color: var(--sky); color: var(--sky); }
+    .seq-free-item--correct { border-color: var(--terrain) !important; color: var(--terrain) !important; background: var(--paper-2) !important; }
+    .seq-free-item--wrong   { border-color: var(--hazard)  !important; color: var(--hazard)  !important; background: var(--paper-2)  !important; }
     .seq-free-item--missed  { border-color: var(--kb-accent) !important; color: var(--kb-accent) !important; }
     .seq-free-item:disabled { opacity: 0.5; cursor: default; }
     .seq-free-ok { font-size: 13px; font-weight: 700; color: var(--terrain); }
 
     .seq-gate-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
     .seq-gate-opt { padding: 8px 14px; background: var(--paper); color: var(--ink-2); border: 1px solid var(--rule-strong); border-radius: var(--radius-s); font-size: 13px; font-weight: 600; cursor: pointer; }
-    .seq-gate-opt--selected { background: var(--sky-soft); border-color: var(--sky); color: var(--sky); }
-    .seq-gate-opt--correct { border-color: var(--terrain) !important; color: var(--terrain) !important; background: var(--terrain-soft) !important; }
-    .seq-gate-opt--wrong { border-color: var(--hazard) !important; color: var(--hazard) !important; background: var(--hazard-soft) !important; }
+    .seq-gate-opt--selected { background: var(--paper-2); border-color: var(--sky); color: var(--sky); }
+    .seq-gate-opt--correct { border-color: var(--terrain) !important; color: var(--terrain) !important; background: var(--paper-2) !important; }
+    .seq-gate-opt--wrong { border-color: var(--hazard) !important; color: var(--hazard) !important; background: var(--paper-2) !important; }
     .seq-card--locked { opacity: 0.45; pointer-events: none; }
     .seq-card-lock { font-size: 12px; color: var(--ink-3); padding: 10px 0; }
     .seq-picker-preview { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; min-height: 32px; }
