@@ -3204,6 +3204,23 @@ function initSeqRecall() {
   seqState.gateChecked = false;
   seqState.gateCorrect = false;
   seqState.pickerOpen = false;
+  if (hasBucketsInit) {
+    const orderedItems = list.items
+      .map((item, i) => ({ ...item, origIdx: i }))
+      .filter(it => it.bucket === 'ordered');
+    const distractorPool = list.items.filter(it => it.bucket !== 'ordered');
+    const distractors = [...distractorPool]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3)
+      .map(it => ({ action: it.action, isDistractor: true, origIdx: null }));
+    seqState.sec3Pool = [
+      ...orderedItems.map(it => ({ action: it.action, value: it.value, origIdx: it.origIdx, isDistractor: false })),
+      ...distractors,
+    ].sort(() => Math.random() - 0.5);
+  } else {
+    seqState.sec3Pool = [];
+  }
+  seqState.shakingDistractor = null;
   seqState.checked = false;
   seqState.dragSrc = null;
   seqState._selectedPool = null;
@@ -3284,6 +3301,17 @@ function tapChip(origIdx) {
   }
 }
 
+function tapOrderedDistractor(action) {
+  if (seqState.done) return;
+  seqState.miss++;
+  seqState.shakingDistractor = action;
+  renderSeqRecall();
+  setTimeout(() => {
+    seqState.shakingDistractor = null;
+    renderSeqRecall();
+  }, 600);
+}
+
 function toggleFreeItem(action) {
   if (seqState.freeCorrect) return;
   const list = CHECKLISTS[seqState.phase];
@@ -3298,11 +3326,17 @@ function toggleFreeItem(action) {
   renderSeqRecall();
 }
 
+function _scrollToFirstSection() {
+  const card = document.querySelector('#seq-content .seq-pool-card');
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function checkFreeItems() {
   const list = CHECKLISTS[seqState.phase];
   const freeSet = new Set(list.items.filter(it => it.bucket === 'free').map(it => it.action));
   const selected = seqState.freeSelections;
   seqState.freeChecked = true;
+  seqState.pickerOpen = false;
   seqState.freeCorrect = selected.size === freeSet.size && [...selected].every(s => freeSet.has(s));
   if (seqState.freeCorrect) {
     const orderedCount = list.items.filter(it => it.bucket === 'ordered').length;
@@ -3312,6 +3346,7 @@ function checkFreeItems() {
     }
   }
   renderSeqRecall();
+  _scrollToFirstSection();
 }
 
 function retryFreeItems() {
@@ -3330,6 +3365,7 @@ function showFreeAnswers() {
   seqState.freeCorrect = true;
   seqState.pickerOpen = false;
   renderSeqRecall();
+  _scrollToFirstSection();
 }
 
 function selectGateAnswer(action) {
@@ -3461,9 +3497,8 @@ function renderSeqRecall() {
       ? `<div class="seq-card-lock">Complete section 1 first</div>`
       : seqState.pickerOpen
       ? `<div class="seq-free-list">${freeListHtml}</div>
-         <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
+         <div class="seq-pool-footer">
            <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="togglePicker()">Done ▲</button>
-           <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="showFreeAnswers()">Show Answers</button>
          </div>`
       : `<div class="seq-picker-preview">${previewHtml}</div>
          <div class="seq-pool-footer" style="gap:8px;flex-wrap:wrap">
@@ -3476,23 +3511,27 @@ function renderSeqRecall() {
 
     // ── Section 3: ordered chips ──
     const sec3Locked = !seqState.freeCorrect;
-    const orderedChipsHtml = seqState.shuffled
-      .filter(it => list.items[it.origIdx].bucket === 'ordered')
-      .map(it => {
-        const chipPlaced = placed.has(it.origIdx);
-        const shaking = seqState.shakingIdx === it.origIdx;
-        const chipLabel = seqActionCounts[it.action] > 1 && it.value
-          ? `${it.action} — ${it.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}`
-          : it.action;
+    const orderedChipsHtml = seqState.sec3Pool.map(it => {
+      if (it.isDistractor) {
+        const shaking = seqState.shakingDistractor === it.action;
         return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}"
-                  onclick="tapChip(${it.origIdx})"
-                  ${chipPlaced || sec3Locked ? 'disabled' : ''}>${chipLabel}</button>`;
-      }).join('');
+                  onclick="tapOrderedDistractor('${it.action.replace(/'/g, "\\'")}')"
+                  ${sec3Locked ? 'disabled' : ''}>${it.action}</button>`;
+      }
+      const chipPlaced = placed.has(it.origIdx);
+      const shaking = seqState.shakingIdx === it.origIdx;
+      const chipLabel = seqActionCounts[it.action] > 1 && it.value
+        ? `${it.action} — ${it.value.toLowerCase().replace(/\s+[—–-]\s+.*$/, '')}`
+        : it.action;
+      return `<button class="seq-chip${shaking ? ' seq-chip--shake' : ''}"
+                onclick="tapChip(${it.origIdx})"
+                ${chipPlaced || sec3Locked ? 'disabled' : ''}>${chipLabel}</button>`;
+    }).join('');
     const orderedRemaining = list.items.filter(it => it.bucket === 'ordered').length - placed.size;
     const sec3Body = sec3Locked
       ? `<div class="seq-card-lock">Complete section 2 first</div>`
       : `<div class="seq-chips">${orderedChipsHtml}</div>
-         <div class="seq-pool-footer"><span class="seq-pool-hint">Tap the highlighted chip next.</span></div>`;
+         <div class="seq-pool-footer"><span class="seq-pool-hint">Tap chips in the correct order.</span></div>`;
 
     poolHtml = `
       <div class="seq-pool-card">
@@ -3577,7 +3616,7 @@ function renderSeqRecall() {
         </div>
       </aside>
       <div class="seq-slot-col">
-        <div class="seq-col-eyebrow">↓ THE CHECKLIST · IN ORDER</div>
+        <div class="seq-col-eyebrow">↓ THE CHECKLIST</div>
         <div class="seq-slot-list">${slotsHtml}</div>
         ${doneBanner}
       </div>

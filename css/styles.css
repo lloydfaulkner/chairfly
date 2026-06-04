@@ -2696,11 +2696,11 @@
     }
     .seq-free-item:hover:not(:disabled) { border-color: var(--ink-3); color: var(--ink); }
     .seq-free-item--selected {
-      background: var(--paper-2);
+      background: #0a1f2a;
       border-color: var(--accent);
       color: var(--accent);
     }
-    .seq-free-item--correct { border-color: var(--green) !important; color: var(--green) !important; background: var(--paper-2) !important; }
+    .seq-free-item--correct { border-color: var(--green) !important; color: var(--green) !important; background: #0d2518 !important; }
     .seq-free-item--wrong   { border-color: var(--red)   !important; color: var(--red)   !important; background: var(--paper-2) !important; }
     .seq-free-item--missed  { border-color: var(--warn)  !important; color: var(--warn)  !important; }
     .seq-free-item:disabled { opacity: 0.5; cursor: default; }
