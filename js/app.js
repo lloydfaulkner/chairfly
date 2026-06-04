@@ -3194,8 +3194,8 @@ function initSeqRecall() {
   seqState.freeSlotResults = [];
   const gateItem = list.items.find(it => it.bucket === 'gate');
   if (gateItem) {
-    const freePool = list.items.filter(it => it.bucket === 'free');
-    const distractors = [...freePool].sort(() => Math.random() - 0.5).slice(0, 3).map(it => it.action);
+    const nonGatePool = list.items.filter(it => it.bucket !== 'gate');
+    const distractors = [...nonGatePool].sort(() => Math.random() - 0.5).slice(0, 5).map(it => it.action);
     seqState.gateOptions = [gateItem.action, ...distractors].sort(() => Math.random() - 0.5);
   } else {
     seqState.gateOptions = [];
