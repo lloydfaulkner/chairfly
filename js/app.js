@@ -3327,8 +3327,15 @@ function toggleFreeItem(action) {
 }
 
 function _scrollToFirstSection() {
-  const card = document.querySelector('#seq-content .seq-pool-card');
-  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const firstCard = document.querySelector('#seq-content .seq-pool-card');
+  if (firstCard) {
+    // Account for fixed 60px header + 12px padding to have clear space below it
+    const headerOffset = 72;
+    window.scrollTo({
+      top: firstCard.offsetTop - headerOffset,
+      behavior: 'smooth'
+    });
+  }
 }
 
 function checkFreeItems() {
