@@ -101,6 +101,7 @@ backgrounds unreadable. This has caused repeated contrast issues.
 - `-webkit-tap-highlight-color: transparent` on ALL interactive elements (set globally on *)
 - No `background: none` on elements that float over the scan-line background
 - Buttons use #111f30 background with #2a4060 border as default state
+- Disabled buttons (`:disabled`): `opacity: 0.35` — mutes the button visually without changing colors
 
 ## App structure
 
@@ -115,17 +116,30 @@ backgrounds unreadable. This has caused repeated contrast issues.
   - `_restoringNav` flag suppresses hash writes during restore to prevent URL flicker
 
 ### Checklist tab
-- Two modes toggled by segmented control: Reference | Sequence Recall
+Two modes toggled by segmented control: **Reference** | **Sequence Recall**
 - Segmented control uses solid #0d1520 background — NOT phase button style
 - Phases: Preflight, Before Start, Engine Start, Runup, Before Landing
 - Each item: action, value, note, why, tip, tipType, acronym, acronymDef, zone
 - Info sheet (ⓘ button per item): Why this step | Memory tip | C172 panel SVG diagram
 - Panel SVG highlights the relevant cockpit zone for each item
-- Sequence Recall: drag-and-drop AND tap-to-select work simultaneously
-  - Tap pool item to select (cyan highlight), tap slot to place
-  - Tap filled slot to return item to pool
-  - Check Sequence button only enabled when all slots filled
-  - Results show correct (green) / wrong (red) with correct answer revealed
+
+#### Reference mode (checklist quiz)
+- Multiple choice: tap an item to open the question
+- Questions are pre-generated per phase for consistency
+- On answer: show correct/wrong status with explanation
+- **Next › button** (if unanswered items remain): collapses current result, scrolls answered item to top, opens next item
+- Skipped items are skipped and can be revisited
+- **Review All button** appears once at least one item is answered — expands all results at once
+
+#### Sequence Recall mode (procedure/drill)
+Three-section bucket system with tap-to-select (no drag required):
+- **Section 1 (Gate):** Multiple choice — pick the first action from 6 options (5 distractors + correct)
+- **Section 2 (Free items):** Multi-select pool — select all non-sequenced items (don't care about order)
+- **Section 3 (Ordered):** Drag or tap sequence — place items in correct order; wrong taps shake red and increment miss count
+- **Check button:** Always visible, disabled (opacity 0.35) until all sections complete
+- **Selection count:** "X / N selected" shown next to disabled Check button in muted text
+- Results show correct (green) / wrong (red) with correct answer revealed
+- Timer runs during sequence, displayed in format MM:SS
 
 ### Radio tab
 - Two modes: Radio Calls | ATIS Decoder
