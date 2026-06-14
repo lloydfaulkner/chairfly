@@ -9,70 +9,70 @@ const ALL_AIRCRAFT = {
   preflight: {
     label: 'Preflight',
     items: [
-      { action: 'Hobbs / Tach', value: 'CHECK', note: 'Record times for billing and maintenance tracking', why: 'Hobbs tracks engine time for billing and maintenance intervals. Tach records RPM-weighted time used for engine overhaul scheduling. Checking them before and after flight lets you log accurate times and catch discrepancies.', tip: 'Write it down immediately — don\'t trust memory after a flight.', zone: 'sixpack',
+      { action: 'Hobbs / Tach', value: 'CHECK', note: 'Record times for billing and maintenance tracking', why: 'Hobbs tracks engine time for billing and maintenance intervals. Tach records RPM-weighted time used for engine overhaul scheduling. Checking them before and after flight lets you log accurate times and catch discrepancies.', tip: 'Write it down immediately — don\'t trust memory after a flight.', zone: 'sixpack', bucket: 'gate',
         checks: [
           { text: 'Record current Hobbs time — establishes the baseline for billing and logbook accuracy', correct: true },
           { text: 'Record current Tach time — tracks RPM-weighted hours for maintenance intervals', correct: true },
           { text: 'Verify both meters read identically — a mismatch flags a prop governor fault', correct: false },
           { text: 'Note whether Hobbs advanced since the last entry — confirms the engine actually ran', correct: false },
         ] },
-      { action: 'Fuel Quantity', value: 'CHECK VISUALLY', note: 'Always visually confirm — gauges can be inaccurate', why: 'Fuel gauges in GA aircraft are notoriously unreliable and are only required to be accurate at empty. A visual check through the fuel cap is the only way to know how much fuel you actually have. Countless accidents trace back to trusting gauges alone.', tip: 'Acronym: CIGAR — Controls, Instruments, Gas, Attitude, Runup. Gas = visual fuel check.', tipType: 'acronym', acronym: 'CIGAR', acronymDef: 'Controls · Instruments · Gas (visual) · Attitude · Runup — a classic preflight flow many pilots use', zone: 'oil',
+      { action: 'Fuel Quantity', value: 'CHECK VISUALLY', note: 'Always visually confirm — gauges can be inaccurate', why: 'Fuel gauges in GA aircraft are notoriously unreliable and are only required to be accurate at empty. A visual check through the fuel cap is the only way to know how much fuel you actually have. Countless accidents trace back to trusting gauges alone.', tip: 'Acronym: CIGAR — Controls, Instruments, Gas, Attitude, Runup. Gas = visual fuel check.', tipType: 'acronym', acronym: 'CIGAR', acronymDef: 'Controls · Instruments · Gas (visual) · Attitude · Runup — a classic preflight flow many pilots use', zone: 'oil', bucket: 'free',
         checks: [
           { text: 'Sufficient fuel for the planned route plus required reserves — confirmed visually, not from gauges', correct: true },
           { text: 'Actual level seen directly through the filler neck — not relying on cockpit gauges', correct: true },
           { text: 'Cockpit gauge reading matches the visual level', correct: false },
           { text: 'Both tanks are within 5 gallons of each other to prevent handling problems', correct: false },
         ] },
-      { action: 'Fuel Caps', value: 'SECURE & VENTED', note: 'Both caps tight; ensure vents face forward', why: 'An unsecured fuel cap can allow fuel to siphon out in flight, especially at cruise. Caps must also be vented (a small hole) so air replaces fuel drawn to the engine — a blocked vent causes fuel starvation.', tip: 'After reinstalling: give the cap a firm twist, then tug up. If it moves, it\'s not locked.', zone: 'oil',
+      { action: 'Fuel Caps', value: 'SECURE & VENTED', note: 'Both caps tight; ensure vents face forward', why: 'An unsecured fuel cap can allow fuel to siphon out in flight, especially at cruise. Caps must also be vented (a small hole) so air replaces fuel drawn to the engine — a blocked vent causes fuel starvation.', tip: 'After reinstalling: give the cap a firm twist, then tug up. If it moves, it\'s not locked.', zone: 'oil', bucket: 'free',
         checks: [
           { text: 'Each cap is fully seated and locked — won\'t pull free when tugged', correct: true },
           { text: 'Vent holes are open and unobstructed — a blocked vent starves the engine', correct: true },
           { text: 'Vent holes face forward into the slipstream for proper ram-air pressurization', correct: false },
           { text: 'Caps are installed on the correct tank (left vs. right) to prevent cross-flow', correct: false },
         ] },
-      { action: 'Fuel Sump (each)', value: 'DRAIN & CHECK', note: 'Check for water (cloudy/bubbles) and correct color (blue/100LL)', why: 'Water is denser than aviation fuel and sinks to the lowest points (sumps). Even small amounts of water can cause engine stoppage. You drain a small sample from each sump drain and look for cloudiness, separation, or bubbles — all signs of water contamination.', tip: '100LL fuel is dyed BLUE. If your sample looks clear, purple, or wrong — don\'t fly.', zone: 'oil',
+      { action: 'Fuel Sump (each)', value: 'DRAIN & CHECK', note: 'Check for water (cloudy/bubbles) and correct color (blue/100LL)', why: 'Water is denser than aviation fuel and sinks to the lowest points (sumps). Even small amounts of water can cause engine stoppage. You drain a small sample from each sump drain and look for cloudiness, separation, or bubbles — all signs of water contamination.', tip: '100LL fuel is dyed BLUE. If your sample looks clear, purple, or wrong — don\'t fly.', zone: 'oil', bucket: 'free',
         checks: [
           { text: 'No water contamination — sample is clear, not cloudy, no bubbles or visible water layer', correct: true },
           { text: 'Correct fuel color — blue confirms 100LL avgas, not jet fuel or a misfuel', correct: true },
           { text: 'Volume is adequate — drain at least one full cup to reach any settled contamination', correct: false },
           { text: 'Unusual smell is sufficient grounds to abort the flight, even without visible contamination', correct: false },
         ] },
-      { action: 'Oil Quantity', value: 'MIN 6 QTS', note: 'Check with dipstick; add if below 6 quarts', why: 'Oil lubricates, cools, and seals the engine. The C172 holds 8 quarts maximum. Below 6 quarts, oil temperature rises faster and the engine risks damage on longer flights. Always check with a dipstick — sight glasses can be misleading.', tip: 'Touch the dipstick to the back of your hand — if it\'s cold, the engine hasn\'t run. If warm, wait 5 min for accurate reading.', zone: 'oil',
+      { action: 'Oil Quantity', value: 'MIN 6 QTS', note: 'Check with dipstick; add if below 6 quarts', why: 'Oil lubricates, cools, and seals the engine. The C172 holds 8 quarts maximum. Below 6 quarts, oil temperature rises faster and the engine risks damage on longer flights. Always check with a dipstick — sight glasses can be misleading.', tip: 'Touch the dipstick to the back of your hand — if it\'s cold, the engine hasn\'t run. If warm, wait 5 min for accurate reading.', zone: 'oil', bucket: 'free',
         checks: [
           { text: 'Dipstick reads at least 6 quarts — the C172 minimum for safe operations', correct: true },
           { text: 'Oil appears normal — milky color means water contamination, very black means overdue for change', correct: true },
           { text: 'Level matches the squawk book entry from the last flight', correct: false },
           { text: 'Both dipstick insertions read the same level as a consistency verification', correct: false },
         ] },
-      { action: 'Oil Cap', value: 'SECURE', note: 'Hand-tight and locked', why: 'An open or loose oil cap sprays hot oil over the engine and windshield within seconds of startup. This has caused complete loss of visibility and engine damage in accidents.', tip: 'After every oil check, say out loud: "Cap is on and locked." The verbalization catches the step when distracted.', zone: 'oil',
+      { action: 'Oil Cap', value: 'SECURE', note: 'Hand-tight and locked', why: 'An open or loose oil cap sprays hot oil over the engine and windshield within seconds of startup. This has caused complete loss of visibility and engine damage in accidents.', tip: 'After every oil check, say out loud: "Cap is on and locked." The verbalization catches the step when distracted.', zone: 'oil', bucket: 'free',
         checks: [
           { text: 'Cap is fully seated and won\'t pull free when tugged', correct: true },
           { text: 'No fresh oil spray or residue around the cap — would indicate it was loose in a previous flight', correct: true },
           { text: 'Cap alignment mark points to the 12 o\'clock index position', correct: false },
           { text: 'Cap gasket condition is assessed visually without tools', correct: false },
         ] },
-      { action: 'Pitot Tube', value: 'UNOBSTRUCTED', note: 'Check for insects, debris, cover removed', why: 'The pitot tube measures dynamic air pressure to drive the airspeed indicator. Blockage — often from insects or a forgotten cover — gives false airspeed readings. Pilots have died flying with a blocked pitot thinking they were too slow.', tip: 'Pitot covers are usually red or orange with a "Remove Before Flight" streamer. If you installed it, YOU remove it.', zone: 'pitot',
+      { action: 'Pitot Tube', value: 'UNOBSTRUCTED', note: 'Check for insects, debris, cover removed', why: 'The pitot tube measures dynamic air pressure to drive the airspeed indicator. Blockage — often from insects or a forgotten cover — gives false airspeed readings. Pilots have died flying with a blocked pitot thinking they were too slow.', tip: 'Pitot covers are usually red or orange with a "Remove Before Flight" streamer. If you installed it, YOU remove it.', zone: 'pitot', bucket: 'free',
         checks: [
           { text: 'Tube opening is clear — no insects, mud, or debris blocking it', correct: true },
           { text: 'Pitot cover has been removed and is stowed or returned', correct: true },
           { text: 'Heating element is visible and intact inside the tube opening', correct: false },
           { text: 'Tube is pointed slightly downward to allow moisture drainage', correct: false },
         ] },
-      { action: 'Static Ports', value: 'CLEAR', note: 'Both sides of fuselage; critical for altimeter accuracy', why: 'Static ports measure ambient air pressure for the altimeter, VSI, and airspeed indicator. A blocked static port freezes the altimeter at the altitude where it blocked and makes VSI read zero. Run your finger along both ports — look for tape, bugs, or mud.', tip: 'Static ports are usually flush holes on both sides of the fuselage mid-section. They\'re easy to miss — deliberately run your fingers over them.', zone: 'static',
+      { action: 'Static Ports', value: 'CLEAR', note: 'Both sides of fuselage; critical for altimeter accuracy', why: 'Static ports measure ambient air pressure for the altimeter, VSI, and airspeed indicator. A blocked static port freezes the altimeter at the altitude where it blocked and makes VSI read zero. Run your finger along both ports — look for tape, bugs, or mud.', tip: 'Static ports are usually flush holes on both sides of the fuselage mid-section. They\'re easy to miss — deliberately run your fingers over them.', zone: 'static', bucket: 'free',
         checks: [
           { text: 'Both ports are clear — run a fingertip over each to feel for tape, mud, or insect blockage', correct: true },
           { text: 'Both sides of the fuselage are checked — there is one port per side', correct: true },
           { text: 'Ports are aimed perpendicular to the slipstream for accurate static pressure readings', correct: false },
           { text: 'Static port covers have been removed (most aircraft don\'t use removable covers)', correct: false },
         ] },
-      { action: 'Control Surfaces', value: 'FREE & CORRECT', note: 'Push/pull each; check for full range, no binding', why: 'You\'re verifying that all flight controls move freely to full deflection AND move in the correct direction. Reversed controls (from improper rigging or maintenance) have caused fatal accidents. You should also feel for any unusual resistance or binding.', tip: 'Move the yoke right — look for right aileron UP, left aileron DOWN. Verify visually, not just by feel.', zone: 'controls',
+      { action: 'Control Surfaces', value: 'FREE & CORRECT', note: 'Push/pull each; check for full range, no binding', why: 'You\'re verifying that all flight controls move freely to full deflection AND move in the correct direction. Reversed controls (from improper rigging or maintenance) have caused fatal accidents. You should also feel for any unusual resistance or binding.', tip: 'Move the yoke right — look for right aileron UP, left aileron DOWN. Verify visually, not just by feel.', zone: 'controls', bucket: 'free',
         checks: [
           { text: 'Controls move freely to full deflection in all directions with no binding or unusual resistance', correct: true },
           { text: 'Controls move in the correct direction — right yoke produces right aileron UP', correct: true },
           { text: 'Control cable routing is verified under the engine cowling', correct: false },
           { text: 'Trim tabs are in the neutral position before setting takeoff trim', correct: false },
         ] },
-      { action: 'Tires', value: 'CONDITION & INFLATION', note: 'Check for flat spots, cuts, proper inflation', why: 'Underinflated or damaged tires can fail on landing or cause ground handling problems, especially in crosswinds. Flat spots indicate hard braking. Check all three tires including the nosewheel.', tip: 'Press your thumb into the tire sidewall — proper inflation should feel firm. Any visible cord or deep cuts: do not fly.', zone: 'tires',
+      { action: 'Tires', value: 'CONDITION & INFLATION', note: 'Check for flat spots, cuts, proper inflation', why: 'Underinflated or damaged tires can fail on landing or cause ground handling problems, especially in crosswinds. Flat spots indicate hard braking. Check all three tires including the nosewheel.', tip: 'Press your thumb into the tire sidewall — proper inflation should feel firm. Any visible cord or deep cuts: do not fly.', zone: 'tires', bucket: 'free',
         checks: [
           { text: 'Proper inflation — tire sidewall feels firm under thumb pressure, not soft', correct: true },
           { text: 'No flat spots on the tread, which indicate hard braking in a previous landing', correct: true },
@@ -80,26 +80,40 @@ const ALL_AIRCRAFT = {
           { text: 'Tread depth meets the minimum legal requirement (like automobile tire laws)', correct: false },
           { text: 'Tire pressure matches the exact PSI value stamped on the sidewall', correct: false },
         ] },
-      { action: 'Brakes', value: 'CHECK', note: 'Look for fluid leaks on struts and brake lines', why: 'Brake fluid leaks can cause brake failure on landing. Look for wet spots or staining around the brake calipers and brake lines. You\'ll also check brake function during taxi.', tip: 'Red or brown fluid on the wheel fairing or strut = brake fluid. Hydraulic brake fluid is a show-stopper.', zone: 'tires',
+      { action: 'Brakes', value: 'CHECK', note: 'Look for fluid leaks on struts and brake lines', why: 'Brake fluid leaks can cause brake failure on landing. Look for wet spots or staining around the brake calipers and brake lines. You\'ll also check brake function during taxi.', tip: 'Red or brown fluid on the wheel fairing or strut = brake fluid. Hydraulic brake fluid is a show-stopper.', zone: 'tires', bucket: 'free',
         checks: [
           { text: 'No red or brown hydraulic fluid visible on calipers, brake lines, or wheel fairings', correct: true },
           { text: 'Brake hoses and lines show no cracking, chafing, or fraying', correct: true },
           { text: 'Brake pad thickness is adequate — visible from the outside without disassembly', correct: false },
           { text: 'Brake fluid reservoir is at the correct level (C172 uses a sealed hydraulic system)', correct: false },
         ] },
-      { action: 'Tie-downs / Chocks', value: 'REMOVED', note: 'Both tie-down ropes and any wheel chocks', why: 'Attempting to taxi or take off with tie-downs attached can cause structural damage or flip the aircraft. This is embarrassingly common — even experienced pilots have done it. Chocks left in place prevent taxi.', tip: 'Walk completely around the aircraft during your preflight. You\'ll naturally see tie-downs if they\'re still on. Never skip the walk-around.', zone: 'tires',
+      { action: 'Tie-downs / Chocks', value: 'REMOVED', note: 'Both tie-down ropes and any wheel chocks', why: 'Attempting to taxi or take off with tie-downs attached can cause structural damage or flip the aircraft. This is embarrassingly common — even experienced pilots have done it. Chocks left in place prevent taxi.', tip: 'Walk completely around the aircraft during your preflight. You\'ll naturally see tie-downs if they\'re still on. Never skip the walk-around.', zone: 'tires', bucket: 'free',
         checks: [
           { text: 'Both wing tie-down ropes are removed and stowed', correct: true },
           { text: 'All wheel chocks are removed from all three wheels', correct: true },
           { text: 'Tie-down cleats on the ramp are properly rated for the aircraft\'s maximum gross weight', correct: false },
           { text: 'Tie-down ropes are inspected for fraying before being stored away', correct: false },
         ] },
+      { action: 'Yoke Lock', value: 'REMOVED', note: 'Flight controls unlocked and free to move', why: 'The yoke lock (or gust lock) prevents control surface flutter when the aircraft is parked. Attempting to fly with it installed will cause immediate control loss and crash. This is a critical mistake to catch during preflight.', tip: 'The lock is usually a bright yellow streamer labeled "REMOVE BEFORE FLIGHT". If installed, visually check that control surfaces move freely after removing it.', zone: 'controls', bucket: 'free',
+        checks: [
+          { text: 'Yoke lock has been removed and is stowed or left with maintenance', correct: true },
+          { text: 'Flight controls move freely through full range after lock removal — no binding or obstruction', correct: true },
+          { text: 'No lock hardware or remnants are visible in the cockpit or around the yoke', correct: false },
+          { text: 'The yoke lock is labeled and marked with a "Remove Before Flight" tag for visibility', correct: false },
+        ] },
+      { action: 'Master Switch / Lights', value: 'ON — TEST LIGHTS, THEN OFF', note: 'Verify all exterior lights function, then turn off to preserve engine time', why: 'You need to verify that navigation lights, strobes, and landing lights all work before flight. Turning the master switch on briefly tests these systems. Turning the master off before start preserves engine time and reduces electrical load during the critical startup phase.', tip: 'Turn master ON → verify lights (nav, strobe, landing light) → turn master OFF before proceeding to engine start. Electrical load during start can cause voltage spikes.', zone: 'master', bucket: 'free',
+        checks: [
+          { text: 'Navigation lights are visible and functioning when master is on', correct: true },
+          { text: 'Strobe light(s) are flashing visibly when powered', correct: true },
+          { text: 'Landing light is bright and illuminating the ramp ahead', correct: true },
+          { text: 'Master switch is turned OFF after light check to reduce electrical load', correct: true },
+        ] },
     ]
   },
   beforestart: {
     label: 'Before Start',
     items: [
-      { action: 'Preflight Inspection', value: 'COMPLETE', note: 'Confirm walk-around is done', why: 'A verbal confirmation that you\'ve completed the exterior walk-around. It\'s easy to get distracted and sit down before finishing — this step forces a conscious check.',
+      { action: 'Preflight Inspection', value: 'COMPLETE', note: 'Confirm walk-around is done', why: 'A verbal confirmation that you\'ve completed the exterior walk-around. It\'s easy to get distracted and sit down before finishing — this step forces a conscious check.', bucket: 'gate',
         answerVariants: [
           'A verbal confirmation forces a conscious check — it\'s easy to get distracted and sit down before finishing the walk-around.',
           'Without this step you might skip the last few items of the walk-around without realizing it.',
@@ -113,7 +127,7 @@ const ALL_AIRCRAFT = {
           'Confirming the preflight resets the aircraft\'s maintenance fault counter for the flight.',
         ],
         tip: 'If you can\'t remember completing a specific preflight item, go back and check it. Memory is not a substitute for action.', zone: 'tires' },
-      { action: 'Hobbs/Tach', value: 'NOTE TIME', note: 'Start time logged', why: 'Logging your start Hobbs time lets you compute accurate flight time for billing, logbook, and maintenance tracking.',
+      { action: 'Hobbs/Tach', value: 'NOTE TIME', note: 'Start time logged', why: 'Logging your start Hobbs time lets you compute accurate flight time for billing, logbook, and maintenance tracking.', bucket: 'free',
         answerVariants: [
           'Logging your start Hobbs time lets you compute accurate flight time for billing, logbook, and maintenance tracking.',
           'Without a start reading you can\'t calculate billable hours, log accurate flight time, or schedule maintenance correctly.',
@@ -127,7 +141,7 @@ const ALL_AIRCRAFT = {
           'Cross-checking Hobbs and Tach ensures the prop governor is calibrated correctly.',
         ],
         tip: 'Take a photo of the Hobbs/Tach with your phone before engine start. Quick, accurate, and searchable later.', zone: 'sixpack' },
-      { action: 'Seats & Belts', value: 'ADJUST & LOCK', note: 'Both occupants; seat rails locked', why: 'Seats that aren\'t properly locked on their rails can slide back on takeoff rotation, making it impossible to reach the controls. This has caused accidents on takeoff. The loud click means it\'s locked.',
+      { action: 'Seats & Belts', value: 'ADJUST & LOCK', note: 'Both occupants; seat rails locked', why: 'Seats that aren\'t properly locked on their rails can slide back on takeoff rotation, making it impossible to reach the controls. This has caused accidents on takeoff. The loud click means it\'s locked.', bucket: 'free',
         answerVariants: [
           'Seats that aren\'t locked can slide back on takeoff rotation, making it impossible to reach the controls.',
           'An unlocked seat rail can cause the seat to shoot rearward under G-load at rotation — you won\'t be able to reach the yoke.',
@@ -141,7 +155,7 @@ const ALL_AIRCRAFT = {
           'Required by FAR 91.107 to be verified before the aircraft moves under its own power.',
         ],
         tip: 'After adjusting: grab the seat back and try to push it rearward forcefully. No movement = locked.', zone: 'seats' },
-      { action: 'Brakes', value: 'TEST & SET', note: 'Press firmly; hold during start', why: 'You verify brake function before you have engine power. Holding brakes during start keeps the aircraft stationary while the prop wash is generating significant force. Release brakes before advancing throttle for taxi.',
+      { action: 'Brakes', value: 'TEST & SET', note: 'Press firmly; hold during start', why: 'You verify brake function before you have engine power. Holding brakes during start keeps the aircraft stationary while the prop wash is generating significant force. Release brakes before advancing throttle for taxi.', bucket: 'free',
         answerVariants: [
           'You verify brake function before you have engine power, and hold brakes to keep the aircraft stationary during start.',
           'Holding brakes during start keeps the aircraft from rolling while the propeller generates significant thrust.',
@@ -155,7 +169,7 @@ const ALL_AIRCRAFT = {
           'Brake pressure must be verified before the nose wheel steering can be engaged.',
         ],
         seqQuestion: 'Why test the brakes before you start the engine?', tip: 'Press and hold both toe brakes — they should feel firm with no spongy travel. Spongy = air in the lines.', zone: 'tires' },
-      { action: 'Circuit Breakers', value: 'IN (CHECK)', note: 'All breakers in and set', why: 'A popped circuit breaker means that circuit is unprotected or non-functional. If a breaker is out before start, you have an electrical issue that needs to be resolved before flight.',
+      { action: 'Circuit Breakers', value: 'IN (CHECK)', note: 'All breakers in and set', why: 'A popped circuit breaker means that circuit is unprotected or non-functional. If a breaker is out before start, you have an electrical issue that needs to be resolved before flight.', bucket: 'free',
         answerVariants: [
           'A popped circuit breaker means that circuit is unprotected or non-functional — an electrical issue to resolve before flight.',
           'If a breaker is out before start, the system it protects isn\'t working and you may not notice until it matters.',
@@ -169,7 +183,7 @@ const ALL_AIRCRAFT = {
           'A popped breaker prevents the ignition switch from completing the start circuit.',
         ],
         tip: 'Run your eyes along the CB panel left to right. Any breaker sticking out further than the rest is popped.', zone: 'cb' },
-      { action: 'Electrical Equipment', value: 'OFF', note: 'Reduce electrical load during start', why: 'The starter motor draws enormous current. Additional electrical loads during start can cause voltage spikes that damage avionics or drain the battery, making start more difficult. Turn everything off, then add load after start.',
+      { action: 'Electrical Equipment', value: 'OFF', note: 'Reduce electrical load during start', why: 'The starter motor draws enormous current. Additional electrical loads during start can cause voltage spikes that damage avionics or drain the battery, making start more difficult. Turn everything off, then add load after start.', bucket: 'free',
         answerVariants: [
           'The starter motor draws enormous current — extra loads cause voltage spikes that damage avionics or drain the battery.',
           'Extra electrical load during start competes with the starter and risks a surge that damages sensitive electronics.',
@@ -183,7 +197,7 @@ const ALL_AIRCRAFT = {
           'Running equipment during start drains the battery enough to affect magneto timing.',
         ],
         seqQuestion: 'Why turn electrical equipment off before starting the engine?', tip: 'Think of it like starting a car in winter — you turn off A/C and heated seats first.', zone: 'master' },
-      { action: 'Avionics Master', value: 'OFF', note: 'Protect avionics from start surge', why: 'Engine start creates a momentary voltage spike that can damage sensitive avionics — GPS units, radios, and glass panels are vulnerable. The avionics master isolates them during this surge. Turn it on after the engine is running and stable.',
+      { action: 'Avionics Master', value: 'OFF', note: 'Protect avionics from start surge', why: 'Engine start creates a momentary voltage spike that can damage sensitive avionics — GPS units, radios, and glass panels are vulnerable. The avionics master isolates them during this surge. Turn it on after the engine is running and stable.', bucket: 'free',
         answerVariants: [
           'Engine start creates a voltage spike that can damage GPS units, radios, and glass panels — the avionics master isolates them.',
           'The avionics master shields sensitive electronics from the start surge; turn it on after the engine is running.',
@@ -197,7 +211,7 @@ const ALL_AIRCRAFT = {
           'Avionics draw too much current for the battery alone and must be isolated until the alternator is online.',
         ],
         seqQuestion: 'Why turn the Avionics Master off before starting the engine?', tip: 'The avionics master is separate from the main electrical master. It\'s usually a toggle above or near the radio stack. "Avionics on LAST before taxi, off FIRST before shutdown."', zone: 'avionics' },
-      { action: 'Fuel Selector', value: 'BOTH', note: 'Ensures both tanks feed engine during start', why: 'BOTH position draws from both tanks simultaneously, ensuring adequate fuel flow. Starting on a single tank risks fuel starvation if that tank is lower than expected or has a problem.',
+      { action: 'Fuel Selector', value: 'BOTH', note: 'Ensures both tanks feed engine during start', why: 'BOTH position draws from both tanks simultaneously, ensuring adequate fuel flow. Starting on a single tank risks fuel starvation if that tank is lower than expected or has a problem.', bucket: 'free',
         answerVariants: [
           'BOTH draws from both tanks simultaneously — starting on one tank risks starvation if it\'s lower than expected.',
           'Starting on a single tank risks fuel starvation if that tank has a problem or is lower than you thought.',
@@ -323,7 +337,7 @@ const ALL_AIRCRAFT = {
           'The call is a signal for passengers to cover their ears before engine noise begins.',
           'Required so nearby aircraft crews know you\'re starting and can hold position.',
         ],
-        tip: 'Open the window, lean out, look both ways, then call it. Don\'t call it just to hear yourself — actually look.', zone: 'oil', bucket: 'ordered' },
+        tip: 'Open the window, lean out, look both ways, then call it. Don\'t call it just to hear yourself — actually look.', zone: 'oil', bucket: 'free' },
       { action: 'Master Switch', value: 'ON', note: 'Both ALT and BAT switches',
         why: 'The master switch has two halves: BAT (battery) powers the electrical system, ALT (alternator) connects the alternator to the bus. Both must be on. Some pilots turn BAT on first to confirm voltage before connecting the alternator.',
         answerVariants: [
@@ -377,7 +391,7 @@ const ALL_AIRCRAFT = {
     label: 'Runup',
     items: [
       { action: 'Engine Warm-up', value: '1000 RPM', note: 'Allow oil temp to come up before runup',
-        why: 'Cold oil is thick and doesn\'t lubricate as effectively. Running the engine at idle until oil temperature rises protects engine internals during the high-power runup checks. Rushing this on cold days stresses the engine.',
+        why: 'Cold oil is thick and doesn\'t lubricate as effectively. Running the engine at idle until oil temperature rises protects engine internals during the high-power runup checks. Rushing this on cold days stresses the engine.', bucket: 'gate',
         answerVariants: [
           'Cold oil is thick and doesn\'t lubricate well — warming up protects engine internals before the high-power runup checks.',
           'Running at low RPM until oil temp rises ensures oil can flow properly through bearings and passages.',
@@ -392,7 +406,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Many pilots target 1000 RPM and wait for the oil temp needle to show movement. On cold days this can take several minutes.', zone: 'sixpack' },
       { action: 'Throttle', value: '1800 RPM', note: 'Set for runup checks',
-        why: '1800 RPM is high enough to load the engine for meaningful magneto and carb heat checks, but low enough to not stress the airframe or blow the aircraft around on the ramp. This is the standard runup power setting for the C172.',
+        why: '1800 RPM is high enough to load the engine for meaningful magneto and carb heat checks, but low enough to not stress the airframe or blow the aircraft around on the ramp. This is the standard runup power setting for the C172.', bucket: 'ordered',
         answerVariants: [
           '1800 RPM loads the engine enough for meaningful magneto and carb heat checks without stressing the airframe.',
           'The mag check needs enough load to reveal ignition problems — 1800 RPM provides that without blowing the aircraft around.',
@@ -408,7 +422,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Set it smoothly — slam-advancing the throttle can overstress cold engine parts.', zone: 'throttle' },
       { action: 'Magnetos', value: 'CHECK L/R', note: 'Max 125 RPM drop; max 50 RPM difference between mags',
-        why: 'The C172 has two independent ignition systems (magnetos) so if one fails, the engine keeps running. You test each one by switching off the other and watching for RPM drop. A large drop means that magneto is doing too much work alone — possibly a fouled plug. Zero drop means the dead magneto is still firing (grounding problem).',
+        why: 'The C172 has two independent ignition systems (magnetos) so if one fails, the engine keeps running. You test each one by switching off the other and watching for RPM drop. A large drop means that magneto is doing too much work alone — possibly a fouled plug. Zero drop means the dead magneto is still firing (grounding problem).', bucket: 'ordered',
         answerVariants: [
           'The C172 has two independent ignition systems — you test each one alone to confirm both are functional before relying on them.',
           'Testing each magneto independently reveals a fouled plug or weak mag before takeoff when you still have options.',
@@ -424,7 +438,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Switch from BOTH → R → BOTH → L → BOTH. The pause at BOTH between checks lets RPM stabilize.', zone: 'ignition' },
       { action: 'Carb Heat', value: 'ON — CHECK', note: 'Expect slight RPM drop (carb heat normal); return to COLD',
-        why: 'Carb heat sends warm unfiltered air through the carburetor to melt any ice. The warm air is less dense, causing a normal small RPM drop. If you had carb ice, the RPM will initially drop more (melting ice disrupts flow), then rise above original. Return to COLD before takeoff — carb heat on reduces power.',
+        why: 'Carb heat sends warm unfiltered air through the carburetor to melt any ice. The warm air is less dense, causing a normal small RPM drop. If you had carb ice, the RPM will initially drop more (melting ice disrupts flow), then rise above original. Return to COLD before takeoff — carb heat on reduces power.', bucket: 'ordered',
         answerVariants: [
           'Warm air causes a normal RPM drop — but if RPM drops then rises above original, you had actual ice that melted.',
           'The carb heat check tests both the system function and detects any existing ice before you commit to takeoff.',
@@ -440,7 +454,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'No RPM change at all when applying carb heat = possible icing already melted or control not working. Investigate.', zone: 'carbheat' },
       { action: 'Engine Instruments', value: 'GREEN', note: 'Oil temp, oil pressure, fuel flow all in range',
-        why: 'All engine instruments should be in the green arc before applying takeoff power. Red lines and yellow arcs are limits. Takeoff with an instrument in the yellow or near red is asking for an in-flight emergency.',
+        why: 'All engine instruments should be in the green arc before applying takeoff power. Red lines and yellow arcs are limits. Takeoff with an instrument in the yellow or near red is asking for an in-flight emergency.', bucket: 'ordered',
         answerVariants: [
           'All engine instruments must be in the green arc before takeoff — amber or red means you\'re already in limit territory.',
           'Takeoff with an instrument in the yellow or near red risks an in-flight emergency at the worst possible time.',
@@ -455,7 +469,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Green = go. Scan oil temp, oil pressure, ammeter, and fuel flow. If anything is amber or red, investigate before departing.', zone: 'sixpack' },
       { action: 'Throttle', value: 'IDLE CHECK', note: 'Confirm idle ~650 RPM; throttle smoothly to 1000',
-        why: 'If idle RPM is too low, the engine may quit during landing rollout or taxi — a dangerous time to lose power. If too high, the aircraft may be difficult to slow on approach. Proper idle speed is 600-700 RPM.',
+        why: 'If idle RPM is too low, the engine may quit during landing rollout or taxi — a dangerous time to lose power. If too high, the aircraft may be difficult to slow on approach. Proper idle speed is 600-700 RPM.', bucket: 'free',
         answerVariants: [
           'Too-low idle RPM and the engine may quit during landing rollout — too high and you can\'t slow on approach.',
           'Proper idle speed ensures the engine stays running when you pull power on approach and landing rollout.',
@@ -470,7 +484,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Pull throttle to idle, count to 3. Engine should stay running smoothly. Then come back up to ~1000 for taxi.', zone: 'throttle' },
       { action: 'Flight Controls', value: 'FREE & CORRECT', note: 'Full deflection in each direction; verify correct movement',
-        why: 'This final cockpit check ensures no control locks were left in, nothing is obstructing movement, and the controls weren\'t accidentally reconnected incorrectly after maintenance. Full deflection means full — not 80%.',
+        why: 'This final cockpit check ensures no control locks were left in, nothing is obstructing movement, and the controls weren\'t accidentally reconnected incorrectly after maintenance. Full deflection means full — not 80%.', bucket: 'free',
         answerVariants: [
           'Final check confirms no control locks are in, nothing is obstructing movement, and no incorrect reconnection after maintenance.',
           'A stuck or reversed control on takeoff is unrecoverable — the runup check is your last chance before committing.',
@@ -486,7 +500,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Yoke full right: look back at RIGHT aileron UP. Full left: LEFT aileron UP. Full back: elevator UP. Full forward: elevator DOWN. Rudder left: left rudder deflects left.', zone: 'controls' },
       { action: 'Trim', value: 'SET TAKEOFF', note: 'Elevator trim to takeoff position mark',
-        why: 'Takeoff trim reduces the control force needed to rotate at Vr. Wrong trim setting means you\'ll fight an unexpected pitch force at the worst moment — during takeoff roll. Most C172s have a green takeoff band on the trim indicator.',
+        why: 'Takeoff trim reduces the control force needed to rotate at Vr. Wrong trim setting means you\'ll fight an unexpected pitch force at the worst moment — during takeoff roll. Most C172s have a green takeoff band on the trim indicator.', bucket: 'free',
         answerVariants: [
           'Correct takeoff trim reduces stick force at rotation — wrong trim means fighting unexpected pitch at the worst moment.',
           'The green takeoff band on the trim indicator is there for a reason — out-of-trim takeoff requires excessive yoke force at Vr.',
@@ -501,7 +515,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'The trim wheel is on the center console between the seats. Set it to the green takeoff range mark, then verify the trim tab position visually if you can.', zone: 'trim' },
       { action: 'Fuel Selector', value: 'BOTH', note: 'Confirm on BOTH',
-        why: 'Confirming BOTH again before takeoff ensures you haven\'t inadvertently moved it during runup. Engine failure on takeoff due to fuel selector on a low or empty tank is a known accident cause.',
+        why: 'Confirming BOTH again before takeoff ensures you haven\'t inadvertently moved it during runup. Engine failure on takeoff due to fuel selector on a low or empty tank is a known accident cause.', bucket: 'free',
         answerVariants: [
           'Confirming BOTH a second time — it could have been bumped during runup, and a takeoff on a nearly-empty tank has killed pilots.',
           'The fuel selector is in a reachable position where it can be knocked during runup — a final check before committing is critical.',
@@ -516,7 +530,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Look at the selector handle direction — BOTH should point forward (toward the nose). Left or right = single tank.', zone: 'fuel' },
       { action: 'Mixture', value: 'RICH (or as required)', note: 'Rich at lower elevations; lean for high-density altitude',
-        why: 'Full rich provides maximum power for takeoff at sea level. At high density altitude (hot day, high elevation), full rich actually causes the engine to run rough due to excess fuel — you lean slightly to restore smooth power.',
+        why: 'Full rich provides maximum power for takeoff at sea level. At high density altitude (hot day, high elevation), full rich actually causes the engine to run rough due to excess fuel — you lean slightly to restore smooth power.', bucket: 'free',
         answerVariants: [
           'Full rich gives maximum power for takeoff at sea level — at high density altitude it actually causes rough running.',
           'Sea level: full rich for max power. High elevation or hot day: lean slightly so the engine runs smoothly at full throttle.',
@@ -597,7 +611,7 @@ const ALL_AIRCRAFT = {
     label: 'Before Landing',
     items: [
       { action: 'Fuel Selector', value: 'BOTH', note: 'Ensure both tanks selected',
-        why: 'Switching to BOTH before landing ensures you have maximum fuel available for a go-around and eliminates the risk of the selected tank running dry during the approach, which requires full power at a critical moment.',
+        why: 'Switching to BOTH before landing ensures you have maximum fuel available for a go-around and eliminates the risk of the selected tank running dry during the approach, which requires full power at a critical moment.', bucket: 'gate',
         answerVariants: [
           'BOTH before landing ensures maximum fuel for a go-around and eliminates the risk of the selected tank running dry on approach.',
           'An engine failure on final from a dry tank is not recoverable — switching to BOTH is cheap insurance.',
@@ -613,7 +627,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Check it on downwind as part of your "GUMPS" check.', tipType: 'acronym', acronym: 'GUMPS', acronymDef: 'Gas (BOTH) · Undercarriage (down — if retractable) · Mixture (rich) · Prop (full forward — if variable) · Seat belts (secure)', zone: 'fuel' },
       { action: 'Mixture', value: 'RICH (or as required)', note: 'Enrich for go-around power availability',
-        why: 'If you need to go around, you\'ll need full power immediately. A lean mixture can cause the engine to run rough or lose power at full throttle. Enriching on the downwind ensures the engine is ready for max power on demand.',
+        why: 'If you need to go around, you\'ll need full power immediately. A lean mixture can cause the engine to run rough or lose power at full throttle. Enriching on the downwind ensures the engine is ready for max power on demand.', bucket: 'free',
         answerVariants: [
           'A go-around needs full power immediately — a lean mixture causes rough running or power loss at exactly that moment.',
           'You enrich on downwind so the engine is ready for max power on demand; diagnosing rough running on final isn\'t an option.',
@@ -628,7 +642,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Part of GUMPS on downwind — M = Mixture rich.', zone: 'mixture' },
       { action: 'Carb Heat', value: 'AS REQUIRED', note: 'On if conditions warrant; monitor RPM for ice',
-        why: 'At reduced power settings on approach, the carburetor is more susceptible to icing — particularly in humid conditions at 20-70°F. If in doubt, carb heat on. Remember to return it to cold before any go-around (it reduces power).',
+        why: 'At reduced power settings on approach, the carburetor is more susceptible to icing — particularly in humid conditions at 20-70°F. If in doubt, carb heat on. Remember to return it to cold before any go-around (it reduces power).', bucket: 'free',
         answerVariants: [
           'Low power on approach makes the carb more susceptible to icing — carb heat prevents it from forming at this critical phase.',
           'At 20-70°F with humidity, reduced approach power creates prime conditions for carb ice — heat prevents it.',
@@ -644,7 +658,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Carb heat on approach is good practice in marginal conditions. But remember: carb heat OFF for go-around — you need full power.', zone: 'carbheat' },
       { action: 'Seats & Belts', value: 'SECURE', note: 'Confirm both occupants belted',
-        why: 'Landing is the highest-risk phase of flight for injury in an accident. Shoulder harnesses significantly reduce injury in hard landings. Check both occupants — passengers may have loosened their belts during flight.',
+        why: 'Landing is the highest-risk phase of flight for injury in an accident. Shoulder harnesses significantly reduce injury in hard landings. Check both occupants — passengers may have loosened their belts during flight.', bucket: 'free',
         answerVariants: [
           'Landing is the highest-risk phase for injury — shoulder harnesses dramatically reduce injury in hard landings.',
           'Check passengers too — they may have loosened their belts during flight without telling you.',
@@ -659,7 +673,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Announce it: "Seat belts check — mine\'s locked." Then look over at your passenger.', zone: 'seats' },
       { action: 'Airspeed (downwind)', value: '90 KIAS', note: 'Reduce from cruise; verify before pattern entry',
-        why: 'Slowing to pattern speed on downwind gives you time to configure the aircraft without rushing. 90 KIAS is the C172 standard downwind speed — fast enough for safety margin, slow enough to add flaps on base.',
+        why: 'Slowing to pattern speed on downwind gives you time to configure the aircraft without rushing. 90 KIAS is the C172 standard downwind speed — fast enough for safety margin, slow enough to add flaps on base.', bucket: 'ordered',
         answerVariants: [
           'Pattern speed on downwind gives time to configure the aircraft without rushing — too fast and you blow through the base turn.',
           '90 KIAS is slow enough to add flaps on base but fast enough for a safety margin — the sweet spot for pattern work.',
@@ -674,7 +688,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Reduce power to ~1500 RPM abeam the numbers. Let speed bleed to 90, add first notch of flaps (10°).', zone: 'sixpack' },
       { action: 'Flaps (base)', value: '20°', note: 'Add second notch on base leg',
-        why: 'Adding flaps progressively (not all at once) lets you control the pitch change each time. 20° on base steepens your descent and slows you further for a stabilized final approach. Full flaps (30°) added on final if runway assured.',
+        why: 'Adding flaps progressively (not all at once) lets you control the pitch change each time. 20° on base steepens your descent and slows you further for a stabilized final approach. Full flaps (30°) added on final if runway assured.', bucket: 'ordered',
         answerVariants: [
           'Progressive flap extension controls pitch changes — dumping all flaps at once causes a sudden nose pitch you have to chase.',
           '20° on base steepens descent and slows you for stabilized final — full flaps added on final when runway is assured.',
@@ -690,7 +704,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Each notch: check airspeed is below Vfe (white arc top = 85 KIAS), add flap, re-trim.', zone: 'flaps' },
       { action: 'Airspeed (final)', value: '65–70 KIAS', note: 'With full flaps; adjust for weight/wind',
-        why: '65 KIAS is the C172 Vref with full flaps at typical training weights. Add half the gust factor in gusty conditions.',
+        why: '65 KIAS is the C172 Vref with full flaps at typical training weights. Add half the gust factor in gusty conditions.', bucket: 'ordered',
         answerVariants: [
           '65 KIAS is C172 Vref with full flaps — too slow and you\'re at stall margins; too fast and you float and can\'t stop.',
           'Flying too fast on final means a long float using up runway — too slow means a dangerously thin stall margin.',
@@ -705,7 +719,7 @@ const ALL_AIRCRAFT = {
         ],
         tip: 'Look at the far end of the runway throughout the flare — not the nose or the numbers.', zone: 'sixpack' },
       { action: 'Go-Around', value: 'BRIEF & READY', note: 'Have plan — unstabilized = go around',
-        why: 'Deciding to go around on the ground takes far less courage than deciding at 50 feet. If not stabilized by 500 ft AGL — go around. No exceptions.',
+        why: 'Deciding to go around on the ground takes far less courage than deciding at 50 feet. If not stabilized by 500 ft AGL — go around. No exceptions.', bucket: 'free',
         answerVariants: [
           'Deciding to go around on the ground is easy — deciding at 50 feet is hard. Brief it before you need it.',
           'If not stabilized by 500 ft AGL you need an immediate automatic decision — briefing ahead makes it a reflex, not a debate.',
@@ -812,77 +826,77 @@ const ALL_AIRCRAFT = {
       preflight: {
         label: 'Preflight',
         items: [
-          { action: 'Hobbs / Tach', value: 'CHECK', note: 'Record for billing and engine maintenance', why: 'Hobbs records engine time for billing and TBO tracking. Always note times before and after flight.', tip: 'Photo the gauges with your phone before engine start.', zone: 'sixpack',
+          { action: 'Hobbs / Tach', value: 'CHECK', note: 'Record for billing and engine maintenance', why: 'Hobbs records engine time for billing and TBO tracking. Always note times before and after flight.', tip: 'Photo the gauges with your phone before engine start.', zone: 'sixpack', bucket: 'gate',
             checks: [
               { text: 'Record current Hobbs time — establishes the baseline for billing and logbook accuracy', correct: true },
               { text: 'Record current Tach time — tracks RPM-weighted hours for maintenance intervals', correct: true },
               { text: 'Verify both meters read identically — a mismatch flags a prop governor fault', correct: false },
               { text: 'Note whether Hobbs advanced since the last entry — confirms the engine actually ran', correct: false },
             ] },
-          { action: 'Fuel Quantity', value: 'CHECK VISUALLY', note: 'Always visually confirm — gauges unreliable', why: 'Fuel gauges are only required to be accurate at empty. Physically look into each tank to confirm level.', tip: 'Blue = 100LL. Any other color or cloudiness — do not fly.', zone: 'oil',
+          { action: 'Fuel Quantity', value: 'CHECK VISUALLY', note: 'Always visually confirm — gauges unreliable', why: 'Fuel gauges are only required to be accurate at empty. Physically look into each tank to confirm level.', tip: 'Blue = 100LL. Any other color or cloudiness — do not fly.', zone: 'oil', bucket: 'free',
             checks: [
               { text: 'Sufficient fuel for the planned route plus required reserves — confirmed visually, not from gauges', correct: true },
               { text: 'Actual level seen directly through the filler neck — gauges are only required to be accurate at empty', correct: true },
               { text: 'Cockpit gauge reading matches the visual level', correct: false },
               { text: 'Both tanks are within 5 gallons of each other to prevent handling problems', correct: false },
             ] },
-          { action: 'Fuel Caps', value: 'SECURE', note: 'Both caps tight and locked', why: 'Loose caps allow fuel to siphon out in flight, especially on a low-wing where fuel heads are higher.', tip: 'Twist firmly until it stops, then tug upward to verify.', zone: 'oil',
+          { action: 'Fuel Caps', value: 'SECURE', note: 'Both caps tight and locked', why: 'Loose caps allow fuel to siphon out in flight, especially on a low-wing where fuel heads are higher.', tip: 'Twist firmly until it stops, then tug upward to verify.', zone: 'oil', bucket: 'free',
             checks: [
               { text: 'Each cap is fully seated and locked — won\'t pull free when tugged', correct: true },
               { text: 'Vent holes are open and unobstructed — a blocked vent causes fuel starvation on a low-wing', correct: true },
               { text: 'Caps are installed on the correct tank after refueling', correct: false },
               { text: 'Cap color matches the tank placard — blue cap on left, red on right', correct: false },
             ] },
-          { action: 'Fuel Drains', value: 'DRAIN & CHECK', note: 'Check for water and correct color', why: 'Low-wing aircraft sumps sit lower — water accumulates readily. Drain each sump until the sample runs clear and blue.', tip: 'Drain into a clear tester cup. Water sinks to the bottom — even a few drops can be dangerous.', zone: 'oil',
+          { action: 'Fuel Drains', value: 'DRAIN & CHECK', note: 'Check for water and correct color', why: 'Low-wing aircraft sumps sit lower — water accumulates readily. Drain each sump until the sample runs clear and blue.', tip: 'Drain into a clear tester cup. Water sinks to the bottom — even a few drops can be dangerous.', zone: 'oil', bucket: 'free',
             checks: [
               { text: 'Sample is clear with no visible water layer at the bottom of the tester cup', correct: true },
               { text: 'Correct fuel color — blue confirms 100LL avgas, not jet fuel or a misfuel', correct: true },
               { text: 'Volume drained is adequate — at least one full cup per sump to reach any settled contamination', correct: false },
               { text: 'Unusual smell alone is sufficient to abort the flight even without visible contamination', correct: false },
             ] },
-          { action: 'Oil Quantity', value: 'CHECK — MIN 6 QTS', note: 'Check dipstick; add if needed', why: 'Oil is life for the engine. The Cherokee\'s Lycoming O-320 typically holds 8 quarts max. Below 6 is marginal for longer flights.', tip: 'Wipe dipstick clean, reinsert fully, then read.', zone: 'oil',
+          { action: 'Oil Quantity', value: 'CHECK — MIN 6 QTS', note: 'Check dipstick; add if needed', why: 'Oil is life for the engine. The Cherokee\'s Lycoming O-320 typically holds 8 quarts max. Below 6 is marginal for longer flights.', tip: 'Wipe dipstick clean, reinsert fully, then read.', zone: 'oil', bucket: 'free',
             checks: [
               { text: 'Dipstick reads at least 6 quarts — the Cherokee minimum for safe operations', correct: true },
               { text: 'Oil appears normal — milky color means water contamination, very black means overdue for change', correct: true },
               { text: 'Level matches the squawk book entry from the last flight', correct: false },
               { text: 'Both dipstick insertions read the same level as a consistency check', correct: false },
             ] },
-          { action: 'Oil Cap', value: 'SECURE', note: 'Hand-tight and locked', why: 'Loose oil cap sprays hot oil on the windshield and engine, causing loss of visibility and potential fire.', tip: 'Say out loud: "Cap is on and locked."', zone: 'oil',
+          { action: 'Oil Cap', value: 'SECURE', note: 'Hand-tight and locked', why: 'Loose oil cap sprays hot oil on the windshield and engine, causing loss of visibility and potential fire.', tip: 'Say out loud: "Cap is on and locked."', zone: 'oil', bucket: 'free',
             checks: [
               { text: 'Cap is fully seated and won\'t pull free when tugged', correct: true },
               { text: 'No fresh oil spray or residue around the cap — would indicate it was loose in a previous flight', correct: true },
               { text: 'Cap alignment mark points to the 12 o\'clock index position', correct: false },
               { text: 'Cap gasket condition is assessed visually without tools', correct: false },
             ] },
-          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Select the fullest tank for start', why: 'Unlike the C172\'s BOTH position, the Cherokee has LEFT / RIGHT / OFF. Select the fuller tank to start and for takeoff.', tip: 'Fuel selector is on the floor between the seats. Verify visually — don\'t assume.', zone: 'fuel',
+          { action: 'Fuel Selector', value: 'PROPER TANK', note: 'Select the fullest tank for start', why: 'Unlike the C172\'s BOTH position, the Cherokee has LEFT / RIGHT / OFF. Select the fuller tank to start and for takeoff.', tip: 'Fuel selector is on the floor between the seats. Verify visually — don\'t assume.', zone: 'fuel', bucket: 'free',
             checks: [
               { text: 'Selector is in LEFT or RIGHT — not OFF — for engine start and takeoff', correct: true },
               { text: 'Fuller tank is selected to maximize available fuel through initial climb', correct: true },
               { text: 'Selector is in the BOTH position to ensure equal draw from both tanks', correct: false },
               { text: 'Selector valve is wire-locked in position to prevent accidental movement in flight', correct: false },
             ] },
-          { action: 'Pitot Tube', value: 'UNOBSTRUCTED', note: 'Check for insects, debris, cover removed', why: 'Blocked pitot = false airspeed. The pitot cover must be removed — check for the "Remove Before Flight" streamer.', tip: 'If you installed the cover, YOU remove it.', zone: 'pitot',
+          { action: 'Pitot Tube', value: 'UNOBSTRUCTED', note: 'Check for insects, debris, cover removed', why: 'Blocked pitot = false airspeed. The pitot cover must be removed — check for the "Remove Before Flight" streamer.', tip: 'If you installed the cover, YOU remove it.', zone: 'pitot', bucket: 'free',
             checks: [
               { text: 'Tube opening is clear — no insects, mud, or debris blocking it', correct: true },
               { text: 'Pitot cover has been removed and is stowed or returned', correct: true },
               { text: 'Heating element is visible and intact inside the tube opening', correct: false },
               { text: 'Tube is pointed slightly downward to allow moisture drainage', correct: false },
             ] },
-          { action: 'Static Ports', value: 'CLEAR', note: 'Both sides of fuselage', why: 'Blocked static ports freeze the altimeter and VSI. Flush holes — check for tape, mud, or insects.', tip: 'Run your fingernail over each port. Clear = nothing catches.', zone: 'static',
+          { action: 'Static Ports', value: 'CLEAR', note: 'Both sides of fuselage', why: 'Blocked static ports freeze the altimeter and VSI. Flush holes — check for tape, mud, or insects.', tip: 'Run your fingernail over each port. Clear = nothing catches.', zone: 'static', bucket: 'free',
             checks: [
               { text: 'Both ports are clear — run a fingertip over each to feel for tape, mud, or insect blockage', correct: true },
               { text: 'Both sides of the fuselage are checked — there is one port per side', correct: true },
               { text: 'Ports are aimed perpendicular to the slipstream for accurate static pressure readings', correct: false },
               { text: 'Static port covers have been removed (most aircraft don\'t use removable covers)', correct: false },
             ] },
-          { action: 'Control Surfaces', value: 'FREE & CORRECT', note: 'Full deflection — verify correct direction', why: 'Reversed or restricted controls have caused fatal accidents. Always verify visually that the surface moves the right way.', tip: 'Yoke right: right aileron UP. Yoke back: elevator UP. Rudder left: rudder left.', zone: 'controls',
+          { action: 'Control Surfaces', value: 'FREE & CORRECT', note: 'Full deflection — verify correct direction', why: 'Reversed or restricted controls have caused fatal accidents. Always verify visually that the surface moves the right way.', tip: 'Yoke right: right aileron UP. Yoke back: elevator UP. Rudder left: rudder left.', zone: 'controls', bucket: 'free',
             checks: [
               { text: 'Controls move freely to full deflection in all directions with no binding or unusual resistance', correct: true },
               { text: 'Controls move in the correct direction — right yoke produces right aileron UP', correct: true },
               { text: 'Control cable routing is verified under the engine cowling', correct: false },
               { text: 'Trim tabs are in the neutral position before setting takeoff trim', correct: false },
             ] },
-          { action: 'Tires', value: 'CONDITION & INFLATION', note: 'All three — check for cuts and flat spots', why: 'Underinflated or damaged tires can blow on landing. The Cherokee sits lower than most — tires are easy to check.', tip: 'Press firmly with your thumb. Any cord showing = do not fly.', zone: 'tires',
+          { action: 'Tires', value: 'CONDITION & INFLATION', note: 'All three — check for cuts and flat spots', why: 'Underinflated or damaged tires can blow on landing. The Cherokee sits lower than most — tires are easy to check.', tip: 'Press firmly with your thumb. Any cord showing = do not fly.', zone: 'tires', bucket: 'free',
             checks: [
               { text: 'Proper inflation — tire sidewall feels firm under thumb pressure, not soft', correct: true },
               { text: 'No flat spots on the tread, which indicate hard braking in a previous landing', correct: true },
@@ -890,7 +904,7 @@ const ALL_AIRCRAFT = {
               { text: 'Tread depth meets the minimum legal requirement (like automobile tire laws)', correct: false },
               { text: 'Tire pressure matches the exact PSI value stamped on the sidewall', correct: false },
             ] },
-          { action: 'Tie-downs / Chocks', value: 'REMOVED', note: 'Remove all before engine start', why: 'Attempting to taxi with tie-downs attached is more dangerous on a low-wing — propeller blast won\'t reveal them.', tip: 'Walk all the way around during preflight and you\'ll see them naturally.', zone: 'tires',
+          { action: 'Tie-downs / Chocks', value: 'REMOVED', note: 'Remove all before engine start', why: 'Attempting to taxi with tie-downs attached is more dangerous on a low-wing — propeller blast won\'t reveal them.', tip: 'Walk all the way around during preflight and you\'ll see them naturally.', zone: 'tires', bucket: 'free',
             checks: [
               { text: 'Both wing tie-down ropes are removed and stowed', correct: true },
               { text: 'All wheel chocks are removed from in front of and behind the main wheels', correct: true },

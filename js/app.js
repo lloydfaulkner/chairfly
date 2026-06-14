@@ -262,7 +262,6 @@ function initChecklist() {
   document.getElementById('phase-selector').innerHTML = phases.map(p =>
     `<button class="phase-btn ${p === state.checklist.phase ? 'active' : ''}" onclick="selectPhase('${p}')">${CHECKLISTS[p].label}</button>`
   ).join('');
-  updatePreflightBtn();
   renderChecklist();
 }
 
@@ -554,8 +553,6 @@ function renderChecklist() {
   document.getElementById('cl-progress-fill').style.width = `${(doneCount / total) * 100}%`;
 
   const ul = document.getElementById('checklist-items');
-  const preflightNote = document.getElementById('cl-preflight-note');
-  if (preflightNote) preflightNote.style.display = phase === 'preflight' ? '' : 'none';
   ul.innerHTML = list.items.map((item, i) => _renderQuizItem(phase, item, i)).join('');
 
   const anyAnswered = Object.values(qs).some(s => s && (s.status === 'correct' || s.status === 'wrong'));
@@ -3155,26 +3152,10 @@ function setClMode(mode, btn) {
   document.getElementById('cl-reference-mode').style.display = mode === 'reference' ? '' : 'none';
   document.getElementById('cl-recall-mode').style.display = mode === 'recall' ? '' : 'none';
   if (mode === 'recall') {
-    if (state.checklist.phase === 'preflight') {
-      state.checklist.phase = 'beforestart';
-      document.querySelectorAll('.phase-btn').forEach((b, i) => {
-        b.classList.toggle('active', Object.keys(CHECKLISTS)[i] === 'beforestart');
-      });
-    }
     initSeqRecall();
   }
   currentClMode = mode;
-  updatePreflightBtn();
   updateHash();
-}
-
-function updatePreflightBtn() {
-  const btn = document.querySelector('.phase-btn');
-  if (!btn) return;
-  const inRecall = currentClMode === 'recall';
-  btn.disabled = inRecall;
-  const note = document.getElementById('preflight-recall-note');
-  if (note) note.style.display = inRecall ? '' : 'none';
 }
 
 function initSeqRecall() {
@@ -3230,6 +3211,7 @@ function initSeqRecall() {
   seqState.miss = 0;
   seqState.elapsed = 0;
   seqState.done = false;
+  seqState.skipped = false;
   seqState.shakingIdx = null;
   seqState._timer = setInterval(() => {
     if (!seqState.done) {
@@ -3274,6 +3256,7 @@ function tapChip(origIdx) {
       seqState.done = true;
       clearInterval(seqState._timer);
       setTimeout(renderSeqRecall, 600);
+      setTimeout(openSeqCompletion, 900);
     } else {
       renderSeqRecall();
     }
@@ -3285,6 +3268,7 @@ function tapChip(origIdx) {
         seqState.done = true;
         clearInterval(seqState._timer);
         setTimeout(renderSeqRecall, 600);
+        setTimeout(openSeqCompletion, 900);
       } else {
         renderSeqRecall();
       }
@@ -3353,6 +3337,7 @@ function checkFreeItems() {
     }
   }
   renderSeqRecall();
+  if (seqState.done) setTimeout(openSeqCompletion, 300);
   _scrollToFirstSection();
 }
 
@@ -3370,8 +3355,18 @@ function showFreeAnswers() {
   seqState.freeSelections = freeSet;
   seqState.freeChecked = true;
   seqState.freeCorrect = true;
+  seqState.skipped = true;
   seqState.pickerOpen = false;
+
+  // Check if section is now complete
+  const orderedCount = list.items.filter(it => it.bucket === 'ordered').length;
+  if (seqState.placed.size === orderedCount && seqState.gateCorrect) {
+    seqState.done = true;
+    clearInterval(seqState._timer);
+  }
+
   renderSeqRecall();
+  if (seqState.done) setTimeout(openSeqCompletion, 300);
   _scrollToFirstSection();
 }
 
@@ -3442,25 +3437,40 @@ function renderSeqRecall() {
     </div>`;
   }).join('');
 
-  // Completion banner
-  const doneBanner = seqState.done ? `
+  // Completion banner (only show "Nailed it" if completed without skipping)
+  const doneBanner = seqState.done && !seqState.skipped ? `
     <div class="seq-done-banner">
       <div class="seq-done-disc">✓</div>
       <div style="flex:1">
         <div class="seq-done-title">Nailed it.</div>
         <div class="seq-done-sub">${completedCount} / ${total} in ${fmtSeqTime(seqState.elapsed)} · ${accuracy}% accuracy. Logged to your record.</div>
       </div>
-      <button class="cf-btn cf-btn--solid cf-btn--sm" onclick="initSeqRecall()">Try again</button>
+      <div style="display:flex;gap:8px">
+        <button class="cf-btn cf-btn--solid cf-btn--sm" onclick="initSeqRecall()">Try again</button>
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="seqNextPhase()">Next phase &#8594;</button>
+      </div>
     </div>` : '';
+
+  const skippedBanner = seqState.done && seqState.skipped ? `
+    <div class="seq-done-banner">
+      <div class="seq-done-disc" style="background: #5a7a94; color: #eef6ff;">✓</div>
+      <div style="flex:1">
+        <div class="seq-done-title" style="color: #b8d4ea;">Repetition helps!</div>
+        <div class="seq-done-sub" style="color: #9ab8d0;">Try again without Show Answers to lock it in.</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="cf-btn cf-btn--solid cf-btn--sm" onclick="initSeqRecall()">Try again</button>
+        <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="seqNextPhase()">Next phase &#8594;</button>
+      </div>
+    </div>` : '';
+
 
   // Pool
   const seqActionCounts = {};
   list.items.forEach(li => { seqActionCounts[li.action] = (seqActionCounts[li.action] || 0) + 1; });
 
   let poolHtml;
-  if (seqState.done) {
-    poolHtml = '';
-  } else if (hasBuckets) {
+  if (hasBuckets) {
     const gateItem = list.items.find(it => it.bucket === 'gate');
     const freeSet = new Set(freeItems.map(it => it.action));
     const freeCount = freeItems.length;
@@ -3535,11 +3545,21 @@ function renderSeqRecall() {
                 onclick="tapChip(${it.origIdx})"
                 ${chipPlaced || sec3Locked ? 'disabled' : ''}>${chipLabel}</button>`;
     }).join('');
-    const orderedRemaining = list.items.filter(it => it.bucket === 'ordered').length - placed.size;
+    const orderedCount = list.items.filter(it => it.bucket === 'ordered').length;
+    const orderedRemaining = orderedCount - placed.size;
     const sec3Body = sec3Locked
       ? `<div class="seq-card-lock">Complete section 2 first</div>`
       : `<div class="seq-chips">${orderedChipsHtml}</div>
          <div class="seq-pool-footer"><span class="seq-pool-hint">Tap chips in the correct order.</span></div>`;
+
+    const sec3Html = orderedCount > 0 ? `
+      <div class="seq-pool-card seq-ordered-pool${sec3Locked ? ' seq-card--locked' : ''}">
+        <div class="seq-pool-card-header">
+          <span class="seq-pool-eyebrow">③ TAP IN SEQUENCE</span>
+          <span class="seq-pool-left-count">${orderedRemaining} LEFT</span>
+        </div>
+        ${sec3Body}
+      </div>` : '';
 
     poolHtml = `
       <div class="seq-pool-card">
@@ -3556,13 +3576,7 @@ function renderSeqRecall() {
         </div>
         ${sec2Body}
       </div>
-      <div class="seq-pool-card seq-ordered-pool${sec3Locked ? ' seq-card--locked' : ''}">
-        <div class="seq-pool-card-header">
-          <span class="seq-pool-eyebrow">③ TAP IN SEQUENCE</span>
-          <span class="seq-pool-left-count">${orderedRemaining} LEFT</span>
-        </div>
-        ${sec3Body}
-      </div>`;
+      ${sec3Html}`;
   } else {
     const remaining = seqState.shuffled.filter(it => it.origIdx >= nextSlot).length;
     poolHtml = `<div class="seq-pool-card">
@@ -3619,25 +3633,31 @@ function renderSeqRecall() {
       ${hasBuckets ? `
       <aside class="seq-pool-col">
         ${poolHtml}
-        <div class="seq-pool-actions">
-          <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="initSeqRecall()">Restart</button>
+        <div class="seq-pool-actions" style="display: flex; justify-content: space-between; align-items: center;">
+          <a href="#" onclick="initSeqRecall(); return false;" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Clear</a>
+          <div style="display: flex; gap: 12px;">
+            <button class="cf-btn cf-btn--ghost cf-btn--sm" style="font-weight: 500;" onclick="seqPrevPhase()">◀&nbsp;&nbsp;Previous</button>
+            ${!seqState.done ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="seqNextPhase()">Skip&nbsp;&nbsp;▶</button>` : ''}
+          </div>
         </div>
       </aside>
       <div class="seq-slot-col">
         <div class="seq-col-eyebrow">↓ THE CHECKLIST</div>
         <div class="seq-slot-list">${slotsHtml}</div>
-        ${doneBanner}
       </div>
       ` : `
       <div class="seq-slot-col">
         <div class="seq-col-eyebrow">↓ THE CHECKLIST · IN ORDER</div>
         <div class="seq-slot-list">${slotsHtml}</div>
-        ${doneBanner}
       </div>
       <aside class="seq-pool-col">
         ${poolHtml}
-        <div class="seq-pool-actions">
-          <button class="cf-btn cf-btn--ghost cf-btn--sm" onclick="initSeqRecall()">Restart</button>
+        <div class="seq-pool-actions" style="display: flex; justify-content: space-between; align-items: center;">
+          <a href="#" onclick="initSeqRecall(); return false;" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Clear</a>
+          <div style="display: flex; gap: 12px;">
+            <button class="cf-btn cf-btn--ghost cf-btn--sm" style="font-weight: 500;" onclick="seqPrevPhase()">◀&nbsp;&nbsp;Previous</button>
+            ${!seqState.done ? `<button class="cf-btn cf-btn--primary cf-btn--sm" onclick="seqNextPhase()">Skip&nbsp;&nbsp;▶</button>` : ''}
+          </div>
         </div>
       </aside>
       `}
@@ -3891,6 +3911,55 @@ function seqNextPhase() {
     b.classList.toggle('active', phases[i] === next);
   });
   initSeqRecall();
+}
+
+function seqPrevPhase() {
+  const phases = Object.keys(CHECKLISTS);
+  const idx = phases.indexOf(seqState.phase);
+  const prev = phases[(idx - 1 + phases.length) % phases.length];
+  seqState.phase = prev;
+  state.checklist.phase = prev;
+  document.querySelectorAll('.phase-btn').forEach((b, i) => {
+    b.classList.toggle('active', phases[i] === prev);
+  });
+  initSeqRecall();
+}
+
+function openSeqCompletion() {
+  const sheet = document.getElementById('seq-completion-sheet');
+  const overlay = document.getElementById('seq-completion-overlay');
+  const list = CHECKLISTS[seqState.phase];
+  const total = list.items.length;
+  const completedCount = seqState.ok;
+  const accuracy = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+
+  if (seqState.skipped) {
+    document.getElementById('seq-completion-title').textContent = 'Repetition helps!';
+    document.getElementById('seq-completion-body').innerHTML = '<p>Try again without Show Answers to lock it in.</p>';
+  } else {
+    document.getElementById('seq-completion-title').textContent = 'Nailed it.';
+    document.getElementById('seq-completion-body').innerHTML = `<p>${completedCount} / ${total} in ${fmtSeqTime(seqState.elapsed)} · ${accuracy}% accuracy.</p>`;
+  }
+
+  overlay.style.display = '';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.classList.add('open');
+    sheet.classList.add('open');
+  }));
+}
+
+function closeSeqCompletion() {
+  const overlay = document.getElementById('seq-completion-overlay');
+  const sheet = document.getElementById('seq-completion-sheet');
+  overlay.classList.remove('open');
+  sheet.classList.remove('open');
+  overlay.style.display = 'none';
+}
+
+function seqTryAgain() {
+  closeSeqCompletion();
+  initSeqRecall();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ══════════════════════════════════════

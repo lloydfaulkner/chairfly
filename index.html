@@ -114,7 +114,6 @@
       </div>
 
       <div class="cl-phase-scroller" id="phase-selector"></div>
-      <p id="preflight-recall-note" style="display:none">Preflight is a walk-around — switch to Reference to view it.</p>
 
       <div id="cl-reference-mode">
         <div class="cl-complete-banner" id="complete-banner">
@@ -128,9 +127,6 @@
               <span class="cl-phase-count" id="cl-progress">0 / 0</span>
             </div>
             <div class="cl-ref-progress"><div class="cl-ref-progress-fill" id="cl-progress-fill" style="width:0%"></div></div>
-            <div id="cl-preflight-note" class="cl-preflight-note" style="display:none">
-              Walk-around order: nose → left wing → tail → right wing. Sequence Recall isn't available for walk-arounds.
-            </div>
             <p id="cl-quiz-hint" class="cl-quiz-hint">Tap an item title to expand or collapse it.</p>
             <ul class="cl-items" id="checklist-items"></ul>
             <div class="cl-ref-footer">
@@ -663,6 +659,20 @@
     <button class="verdict-close" onclick="closeHintSheet()" aria-label="Close">&#x2715;</button>
   </div>
   <div class="hint-sheet-body" id="hint-sheet-body"></div>
+</div>
+
+<!-- SEQ COMPLETION SHEET -->
+<div class="verdict-overlay" id="seq-completion-overlay" onclick="closeSeqCompletion()" style="display:none"></div>
+<div class="verdict-sheet" id="seq-completion-sheet" role="dialog" aria-modal="true">
+  <div class="verdict-handle"></div>
+  <div class="verdict-header">
+    <div class="verdict-title" id="seq-completion-title"></div>
+  </div>
+  <div class="verdict-body" id="seq-completion-body"></div>
+  <div class="verdict-actions">
+    <button class="cf-btn cf-btn--ghost" id="seq-completion-try-btn" onclick="seqTryAgain()">Try again</button>
+    <button class="cf-btn cf-btn--primary" id="seq-completion-next-btn" onclick="seqNextPhase()">Next phase &#8594;</button>
+  </div>
 </div>
 
 <!-- VERDICT SHEET -->
