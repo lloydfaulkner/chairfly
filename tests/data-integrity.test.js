@@ -277,3 +277,77 @@ describe('AIRPORTS', () => {
     }
   });
 });
+
+// ── SEQUENCE RECALL BUCKET STRUCTURE ─────────────────────────────────────────
+
+describe('Sequence_Recall_BucketStructure', () => {
+  const VALID_BUCKETS = new Set(['gate', 'free', 'ordered']);
+
+  for (const id of AIRCRAFT_IDS) {
+    const ac = ALL_AIRCRAFT[id];
+    for (const [phaseId, phase] of Object.entries(ac.checklists)) {
+      test(`${id}_${phaseId}Items_HaveValidBucketValues`, () => {
+        for (const item of phase.items) {
+          if (item.bucket) {
+            assert.ok(
+              VALID_BUCKETS.has(item.bucket),
+              `${id}/${phaseId} item "${item.action}" has invalid bucket "${item.bucket}"`,
+            );
+          }
+        }
+      });
+
+      test(`${id}_${phaseId}Items_IfBucketed_HasGateItem`, () => {
+        const hasBuckets = phase.items.some(it => it.bucket);
+        if (hasBuckets) {
+          const gateItems = phase.items.filter(it => it.bucket === 'gate');
+          assert.ok(
+            gateItems.length === 1,
+            `${id}/${phaseId} must have exactly 1 gate item, found ${gateItems.length}`,
+          );
+        }
+      });
+
+      test(`${id}_${phaseId}Items_IfBucketed_HasFreeItems`, () => {
+        const hasBuckets = phase.items.some(it => it.bucket);
+        if (hasBuckets) {
+          const freeItems = phase.items.filter(it => it.bucket === 'free');
+          assert.ok(
+            freeItems.length > 0,
+            `${id}/${phaseId} must have at least 1 free item, found ${freeItems.length}`,
+          );
+        }
+      });
+
+      test(`${id}_${phaseId}Items_AllOrNone_HaveBuckets`, () => {
+        const bucketed = phase.items.filter(it => it.bucket);
+        const unbucketed = phase.items.filter(it => !it.bucket);
+        assert.ok(
+          bucketed.length === 0 || unbucketed.length === 0,
+          `${id}/${phaseId} must be all-bucketed or all-unbucketed, found ${bucketed.length} bucketed and ${unbucketed.length} unbucketed`,
+        );
+      });
+    }
+  }
+
+  test('AllAircraft_HaveConsistentBucketStructure', () => {
+    const aircraftIds = Object.keys(ALL_AIRCRAFT);
+    assert.ok(aircraftIds.length > 0, 'At least one aircraft must be defined');
+
+    for (const phaseId of Object.keys(ALL_AIRCRAFT[aircraftIds[0]].checklists)) {
+      const phaseStructures = aircraftIds.map(id => ({
+        id,
+        hasBuckets: ALL_AIRCRAFT[id].checklists[phaseId].items.some(it => it.bucket),
+      }));
+
+      const firstHasBuckets = phaseStructures[0].hasBuckets;
+      for (const aircraft of phaseStructures.slice(1)) {
+        assert.equal(
+          aircraft.hasBuckets,
+          firstHasBuckets,
+          `${phaseId}: bucket structure mismatch — ${phaseStructures[0].id} has ${firstHasBuckets ? 'buckets' : 'no buckets'}, but ${aircraft.id} has ${aircraft.hasBuckets ? 'buckets' : 'no buckets'}`,
+        );
+      }
+    }
+  });
+});
