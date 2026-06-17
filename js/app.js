@@ -1868,63 +1868,102 @@ function buildPowerOnStall(ap) {
     steps: [
       {
         type: 'choice',
-        phase: 'Setup',
-        prompt: 'What does a power on stall simulate, and why is it more aggressive?',
-        context: 'Power on stalls have different characteristics than power off stalls.',
+        phase: 'Concept',
+        prompt: 'What does a power on stall simulate, and why is it more aggressive than a power off stall?',
+        context: 'Understanding the purpose of each stall type is part of the oral exam.',
         options: [
           { text: 'Takeoff/departure stall — torque and P-factor make left yaw/roll more likely', correct: true, why: '' },
           { text: 'Approach stall with engine — same as power off but with power added', correct: false, why: 'Power on stall simulates takeoff and departure, not approach. Full power changes the aerodynamics and control forces significantly.' },
-          { text: 'Cruise stall — simulates speed loss in level flight', correct: false, why: 'Power on stall is specifically a takeoff/departure configuration — high power, flaps up or minimal, climbing attitude.' },
+          { text: 'Cruise stall — simulates speed loss in level flight', correct: false, why: 'Power on stall is specifically a takeoff/departure configuration — high power, flaps up, climbing attitude.' },
           { text: 'Go-around stall — same procedure as power off but faster', correct: false, why: 'While a go-around stall is related, power on stall specifically simulates the takeoff departure scenario with full power applied.' },
         ],
         feedback: 'Power on stall = takeoff/departure stall. High power creates torque, P-factor, and slipstream effects that want to roll/yaw the aircraft left. Recovery requires right rudder coordination.',
         tip: { title: 'Why it\'s different', text: 'At full power and high angle of attack, P-factor and torque are at maximum. The left-turning tendency is very strong — expect the left wing to drop at the stall break if you\'re not holding right rudder.' }
       },
       {
-        type: 'config',
-        phase: 'Entry Configuration',
-        prompt: 'Configure for power on stall entry.',
-        context: 'Simulating departure from runway. Area cleared, altitude established.',
-        controls: [
-          { id: 'flaps', label: 'Flaps', type: 'chips', options: ['0°', '10°', '20°', '30°'], default: '10°', correct: '0°', correctLabel: '0° — takeoff configuration, flaps up', wrongLabel: 'Power on stall uses 0° flaps — takeoff configuration. Some instructors allow 10° for short-field, but 0° is standard.' },
-          { id: 'power', label: 'Power', type: 'chips', options: ['Full', '1800 RPM', '2100 RPM', '1500 RPM'], default: '2100 RPM', correct: 'Full', correctLabel: 'Full power — simulates takeoff power setting', wrongLabel: 'Full power for power on stall — that\'s the defining characteristic. Simulates full takeoff power.' },
-          { id: 'pitch', label: 'Pitch Attitude', type: 'chips', options: ['Level', '10° nose up', '15–20° nose up', '5° nose up'], default: '10° nose up', correct: '15–20° nose up', correctLabel: '15–20° nose up — aggressive climb attitude induces stall rapidly', wrongLabel: 'Pitch to 15–20° nose up at full power to bring on the stall. This simulates over-rotating on takeoff.' },
+        type: 'choice',
+        phase: 'Pre-Entry Setup',
+        prompt: 'What must you complete before initiating any stall maneuver?',
+        context: 'ACS requires a clear area and adequate altitude buffer before stall entry.',
+        options: [
+          { text: 'Two 90° clearing turns at or above 1,500 ft AGL — 2,500–3,000 ft AGL preferred for training', correct: true, why: '' },
+          { text: 'One 180° turn to check for traffic behind you', correct: false, why: 'One 180° covers the same arc as two 90° turns, but two 90° turns is the standard procedure. You also need adequate altitude — 1,500 ft AGL minimum, 2,500–3,000 ft preferred.' },
+          { text: 'Scan left and right, then begin the maneuver', correct: false, why: 'A brief scan isn\'t enough. You must complete full clearing turns to check for traffic below, behind, and in scan blind spots.' },
+          { text: 'Clear the area, then descend to 1,000 ft AGL for the maneuver', correct: false, why: '1,000 ft AGL is not enough altitude. ACS requires at least 1,500 ft AGL above the recovery altitude, with 2,500–3,000 ft recommended for training.' },
         ],
-        feedback: 'Power on stall entry: full power, 0° flaps, pitch aggressively to 15–20° nose up. Hold heading with right rudder — the torque will want to yaw left hard.',
-        tip: { title: 'Right rudder is critical', text: 'At full power and high AOA, you\'ll need significant right rudder to stay coordinated. If you let the ball go left, the left wing drops more aggressively at the stall. Hold right rudder throughout the entry.' }
+        feedback: 'Two 90° clearing turns, then verify you\'re at least 1,500 ft AGL above the recovery altitude. 2,500–3,000 ft AGL is preferred — gives you margin if recovery is delayed.',
+        tip: { title: 'Why clearing turns matter', text: 'Stalls involve altitude loss and sometimes heading changes. You need to know the airspace below and around you is clear before deliberately inducing a stall.' }
+      },
+      {
+        type: 'config',
+        phase: 'Cockpit Configuration',
+        prompt: 'Set up the cockpit before transitioning to entry speed.',
+        context: 'Clearing turns complete. Area is clear. Configure before reducing power.',
+        controls: [
+          { id: 'mixture', label: 'Mixture', type: 'chips', options: ['Rich', 'Lean', 'Best Power', 'Cutoff'], default: 'Lean', correct: 'Rich', correctLabel: 'Rich — full power operation requires full mixture', wrongLabel: 'Set mixture to rich before applying full power. A lean mixture at full power can cause detonation.' },
+          { id: 'fuel', label: 'Fuel Selector', type: 'chips', options: ['BOTH', 'LEFT', 'RIGHT', 'OFF'], default: 'LEFT', correct: 'BOTH', correctLabel: 'BOTH — ensures uninterrupted fuel supply during unusual attitudes', wrongLabel: 'Fuel selector to BOTH for the maneuver. Single-tank selection during unusual attitudes risks uncovering a fuel port.' },
+          { id: 'flaps', label: 'Flaps', type: 'chips', options: ['0°', '10°', '20°', '30°'], default: '10°', correct: '0°', correctLabel: '0° — clean takeoff configuration', wrongLabel: 'Power on stall uses 0° flaps — clean takeoff configuration. Flaps simulate an approach/landing, not a departure.' },
+        ],
+        feedback: 'Mixture rich, fuel selector BOTH, flaps 0°. Now you\'re ready to reduce power and transition to entry speed.',
+        tip: { title: 'C172 specifics', text: 'On the C172, the fuel selector is usually on BOTH already. Mixture is often leaned at cruise altitude — remember to enrichen before applying full power.' }
+      },
+      {
+        type: 'config',
+        phase: 'Transition to Entry Speed',
+        prompt: 'Slow the aircraft to simulate the speed at which liftoff transitions to climbout.',
+        context: 'The stall must be entered from near rotation speed — not from cruise.',
+        controls: [
+          { id: 'power', label: 'Power', type: 'slider', min: 600, max: 2400, step: 100, default: 2100, unit: 'RPM', correct: 1500, tolerance: 200, correctLabel: '~1,500 RPM — reduces speed while allowing altitude to be held', wrongLabel: 'Reduce to ~1,500 RPM to initiate the deceleration. Hold altitude with back pressure as airspeed bleeds off.' },
+          { id: 'airspeed', label: 'Target Airspeed', type: 'chips', options: ['55–60 KIAS', '70–75 KIAS', '45–50 KIAS', '80+ KIAS'], default: '70–75 KIAS', correct: '55–60 KIAS', correctLabel: '55–60 KIAS — just above Vr (52 KIAS), simulating the liftoff-to-climb transition', wrongLabel: 'Target 55–60 KIAS — near Vr. This is the speed you\'d be at just after rotation, when a departure stall is most likely.' },
+        ],
+        feedback: 'Reduce to ~1,500 RPM and hold altitude with back pressure as speed bleeds to 55–60 KIAS. Once you reach that speed you\'re ready to enter.',
+        tip: { title: 'Carb heat', text: 'Turn carb heat ON when you reduce to ~1,500 RPM — low power increases carb ice risk. Turn it back OFF just before applying full power for the entry.' }
+      },
+      {
+        type: 'config',
+        phase: 'Entry',
+        prompt: 'At 55–60 KIAS, establish the stall entry.',
+        context: 'Simulating an aggressive over-rotation after takeoff.',
+        controls: [
+          { id: 'carbheat', label: 'Carb Heat', type: 'chips', options: ['OFF', 'ON'], default: 'ON', correct: 'OFF', correctLabel: 'OFF — carb heat reduces engine output; must be off before applying takeoff power', wrongLabel: 'Turn carb heat OFF before advancing the throttle. Carb heat reduces power output — you want full power for the entry.' },
+          { id: 'power', label: 'Power', type: 'chips', options: ['Full', '2100 RPM', '1800 RPM', '1500 RPM'], default: '1800 RPM', correct: 'Full', correctLabel: 'Full power — simulates takeoff/departure power setting', wrongLabel: 'Full power is the defining characteristic of this stall. Advance the throttle smoothly but promptly to the firewall.' },
+          { id: 'pitch', label: 'Pitch Attitude', type: 'chips', options: ['15–20° nose up', '10° nose up', '5° nose up', 'Level'], default: '10° nose up', correct: '15–20° nose up', correctLabel: '15–20° nose up — aggressive climb attitude that exceeds critical AOA', wrongLabel: 'Pitch to 15–20° nose up to bring on the stall. This simulates over-rotating at takeoff.' },
+        ],
+        feedback: 'Carb heat off → full power → pitch aggressively to 15–20° nose up. Apply and hold significant right rudder from the moment you advance the throttle — torque yaws hard left immediately.',
+        tip: { title: 'Anticipate the rudder', text: 'Don\'t wait for the yaw to develop — anticipate it. The instant you advance the throttle, torque and P-factor kick in. Right rudder from the start keeps the ball centered and prevents the left wing from being pre-loaded to drop harder at the break.' }
       },
       {
         type: 'choice',
-        phase: 'Stall Recognition',
-        prompt: 'At the power on stall break, what is the most likely motion and why?',
-        context: 'Full power, high pitch, approaching stall — what happens at the break?',
+        phase: 'Stall Cues',
+        prompt: 'Holding 15–20° pitch with speed decaying — what is the correct sequence of warning cues before the break?',
+        context: 'ACS requires recognition at first indication, not just at the full break.',
         options: [
-          { text: 'Left yaw and left wing drop — from torque and P-factor', correct: true, why: '' },
-          { text: 'Right wing drop — propeller slipstream pushes right side down', correct: false, why: 'Torque and P-factor both create left-turning tendencies. Slipstream spirals around the fuselage but the net effect at high power/AOA is left yaw.' },
-          { text: 'Straight nose drop — same as power off stall', correct: false, why: 'Power on stalls rarely break straight ahead — the torque and P-factor at full power usually produce a left roll/yaw at the break.' },
-          { text: 'Right yaw first, then nose drop', correct: false, why: 'Right yaw would require a force pushing the nose right. Torque, P-factor, and spiraling slipstream all create left yaw.' },
+          { text: 'Mushy controls → stall horn → buffet → stall break', correct: true, why: '' },
+          { text: 'Stall horn → mushy controls → buffet → stall break', correct: false, why: 'Controls get mushy before the stall horn. You\'re losing control effectiveness as AOA increases, before the horn threshold is reached.' },
+          { text: 'Buffet → stall horn → mushy controls → stall break', correct: false, why: 'Airframe buffet (disturbed airflow reaching the tail) typically comes after the stall horn, not before. Control mushiness begins earliest.' },
+          { text: 'Stall break → stall horn → buffet', correct: false, why: 'The horn and buffet are warnings that come BEFORE the break. If you\'re waiting for the break to identify the stall, you\'re already too late.' },
         ],
-        feedback: 'Power on stalls typically break to the left — left wing drops, left yaw — due to torque and P-factor. Right rudder throughout the entry reduces the severity of this break.',
-        tip: { title: 'What to say', text: 'Announce "stall" at the break. Your examiner wants to hear you recognize it. Recovery priority: wings level → nose down slightly → maintain full power → climb away.' }
+        feedback: 'Cue sequence: mushy controls → stall horn → buffet → stall break. Announce "stall warning" at the horn. Announce "stall" at the break. ACS tests recognition — don\'t wait for the full break to react.',
+        tip: { title: 'What to listen and feel for', text: 'At full power the engine is loud, but you\'ll hear the stall horn over it. You\'ll also feel the controls get heavy and unresponsive as the elevator loses effectiveness. The buffet is a physical shudder through the airframe — it comes from disturbed airflow hitting the tail just before the wing fully stalls.' }
       },
       {
         type: 'config',
         phase: 'Recovery',
-        prompt: 'Left wing drops at the stall break. Recover.',
-        context: 'Full power stall break with left roll tendency. Sequence matters — wrong order can aggravate the stall.',
+        prompt: 'The stall breaks — left yaw and left wing drop. Recover with minimum altitude loss.',
+        context: 'Sequence matters: wrong order can turn a stall break into a spin entry.',
         controls: [
-          { id: 'rudder', label: 'First control input', type: 'chips', options: ['Right aileron to level', 'Right rudder to stop yaw', 'Left aileron', 'Elevator forward'], default: 'Right aileron to level', correct: 'Right rudder to stop yaw', correctLabel: 'Right rudder first — stops the yaw before it becomes a spin entry', wrongLabel: 'Right RUDDER first to stop the yaw. Using aileron first in a stall can aggravate the roll (aileron drag stalls the dropping wing further).' },
-          { id: 'pitch', label: 'Pitch input', type: 'chips', options: ['Aggressive nose down', 'Slight nose down — break AOA', 'Hold pitch', 'Nose up to stop sink'], default: 'Hold pitch', correct: 'Slight nose down — break AOA', correctLabel: 'Slight nose down — breaks angle of attack without excessive altitude loss', wrongLabel: 'Lower nose just enough to break the stall AOA. Aggressive push wastes altitude unnecessarily.' },
-          { id: 'power', label: 'Power', type: 'chips', options: ['Keep full power', 'Reduce to 1800 RPM', 'Idle', 'Reduce then add'], default: 'Keep full power', correct: 'Keep full power', correctLabel: 'Keep full power — you already have it in, use it to accelerate recovery', wrongLabel: 'Power on stall recovery keeps full power — it\'s already helping you. Reducing power wastes the energy you have.' },
+          { id: 'rudder', label: 'First input', type: 'chips', options: ['Right rudder — stop the yaw', 'Left aileron — stop the roll', 'Right aileron — level the wings', 'Elevator forward'], default: 'Right aileron — level the wings', correct: 'Right rudder — stop the yaw', correctLabel: 'Right rudder first — arrests the yaw before it becomes a spin entry', wrongLabel: 'Right RUDDER first — not aileron. Applying aileron on a stalled dropping wing adds drag to that wing, worsening the roll and potentially inducing a spin.' },
+          { id: 'pitch', label: 'Pitch', type: 'chips', options: ['Slight nose down — break AOA', 'Aggressive nose down — dive away', 'Hold pitch', 'Nose up — stop the sink'], default: 'Hold pitch', correct: 'Slight nose down — break AOA', correctLabel: 'Slight nose down — breaks the stall angle of attack with minimum altitude loss', wrongLabel: 'Lower the nose just enough to break the stall. Aggressive push-forward dives and loses altitude you don\'t need to give up.' },
+          { id: 'power', label: 'Power', type: 'chips', options: ['Keep full power', 'Reduce to 1800 RPM', 'Idle', 'Reduce then re-add'], default: 'Keep full power', correct: 'Keep full power', correctLabel: 'Keep full power — it\'s already in; use it to accelerate through the recovery', wrongLabel: 'Keep full power throughout. It\'s already helping you — pulling it back wastes the energy you have.' },
         ],
-        feedback: 'Recovery sequence: right rudder to stop yaw → slight nose down to break stall → wings level with coordinated aileron → climb at Vy. Full power maintained throughout.',
-        tip: { title: 'Spin awareness', text: 'An uncoordinated stall break — ball to the left, left wing dropping — is a spin entry. Right rudder prevents this. If a wing drops at the break and you apply opposite aileron before rudder, you can worsen the roll. Rudder first, always.' }
+        feedback: 'Recovery: right rudder to stop yaw → slight nose down to break stall → wings level with coordinated aileron and rudder → establish Vy climb (71 KIAS). Full power throughout.',
+        tip: { title: 'Spin awareness', text: 'An uncoordinated stall break — ball left, left wing dropping, no right rudder — is how spins begin. Rudder stops the yaw. Once the wings are flying again (AOA broken), then use aileron to level. The order is: rudder → pitch → wings level.' }
       },
     ],
     distractors: [
       { phase: 'Lineup',              why: 'Lineup is the first step of a normal takeoff, not a step in the stall drill.' },
       { phase: 'Flare & Touchdown',   why: 'Flare and touchdown are landing steps. The stall sequence ends at Recovery.' },
-      { phase: 'Turn in Slow Flight', why: 'Slow flight turns are a separate maneuver. The power-on stall goes straight to stall entry.' },
+      { phase: 'Turn in Slow Flight', why: 'Slow flight turns are a separate maneuver. The power-on stall doesn\'t include them.' },
       { phase: 'Rollout',             why: 'Rollout is a landing step. The stall sequence ends at Recovery.' },
       { phase: 'Downwind — GUMPS',    why: 'GUMPS is a traffic pattern item. The stall drill doesn\'t include it.' },
       { phase: 'Base Turn',           why: 'Base turn is a pattern leg, not part of the stall drill sequence.' },
