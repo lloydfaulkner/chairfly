@@ -16,7 +16,7 @@ resource "aws_cloudfront_distribution" "this" {
   enabled             = true
   default_root_object = "index.html"
   is_ipv6_enabled     = true
-  price_class         = "PriceClass_All"
+  price_class         = "PriceClass_100"
   web_acl_id          = var.web_acl_id
   tags                = { Name = var.project }
 
@@ -37,7 +37,8 @@ resource "aws_cloudfront_distribution" "this" {
 
   restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = "whitelist"
+      locations        = ["US", "CA", "PR", "VI", "GU"]
     }
   }
 
