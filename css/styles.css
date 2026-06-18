@@ -4861,3 +4861,36 @@
 .drill-chip--blue:active   { border-color: #4db8ff; color: #4db8ff; background: var(--paper); }
 .drill-chip--orange:active { border-color: #ff9a5d; color: #ff9a5d; background: var(--paper); }
 .drill-chip--red:active    { border-color: #ff7070; color: #ff7070; background: var(--paper); }
+
+/* ── Update toast ─────────────────────────────────────────────────────────── */
+#update-toast {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #111f30;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: var(--text-bright);
+  font-family: var(--body);
+  font-size: 14px;
+  white-space: nowrap;
+  z-index: 9999;
+  box-shadow: 0 0 16px #00c8ff33;
+}
+#update-toast[hidden] { display: none; }
+#update-toast button {
+  background: var(--accent);
+  color: #0a0f1a;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 14px;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
