@@ -702,16 +702,11 @@
 </div>
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-      reg.addEventListener('updatefound', () => {
-        if (!navigator.serviceWorker.controller) return;
-        const sw = reg.installing;
-        sw.addEventListener('statechange', () => {
-          if (sw.state === 'activated') {
-            document.getElementById('update-toast').hidden = false;
-          }
-        });
-      });
+    navigator.serviceWorker.register('sw.js');
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type === 'SW_UPDATED') {
+        document.getElementById('update-toast').hidden = false;
+      }
     });
   }
 </script>
