@@ -1872,6 +1872,20 @@ function buildPowerOnStall(ap) {
     steps: [
       {
         type: 'choice',
+        phase: 'Entry Altitude',
+        prompt: 'What is the ACS minimum altitude for stall maneuvers, and what altitude is preferred for training?',
+        context: 'The examiner will note your altitude before you initiate — this is a checkride item.',
+        options: [
+          { text: '1,500 ft AGL minimum — 2,500–3,000 ft AGL preferred for training', correct: true, why: '' },
+          { text: '1,000 ft AGL minimum — 1,500 ft AGL preferred', correct: false, why: '1,000 ft AGL is not enough. ACS requires at least 1,500 ft AGL above the recovery altitude. 1,000 ft leaves almost no margin if recovery is delayed.' },
+          { text: '2,500 ft AGL required by ACS — no preference above that', correct: false, why: 'The ACS minimum is 1,500 ft AGL, not 2,500. 2,500–3,000 ft is the recommended training altitude for extra margin, but not the regulatory minimum.' },
+          { text: 'No minimum — just clear of clouds and terrain', correct: false, why: 'ACS specifies 1,500 ft AGL above the recovery altitude. Cloud clearance is a VFR requirement but is separate from the stall altitude standard.' },
+        ],
+        feedback: 'ACS minimum: 1,500 ft AGL above recovery altitude. Preferred for training: 2,500–3,000 ft AGL — extra buffer if recovery is slow.',
+        tip: { title: 'At KUZA', text: 'KUZA is 666 ft MSL. 1,500 ft AGL puts you at ~2,166 ft MSL minimum. Preferred training altitude is ~3,166–3,666 ft MSL. Your instructor will likely say "at or above 3,000 ft MSL" as a clean number.' }
+      },
+      {
+        type: 'choice',
         phase: 'Clearing Turns',
         prompt: 'What clearing procedure is required before any stall maneuver?',
         context: 'ACS specifies a clearing procedure — not just a glance around.',
@@ -1883,20 +1897,6 @@ function buildPowerOnStall(ap) {
         ],
         feedback: 'Two 90° clearing turns — look above, below, and all quadrants. The turns also let you confirm your heading and see what\'s below before the altitude loss in recovery.',
         tip: { title: 'Why two turns', text: 'Each 90° exposes a different quadrant. The first clears the front-left, the second clears the right. Together they cover the area you\'ll descend through during recovery.' }
-      },
-      {
-        type: 'choice',
-        phase: 'Min 1,500 ft AGL',
-        prompt: 'What is the ACS minimum altitude for stall maneuvers, and what altitude is preferred for training?',
-        context: 'The examiner will note your altitude before you initiate — this is a checkride item.',
-        options: [
-          { text: '1,500 ft AGL minimum — 2,500–3,000 ft AGL preferred for training', correct: true, why: '' },
-          { text: '1,000 ft AGL minimum — 1,500 ft AGL preferred', correct: false, why: '1,000 ft AGL is not enough. ACS requires at least 1,500 ft AGL above the recovery altitude. 1,000 ft leaves almost no margin if recovery is delayed.' },
-          { text: '2,500 ft AGL required by ACS — no preference above that', correct: false, why: 'The ACS minimum is 1,500 ft AGL, not 2,500. 2,500–3,000 ft is the recommended training altitude for extra margin, but not the regulatory minimum.' },
-          { text: 'No minimum — just clear of clouds and terrain', correct: false, why: 'ACS specifies 1,500 ft AGL above the recovery altitude. Cloud clearance is a VFR requirement but is separate from the stall altitude standard.' },
-        ],
-        feedback: 'ACS minimum: 1,500 ft AGL above recovery altitude. Preferred for training: 2,500–3,000 ft AGL — extra buffer if recovery is slow.',
-        tip: { title: 'At KUZA', text: 'KUZA is 666 ft MSL. 1,500 ft AGL puts you at ~2,166 ft MSL minimum. Preferred training altitude is ~3,166–3,666 ft MSL. Your instructor will likely say "at or above 3,000 ft MSL" as a clean number.' }
       },
       {
         type: 'config',
@@ -1965,8 +1965,8 @@ function buildPowerOnStall(ap) {
       },
     ],
     recallItems: [
+      { phase: 'Entry Altitude' },
       { phase: 'Clearing Turns' },
-      { phase: 'Min 1,500 ft AGL' },
       { phase: 'Mixture/Fuel/Flaps' },
       { phase: 'Throttle ↓ / Carb ON' },
       { phase: 'Back Pressure' },
