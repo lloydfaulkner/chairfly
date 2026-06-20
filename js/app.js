@@ -1884,7 +1884,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'config',
-        phase: 'Mixture / Fuel / Flaps',
+        phase: 'Mixture/Fuel/Flaps',
         prompt: 'Set up the cockpit before transitioning to entry speed.',
         context: 'Clearing turns complete. Area is clear. Configure before reducing power.',
         controls: [
