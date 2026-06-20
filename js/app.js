@@ -1953,7 +1953,8 @@ function buildPowerOnStall(ap) {
     recallItems: [
       { phase: 'Clearing Turns' },
       { phase: 'Mixture/Fuel/Flaps' },
-      { phase: 'Throttle/Back Pressure' },
+      { phase: 'Throttle ↓ / Carb ON' },
+      { phase: 'Back Pressure' },
       { phase: 'Carb Heat — OFF' },
       { phase: 'Full Power' },
       { phase: 'Pitch 15–20° Up' },
