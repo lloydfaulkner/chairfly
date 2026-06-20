@@ -2055,7 +2055,7 @@ function renderProcSeqRecall() {
   const eyebrow = group ? `↳ ${group.label.toUpperCase()} · SEQUENCE RECALL` : '↳ SEQUENCE RECALL · TAP IN ORDER';
   const recallTitle = group ? `Build the ${group.label.toLowerCase()} flow from memory` : 'Build the procedure from memory';
   const contextHtml = group?.context ? `<div class="seq-group-context">${group.context}</div>` : '';
-  const advanceBtnLabel = group ? `Practice ${group.label} ›` : 'Drill Each Step →';
+  const advanceBtnLabel = group ? `Practice ${group.label} ›` : 'Let\'s go →';
   const pct = s.totalReal > 0 ? Math.round((s.nextSlot / s.totalReal) * 100) : 0;
 
   const slotsHtml = Array.from({ length: s.totalReal }, (_, i) => {
