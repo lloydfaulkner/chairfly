@@ -2496,6 +2496,7 @@
       align-items: start;
     }
     @media (max-width: 700px) { .seq-grid { grid-template-columns: 1fr; } }
+    @media (min-width: 701px) { .seq-slot-col { order: -1; } }
 
     .seq-col-eyebrow {
       font-family: var(--font-mono);

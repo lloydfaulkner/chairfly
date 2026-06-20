@@ -2077,10 +2077,6 @@ function renderProcSeqRecall() {
     </div>
     ${doneHtml}
     <div class="seq-grid">
-      <div class="seq-slot-col">
-        <div class="seq-col-eyebrow">${isItemBased ? `↓ ${group.label.toUpperCase()} CHECKLIST · IN ORDER` : '↓ THE PROCEDURE · IN ORDER'}</div>
-        <div class="seq-slot-list">${slotsHtml}</div>
-      </div>
       <div class="seq-pool-col">
         <div class="seq-pool-card">
           <div class="seq-pool-card-header">
@@ -2094,6 +2090,10 @@ function renderProcSeqRecall() {
             ${!s.done ? `<div style="margin-top:10px;text-align:center"><a href="#" onclick="procAdvanceFromRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Skip</a></div>` : ''}
           </div>
         </div>
+      </div>
+      <div class="seq-slot-col">
+        <div class="seq-col-eyebrow">${isItemBased ? `↓ ${group.label.toUpperCase()} CHECKLIST · IN ORDER` : '↓ THE PROCEDURE · IN ORDER'}</div>
+        <div class="seq-slot-list">${slotsHtml}</div>
       </div>
     </div>`;
 }
