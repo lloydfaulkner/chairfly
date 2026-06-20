@@ -5137,7 +5137,7 @@ function updateSpeechNote() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+if (typeof document !== 'undefined') document.addEventListener('DOMContentLoaded', () => {
   // Sync mode toggle button state with boot-time mode
   _applyMode(document.documentElement.dataset.mode || 'day', false);
   // Initialize aircraft header button
@@ -5173,4 +5173,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Export for testing
-if (typeof module !== 'undefined') module.exports = { isAndroid, buildCallTemplateHtml };
+if (typeof module !== 'undefined') module.exports = { isAndroid, buildCallTemplateHtml, buildPowerOnStall, _initProcRecall, procSeqState };
