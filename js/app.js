@@ -1783,6 +1783,18 @@ function buildSlowFlight(ap) {
         tip: { title: 'Common mistake', text: 'Don\'t retract flaps before you have enough speed — especially going from 30° to 20° to 10°. Each retraction step removes lift. If you retract too fast you\'ll sink or stall. Speed first, then flaps.' }
       },
     ],
+    recallItems: [
+      { phase: 'Clearing Turns' },
+      { phase: 'Carb Heat ON / Power ↓' },
+      { phase: 'Flaps 10° (Below Vfe)' },
+      { phase: 'Back Pressure — Hold Altitude' },
+      { phase: 'Flaps 30° / ~50 KIAS' },
+      { phase: 'Right Rudder — Coordinated' },
+      { phase: 'Max 30° Bank in Turns' },
+      { phase: 'Full Power — Recover' },
+      { phase: 'Carb Heat OFF' },
+      { phase: 'Flaps Up Incrementally' },
+    ],
     distractors: [
       { phase: 'Takeoff Roll',        why: 'Takeoff roll is a departure step — not part of the slow flight maneuver sequence.' },
       { phase: 'Base Turn',           why: 'Base turn is a traffic pattern leg, not a step in the slow flight maneuver.' },
@@ -1853,6 +1865,18 @@ function buildPowerOffStall(ap) {
         feedback: 'Recovery: simultaneously lower nose slightly + full power. Once flying (60+ KIAS), retract flaps incrementally. Hold heading. Climb to entry altitude.',
         tip: { title: 'ACS standard', text: 'ACS requires recovery at first indication (don\'t wait for full break if possible), with minimum altitude loss. Typical power-off stall recovery uses 50–150 ft if done promptly. Delay costs 300+ ft.' }
       },
+    ],
+    recallItems: [
+      { phase: '1,500 ft AGL / Clearing Turns' },
+      { phase: 'Carb Heat ON' },
+      { phase: 'Power → Approach (~1500 RPM)' },
+      { phase: 'Slow to ~65 KIAS / Flaps 30°' },
+      { phase: 'Power → Idle' },
+      { phase: 'Back Pressure — Hold Altitude' },
+      { phase: 'Stall Warning — Announce' },
+      { phase: 'Full Power + Nose Down' },
+      { phase: 'Flaps Up Above 60 KIAS' },
+      { phase: 'Vy Climb' },
     ],
     distractors: [
       { phase: 'Takeoff Roll',        why: 'Takeoff roll is a takeoff step — not part of the power-off stall sequence.' },
