@@ -1884,7 +1884,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'config',
-        phase: 'Cockpit Config',
+        phase: 'Mixture / Fuel / Flaps',
         prompt: 'Set up the cockpit before transitioning to entry speed.',
         context: 'Clearing turns complete. Area is clear. Configure before reducing power.',
         controls: [
@@ -1947,16 +1947,6 @@ function buildPowerOnStall(ap) {
         feedback: 'Recovery: right rudder to stop yaw → slight nose down to break stall → wings level with coordinated aileron and rudder → establish Vy climb (71 KIAS). Full power throughout.',
         tip: { title: 'Spin awareness', text: 'An uncoordinated stall break — ball left, left wing dropping, no right rudder — is how spins begin. Rudder stops the yaw. Once the wings are flying again (AOA broken), then use aileron to level. The order is: rudder → pitch → wings level.' }
       },
-    ],
-    recallItems: [
-      { phase: 'Clearing Turns' },
-      { phase: 'Mixture — Rich' },
-      { phase: 'Fuel Selector — BOTH' },
-      { phase: 'Flaps — 0°' },
-      { phase: 'Slow to Entry Speed' },
-      { phase: 'Stall Entry' },
-      { phase: 'Stall Warning' },
-      { phase: 'Recovery' },
     ],
     distractors: [
       { phase: 'Lineup',              why: 'Lineup is the first step of a normal takeoff, not a step in the stall drill.' },
