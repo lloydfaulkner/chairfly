@@ -1950,6 +1950,16 @@ function buildPowerOnStall(ap) {
         tip: { title: 'Spin awareness', text: 'An uncoordinated stall break — ball left, left wing dropping, no right rudder — is how spins begin. Rudder stops the yaw. Once the wings are flying again (AOA broken), then use aileron to level. The order is: rudder → pitch → wings level.' }
       },
     ],
+    recallItems: [
+      { phase: 'Clearing Turns' },
+      { phase: 'Mixture/Fuel/Flaps' },
+      { phase: 'Throttle/Back Pressure' },
+      { phase: 'Carb Heat — OFF' },
+      { phase: 'Full Power' },
+      { phase: 'Pitch 15–20° Up' },
+      { phase: 'Stall Warning' },
+      { phase: 'Rudder/Break/Vy' },
+    ],
     distractors: [
       { phase: 'Lineup',              why: 'Lineup is the first step of a normal takeoff, not a step in the stall drill.' },
       { phase: 'Flare & Touchdown',   why: 'Flare and touchdown are landing steps. The stall sequence ends at Recovery.' },
