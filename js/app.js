@@ -1605,6 +1605,7 @@ function _initProcRecall(proc, group) {
 }
 
 function retryProcRecall() {
+  _hideProcRecallDone();
   const proc = procState.currentProc;
   const group = proc.recallGroups ? proc.recallGroups[procState.recallGroupIdx] : null;
   _initProcRecall(proc, group);
@@ -1612,6 +1613,7 @@ function retryProcRecall() {
 }
 
 function procAdvanceFromRecall() {
+  _hideProcRecallDone();
   if (procSeqState._timer) { clearInterval(procSeqState._timer); procSeqState._timer = null; }
   procState.inRecall = false;
   const group = procState.currentProc.recallGroups?.[procState.recallGroupIdx] || null;
@@ -1994,6 +1996,30 @@ function tapProcSeqChip(idx) {
   }
 }
 
+function _showProcRecallDone(ok, miss, total, elapsed, advanceBtnLabel) {
+  const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
+  const el = document.getElementById('proc-recall-done');
+  el.innerHTML = `
+    <div class="prd-row">
+      <div class="prd-check">✓</div>
+      <div>
+        <div class="prd-title">Nailed it.</div>
+        <div class="prd-sub">${total} / ${total} in ${fmtSeqTime(elapsed)} · ${accuracy}% accuracy</div>
+      </div>
+    </div>
+    <div class="prd-cta">Now let's drill each step.</div>
+    <button class="cf-btn cf-btn--primary" style="width:100%" onclick="procAdvanceFromRecall()">${advanceBtnLabel}</button>
+    <div style="margin-top:10px;text-align:center">
+      <a href="#" onclick="retryProcRecall();return false" style="font-size:13px;color:var(--ink-3);text-decoration:underline">Try again</a>
+    </div>`;
+  requestAnimationFrame(() => el.classList.add('show'));
+}
+
+function _hideProcRecallDone() {
+  const el = document.getElementById('proc-recall-done');
+  if (el) { el.classList.remove('show'); el.innerHTML = ''; }
+}
+
 function renderProcSeqRecall() {
   const s = procSeqState;
   const ok = s.ok, miss = s.miss;
@@ -2003,7 +2029,7 @@ function renderProcSeqRecall() {
   const eyebrow = group ? `↳ ${group.label.toUpperCase()} · SEQUENCE RECALL` : '↳ SEQUENCE RECALL · TAP IN ORDER';
   const recallTitle = group ? `Build the ${group.label.toLowerCase()} flow from memory` : 'Build the procedure from memory';
   const contextHtml = group?.context ? `<div class="seq-group-context">${group.context}</div>` : '';
-  const advanceBtnLabel = group ? `Practice ${group.label} ›` : 'Begin Procedure →';
+  const advanceBtnLabel = group ? `Practice ${group.label} ›` : 'Drill Each Step →';
   const pct = s.totalReal > 0 ? Math.round((s.nextSlot / s.totalReal) * 100) : 0;
 
   const slotsHtml = Array.from({ length: s.totalReal }, (_, i) => {
@@ -2032,18 +2058,8 @@ function renderProcSeqRecall() {
     ? `<div class="proc-seq-distractor-msg">⚠ That step doesn't belong here — ${s.lastDistractorMsg}</div>`
     : '';
 
-  const doneHtml = s.done ? `
-    <div class="seq-done-banner">
-      <div class="seq-done-disc">✓</div>
-      <div>
-        <div class="seq-done-title">Nailed it.</div>
-        <div class="seq-done-sub">${s.totalReal} / ${s.totalReal} in ${fmtSeqTime(s.elapsed)} · ${accuracy}% accuracy</div>
-      </div>
-      <div>
-        <button class="cf-btn cf-btn--primary cf-btn--sm" onclick="procAdvanceFromRecall()">${advanceBtnLabel}</button>
-        <div style="margin-top:8px"><a href="#" onclick="retryProcRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Try again</a></div>
-      </div>
-    </div>` : '';
+  if (s.done) _showProcRecallDone(ok, miss, s.totalReal, s.elapsed, advanceBtnLabel);
+  const doneHtml = '';
 
   document.getElementById('proc-step-content').innerHTML = `
     <div class="seq-page-header">
