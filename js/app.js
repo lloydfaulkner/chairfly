@@ -1873,16 +1873,30 @@ function buildPowerOnStall(ap) {
       {
         type: 'choice',
         phase: 'Clearing Turns',
-        prompt: 'What must you complete before initiating any stall maneuver?',
-        context: 'ACS requires a clear area and adequate altitude buffer before stall entry.',
+        prompt: 'What clearing procedure is required before any stall maneuver?',
+        context: 'ACS specifies a clearing procedure — not just a glance around.',
         options: [
-          { text: 'Two 90° clearing turns at or above 1,500 ft AGL — 2,500–3,000 ft AGL preferred for training', correct: true, why: '' },
-          { text: 'One 180° turn to check for traffic behind you', correct: false, why: 'One 180° covers the same arc as two 90° turns, but two 90° turns is the standard procedure. You also need adequate altitude — 1,500 ft AGL minimum, 2,500–3,000 ft preferred.' },
-          { text: 'Scan left and right, then begin the maneuver', correct: false, why: 'A brief scan isn\'t enough. You must complete full clearing turns to check for traffic below, behind, and in scan blind spots.' },
-          { text: 'Clear the area, then descend to 1,000 ft AGL for the maneuver', correct: false, why: '1,000 ft AGL is not enough altitude. ACS requires at least 1,500 ft AGL above the recovery altitude, with 2,500–3,000 ft recommended for training.' },
+          { text: 'Two 90° turns — scan for traffic above, below, and all around', correct: true, why: '' },
+          { text: 'One 180° turn to check behind you', correct: false, why: 'One 180° covers the same arc as two 90° turns, but the ACS standard is two 90° turns. Two turns also give more dwell time to scan each quadrant.' },
+          { text: 'Scan left and right from wings-level, then proceed', correct: false, why: 'A wings-level scan misses traffic below and in blind spots behind the wing. Two full clearing turns are required.' },
+          { text: 'One 360° turn to cover the full area', correct: false, why: 'A 360° works but is more than required and wastes altitude. Two 90° turns cover the same scan area more efficiently.' },
         ],
-        feedback: 'Two 90° clearing turns, then verify you\'re at least 1,500 ft AGL above the recovery altitude. 2,500–3,000 ft AGL is preferred — gives you margin if recovery is delayed.',
-        tip: { title: 'Why clearing turns matter', text: 'Stalls involve altitude loss and sometimes heading changes. You need to know the airspace below and around you is clear before deliberately inducing a stall.' }
+        feedback: 'Two 90° clearing turns — look above, below, and all quadrants. The turns also let you confirm your heading and see what\'s below before the altitude loss in recovery.',
+        tip: { title: 'Why two turns', text: 'Each 90° exposes a different quadrant. The first clears the front-left, the second clears the right. Together they cover the area you\'ll descend through during recovery.' }
+      },
+      {
+        type: 'choice',
+        phase: 'Min 1,500 ft AGL',
+        prompt: 'What is the ACS minimum altitude for stall maneuvers, and what altitude is preferred for training?',
+        context: 'The examiner will note your altitude before you initiate — this is a checkride item.',
+        options: [
+          { text: '1,500 ft AGL minimum — 2,500–3,000 ft AGL preferred for training', correct: true, why: '' },
+          { text: '1,000 ft AGL minimum — 1,500 ft AGL preferred', correct: false, why: '1,000 ft AGL is not enough. ACS requires at least 1,500 ft AGL above the recovery altitude. 1,000 ft leaves almost no margin if recovery is delayed.' },
+          { text: '2,500 ft AGL required by ACS — no preference above that', correct: false, why: 'The ACS minimum is 1,500 ft AGL, not 2,500. 2,500–3,000 ft is the recommended training altitude for extra margin, but not the regulatory minimum.' },
+          { text: 'No minimum — just clear of clouds and terrain', correct: false, why: 'ACS specifies 1,500 ft AGL above the recovery altitude. Cloud clearance is a VFR requirement but is separate from the stall altitude standard.' },
+        ],
+        feedback: 'ACS minimum: 1,500 ft AGL above recovery altitude. Preferred for training: 2,500–3,000 ft AGL — extra buffer if recovery is slow.',
+        tip: { title: 'At KUZA', text: 'KUZA is 666 ft MSL. 1,500 ft AGL puts you at ~2,166 ft MSL minimum. Preferred training altitude is ~3,166–3,666 ft MSL. Your instructor will likely say "at or above 3,000 ft MSL" as a clean number.' }
       },
       {
         type: 'config',
@@ -1952,6 +1966,7 @@ function buildPowerOnStall(ap) {
     ],
     recallItems: [
       { phase: 'Clearing Turns' },
+      { phase: 'Min 1,500 ft AGL' },
       { phase: 'Mixture/Fuel/Flaps' },
       { phase: 'Throttle ↓ / Carb ON' },
       { phase: 'Back Pressure' },
