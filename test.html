@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chairfly Companion: ACS Viewer</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-panel: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #9e9e9e;
+            --accent: #00bcd4;
+            --border: #333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* Sidebar layout */
+        #sidebar {
+            width: 350px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .header h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+        #search-box {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        /* List layout */
+        #acs-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        .acs-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .acs-item:hover {
+            background-color: #2a2a2a;
+        }
+        .acs-code {
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+        .acs-title {
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+        /* Main View layout */
+        #main-view {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        .ref-card {
+            background-color: var(--bg-panel);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid var(--accent);
+        }
+        .ref-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background-color: #333;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="header">
+            <h2>✈️ ACS Companion</h2>
+            <input type="text" id="search-box" placeholder="Search codes or terms (e.g. 'IMSAFE')...">
+        </div>
+        <ul id="acs-list"></ul>
+    </div>
+
+    <div id="main-view">
+        <h1 style="color: var(--text-muted); margin-top: 20%;">Select an ACS task to view its extracted references.</h1>
+    </div>
+
+    <script>
+        // 1. The Offline JSON Data Structure (Pre-computed)
+        const acsData = [
+            {
+                code: "PA.II.A.K1",
+                title: "Pilot self-assessment.",
+                type: "Knowledge",
+                references: [
+                    {
+                        source: "FAA-H-8083-2 (Risk Management Handbook)",
+                        location: "Chapter 2, Page 2-3",
+                        text: "A pilot must continuously make decisions about personal fitness for flight. The IMSAFE checklist (Illness, Medication, Stress, Alcohol, Fatigue, Emotion) is the standard method used to evaluate pilot physical and mental readiness."
+                    }
+                ]
+            },
+            {
+                code: "PA.II.A.K3a",
+                title: "Airplane preflight inspection: Which items should be inspected",
+                type: "Knowledge",
+                references: [
+                    {
+                        source: "Cessna 172S POH (Hyper-Personalized Example)",
+                        location: "Section 4: Normal Procedures, Page 4-5",
+                        text: "1. Cabin Door - CHECK. 2. Control Wheel - Remove lock. 3. Ignition Switch - OFF. 4. Master Switch - ON. 5. Fuel Quantity - CHECK. Always verify specific items listed in your aircraft's approved flight manual."
+                    },
+                    {
+                        source: "FAA-H-8083-3 (Airplane Flying Handbook)",
+                        location: "Chapter 2, Page 2-2",
+                        text: "The preflight inspection should be conducted in accordance with the manufacturer's checklist. It generally starts in the cabin and follows a systematic walk-around pattern."
+                    }
+                ]
+            },
+            {
+                code: "PA.II.A.R4",
+                title: "Identify, assess, and mitigate risk associated with External Pressures.",
+                type: "Risk Management",
+                references: [
+                    {
+                        source: "FAA-H-8083-2 (Risk Management Handbook)",
+                        location: "Chapter 4, Page 4-6",
+                        text: "External pressures are influences external to the flight that create a sense of pressure to complete a flight—often at the expense of safety. Examples include passengers waiting, a desire to demonstrate a capability, or a strict itinerary. Mitigation involves setting personal minimums and communicating potential delays early."
+                    }
+                ]
+            }
+        ];
+
+        const listEl = document.getElementById('acs-list');
+        const mainEl = document.getElementById('main-view');
+        const searchBox = document.getElementById('search-box');
+
+        // 2. Render the sidebar list
+        function renderList(data) {
+            listEl.innerHTML = '';
+            data.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'acs-item';
+                li.innerHTML = `
+                    <div class="acs-code">${item.code}</div>
+                    <div class="acs-title">${item.title}</div>
+                `;
+                li.onclick = () => renderDetails(item);
+                listEl.appendChild(li);
+            });
+        }
+
+        // 3. Render the details pane when an item is clicked
+        function renderDetails(item) {
+            let refsHtml = item.references.map(ref => `
+                <div class="ref-card">
+                    <div class="ref-meta">📘 ${ref.source} &nbsp;|&nbsp; 📍 ${ref.location}</div>
+                    <div style="line-height: 1.6;">"${ref.text}"</div>
+                </div>
+            `).join('');
+
+            mainEl.innerHTML = `
+                <div class="badge">${item.type}</div>
+                <h2>${item.code}</h2>
+                <h3 style="color: var(--text-muted); font-weight: normal; margin-bottom: 30px;">${item.title}</h3>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin-bottom: 20px;">
+                ${refsHtml}
+            `;
+        }
+
+        // 4. Instant Search/Filtering functionality
+        searchBox.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = acsData.filter(item => {
+                // Search code, title, and the actual reference text
+                const inCode = item.code.toLowerCase().includes(term);
+                const inTitle = item.title.toLowerCase().includes(term);
+                const inRefs = item.references.some(ref => ref.text.toLowerCase().includes(term));
+                return inCode || inTitle || inRefs;
+            });
+            renderList(filtered);
+        });
+
+        // Initialize
+        renderList(acsData);
+    </script>
+</body>
+</html>
