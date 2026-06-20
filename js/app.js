@@ -1970,7 +1970,7 @@ function buildPowerOnStall(ap) {
       { phase: 'Mixture/Fuel/Flaps' },
       { phase: 'Throttle ↓ / Carb ON' },
       { phase: 'Back Pressure' },
-      { phase: '55–60 KIAS' },
+      { phase: 'Reduce to Vr' },
       { phase: 'Carb Heat — OFF' },
       { phase: 'Full Power' },
       { phase: 'Pitch 15–20° Up' },
