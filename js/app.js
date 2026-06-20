@@ -1524,7 +1524,7 @@ function buildPatternLanding(ap) {
 let procRadioState = { built: [], words: [] };
 
 const procSeqState = {
-  pool: [], slotCount: 0,
+  pool: [], totalReal: 0,
   nextSlot: 0, ok: 0, miss: 0,
   elapsed: 0, done: false, _timer: null,
   shakingIdx: -1, lastDistractorMsg: ''
@@ -1589,7 +1589,7 @@ function _initProcRecall(proc, group) {
   ].sort(() => Math.random() - 0.5);
   if (procSeqState._timer) clearInterval(procSeqState._timer);
   procSeqState.pool = pool;
-  procSeqState.slotCount = rawItems.length;
+  procSeqState.totalReal = rawItems.length;
   procSeqState.nextSlot = 0;
   procSeqState.ok = 0;
   procSeqState.miss = 0;
@@ -1868,7 +1868,7 @@ function buildPowerOnStall(ap) {
     steps: [
       {
         type: 'choice',
-        phase: 'Concept',
+        phase: 'Setup',
         prompt: 'What does a power on stall simulate, and why is it more aggressive than a power off stall?',
         context: 'Understanding the purpose of each stall type is part of the oral exam.',
         options: [
@@ -1882,7 +1882,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'choice',
-        phase: 'Pre-Entry Setup',
+        phase: 'Clearing Turns',
         prompt: 'What must you complete before initiating any stall maneuver?',
         context: 'ACS requires a clear area and adequate altitude buffer before stall entry.',
         options: [
@@ -1896,7 +1896,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'config',
-        phase: 'Cockpit Configuration',
+        phase: 'Cockpit Config',
         prompt: 'Set up the cockpit before transitioning to entry speed.',
         context: 'Clearing turns complete. Area is clear. Configure before reducing power.',
         controls: [
@@ -1909,7 +1909,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'config',
-        phase: 'Transition to Entry Speed',
+        phase: 'Slow to Entry Speed',
         prompt: 'Slow the aircraft to simulate the speed at which liftoff transitions to climbout.',
         context: 'The stall must be entered from near rotation speed — not from cruise.',
         controls: [
@@ -1921,7 +1921,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'config',
-        phase: 'Entry',
+        phase: 'Stall Entry',
         prompt: 'At 55–60 KIAS, establish the stall entry.',
         context: 'Simulating an aggressive over-rotation after takeoff.',
         controls: [
@@ -1934,7 +1934,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'choice',
-        phase: 'Stall Cues',
+        phase: 'Stall Warning',
         prompt: 'Holding 15–20° pitch with speed decaying — what is the correct sequence of warning cues before the break?',
         context: 'ACS requires recognition at first indication, not just at the full break.',
         options: [
