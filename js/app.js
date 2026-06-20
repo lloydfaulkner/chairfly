@@ -1577,9 +1577,11 @@ function startProcedure(procId) {
 }
 
 function _initProcRecall(proc, group) {
-  const rawItems = group
-    ? (group.items || proc.steps.slice(group.stepStart, group.stepEnd + 1).map(s => ({ phase: s.phase })))
-    : proc.steps.map(s => ({ phase: s.phase }));
+  const rawItems = proc.recallItems
+    ? proc.recallItems
+    : group
+      ? (group.items || proc.steps.slice(group.stepStart, group.stepEnd + 1).map(s => ({ phase: s.phase })))
+      : proc.steps.map(s => ({ phase: s.phase }));
   const allDistractors = group ? (group.distractors || []) : (proc.distractors || []);
   const shuffledD = [...allDistractors].sort(() => Math.random() - 0.5);
   const picked = shuffledD.slice(0, Math.random() < 0.5 ? 2 : 3);
@@ -1868,20 +1870,6 @@ function buildPowerOnStall(ap) {
     steps: [
       {
         type: 'choice',
-        phase: 'Setup',
-        prompt: 'What does a power on stall simulate, and why is it more aggressive than a power off stall?',
-        context: 'Understanding the purpose of each stall type is part of the oral exam.',
-        options: [
-          { text: 'Takeoff/departure stall — torque and P-factor make left yaw/roll more likely', correct: true, why: '' },
-          { text: 'Approach stall with engine — same as power off but with power added', correct: false, why: 'Power on stall simulates takeoff and departure, not approach. Full power changes the aerodynamics and control forces significantly.' },
-          { text: 'Cruise stall — simulates speed loss in level flight', correct: false, why: 'Power on stall is specifically a takeoff/departure configuration — high power, flaps up, climbing attitude.' },
-          { text: 'Go-around stall — same procedure as power off but faster', correct: false, why: 'While a go-around stall is related, power on stall specifically simulates the takeoff departure scenario with full power applied.' },
-        ],
-        feedback: 'Power on stall = takeoff/departure stall. High power creates torque, P-factor, and slipstream effects that want to roll/yaw the aircraft left. Recovery requires right rudder coordination.',
-        tip: { title: 'Why it\'s different', text: 'At full power and high angle of attack, P-factor and torque are at maximum. The left-turning tendency is very strong — expect the left wing to drop at the stall break if you\'re not holding right rudder.' }
-      },
-      {
-        type: 'choice',
         phase: 'Clearing Turns',
         prompt: 'What must you complete before initiating any stall maneuver?',
         context: 'ACS requires a clear area and adequate altitude buffer before stall entry.',
@@ -1959,6 +1947,16 @@ function buildPowerOnStall(ap) {
         feedback: 'Recovery: right rudder to stop yaw → slight nose down to break stall → wings level with coordinated aileron and rudder → establish Vy climb (71 KIAS). Full power throughout.',
         tip: { title: 'Spin awareness', text: 'An uncoordinated stall break — ball left, left wing dropping, no right rudder — is how spins begin. Rudder stops the yaw. Once the wings are flying again (AOA broken), then use aileron to level. The order is: rudder → pitch → wings level.' }
       },
+    ],
+    recallItems: [
+      { phase: 'Clearing Turns' },
+      { phase: 'Mixture — Rich' },
+      { phase: 'Fuel Selector — BOTH' },
+      { phase: 'Flaps — 0°' },
+      { phase: 'Slow to Entry Speed' },
+      { phase: 'Stall Entry' },
+      { phase: 'Stall Warning' },
+      { phase: 'Recovery' },
     ],
     distractors: [
       { phase: 'Lineup',              why: 'Lineup is the first step of a normal takeoff, not a step in the stall drill.' },
