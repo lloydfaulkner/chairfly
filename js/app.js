@@ -1897,7 +1897,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'config',
-        phase: 'Slow to Entry Speed',
+        phase: 'Throttle/Back Pressure',
         prompt: 'Slow the aircraft to simulate the speed at which liftoff transitions to climbout.',
         context: 'The stall must be entered from near rotation speed — not from cruise.',
         controls: [
@@ -1909,7 +1909,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'config',
-        phase: 'Stall Entry',
+        phase: 'Carb Off/Full Power/Pitch',
         prompt: 'At 55–60 KIAS, establish the stall entry.',
         context: 'Simulating an aggressive over-rotation after takeoff.',
         controls: [
@@ -1936,7 +1936,7 @@ function buildPowerOnStall(ap) {
       },
       {
         type: 'config',
-        phase: 'Recovery',
+        phase: 'Rudder/Break/Vy',
         prompt: 'The stall breaks — left yaw and left wing drop. Recover with minimum altitude loss.',
         context: 'Sequence matters: wrong order can turn a stall break into a spin entry.',
         controls: [
