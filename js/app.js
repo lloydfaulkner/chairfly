@@ -1731,6 +1731,18 @@ function buildSlowFlight(ap) {
       },
       {
         type: 'config',
+        phase: 'Pre-Maneuver Checklist',
+        prompt: 'Before reducing power, complete the pre-maneuver flow.',
+        context: 'Recovery from slow flight requires full power — ensure the engine is ready for both slow flight and immediate recovery.',
+        controls: [
+          { id: 'fuel', label: 'Fuel Selector', type: 'chips', options: ['BOTH', 'LEFT', 'RIGHT', 'OFF'], default: 'LEFT', correct: 'BOTH', correctLabel: 'BOTH — ensures uninterrupted fuel supply during the maneuver', wrongLabel: 'Fuel selector to BOTH before any maneuver involving unusual attitudes or power changes.' },
+          { id: 'mixture', label: 'Mixture', type: 'chips', options: ['Rich', 'Lean', 'Best Power', 'Cutoff'], default: 'Lean', correct: 'Rich', correctLabel: 'Rich — you may need full power immediately during recovery', wrongLabel: 'Mixture to rich. Slow flight recovery uses full power — a lean mixture at full power risks detonation.' },
+        ],
+        feedback: 'Fuel BOTH, Mixture RICH. Engine gauges in the green. Now you\'re ready to reduce power and enter slow flight.',
+        tip: { title: 'Same flow as pre-stall', text: 'Any maneuver involving slow flight, reduced power, and full-power recovery gets this flow first. Building the habit now means you do it automatically before stalls and steep turns too.' }
+      },
+      {
+        type: 'config',
         phase: 'Entry',
         prompt: 'Configure for slow flight entry from cruise.',
         context: 'You\'re at altitude, area cleared. Enter slow flight — maintain altitude throughout.',
@@ -1745,15 +1757,16 @@ function buildSlowFlight(ap) {
       {
         type: 'config',
         phase: 'Maneuvering Speed',
-        prompt: 'Established in slow flight. What is your target configuration?',
+        prompt: 'Flaps fully extended, airspeed stabilizing. Complete the slow flight configuration.',
         context: 'ACS requires maintaining controlled flight at minimum controllable airspeed — just above stall with full configuration.',
         controls: [
           { id: 'flaps', label: 'Flaps', type: 'chips', options: ['0°', '10°', '20°', '30°'], default: '10°', correct: '30°', correctLabel: '30° (full flaps) — maximum lift, minimum speed', wrongLabel: 'Full flaps for slow flight — gives you lowest possible airspeed while maintaining controlled flight.' },
-          { id: 'speed', label: 'Target Airspeed', type: 'slider', min: 40, max: 80, step: 5, default: 65, unit: 'KIAS', correct: 50, tolerance: 5, correctLabel: '~50 KIAS — just above stall, stall horn may intermittently sound', wrongLabel: 'Target ~50 KIAS — just above stall speed with full flaps. Stall horn sounding intermittently is acceptable per ACS.' },
+          { id: 'power', label: 'Power', type: 'slider', min: 600, max: 2400, step: 100, default: 1500, unit: 'RPM', correct: 2050, tolerance: 100, correctLabel: '~2000–2100 RPM — add power back to hold altitude once established at full flaps', wrongLabel: 'Add power back to ~2000 RPM once at full flaps. At 1500 RPM with full flaps and the extra drag you\'ll descend right through the ACS altitude tolerance.' },
+          { id: 'speed', label: 'Target Airspeed', type: 'slider', min: 40, max: 80, step: 5, default: 65, unit: 'KIAS', correct: 52, tolerance: 3, correctLabel: '50–55 KIAS — just above stall, stall horn may intermittently sound', wrongLabel: 'Target 50–55 KIAS. ACS standard is +10/-0 kts — you can be 10 fast, you cannot actually stall.' },
           { id: 'rudder', label: 'Rudder', type: 'chips', options: ['Neutral', 'Right rudder', 'Left rudder'], default: 'Neutral', correct: 'Right rudder', correctLabel: 'Right rudder — counters left-turning tendency from torque and P-factor at high angle of attack', wrongLabel: 'Right rudder is needed to counteract torque and P-factor at low speeds/high power. Without it the ball skids left.' },
         ],
-        feedback: 'Slow flight established: full flaps, ~50 KIAS, right rudder to stay coordinated, power as needed to maintain altitude. Stall horn acceptable.',
-        tip: { title: 'What your examiner watches', text: 'ACS standard: maintain ±10 kts of target airspeed, ±100 ft altitude, ±10° heading. The most common failure is ballooning altitude on flap extension or letting speed decay below stall without recovery.' }
+        feedback: 'Slow flight established: full flaps, power back to ~2000 RPM to hold altitude, 50–55 KIAS, right rudder to stay coordinated. Stall horn acceptable — that\'s the point.',
+        tip: { title: 'What your examiner watches', text: 'ACS standard: +10/-0 kts airspeed (you can be fast, you cannot stall), ±100 ft altitude, ±10° heading. The most common failure is ballooning altitude on flap extension or letting speed decay into an actual stall.' }
       },
       {
         type: 'choice',
@@ -1776,22 +1789,24 @@ function buildSlowFlight(ap) {
         context: 'You\'re at full flaps, ~50 KIAS, holding altitude. Return to normal cruise.',
         controls: [
           { id: 'power', label: 'Power', type: 'chips', options: ['Full then reduce', 'Idle then climb', '2300 RPM', 'Gradually increase'], default: 'Gradually increase', correct: 'Full then reduce', correctLabel: 'Full power first — builds speed before reducing to cruise power', wrongLabel: 'Add full power first to accelerate, then reduce to cruise power once at normal airspeed. Don\'t gradually increase — you need to accelerate positively.' },
+          { id: 'rudder', label: 'Rudder', type: 'chips', options: ['Right rudder', 'Left rudder', 'Neutral', 'Feet off pedals'], default: 'Neutral', correct: 'Right rudder', correctLabel: 'Right rudder — counters the sudden torque surge when full power is applied', wrongLabel: 'Apply firm right rudder the instant you advance to full power. The torque surge is immediate — if you wait for the yaw you\'ve already drifted off heading.' },
           { id: 'flaps', label: 'Flaps', type: 'chips', options: ['All at once', 'Incrementally as speed builds', 'Leave until cruise', '10° only'], default: 'All at once', correct: 'Incrementally as speed builds', correctLabel: 'Incrementally — retract as airspeed increases to avoid sudden lift loss', wrongLabel: 'Retract flaps incrementally as speed builds. Retracting all at once causes a sudden lift loss and sink.' },
           { id: 'carbheat', label: 'Carb Heat', type: 'chips', options: ['Leave ON', 'OFF'], default: 'Leave ON', correct: 'OFF', correctLabel: 'OFF — returning to cruise power, carb heat no longer needed', wrongLabel: 'Carb heat OFF as you return to cruise power. Leaving it on reduces cruise performance.' },
         ],
-        feedback: 'Recovery: full power → carb heat off → retract flaps incrementally as speed builds → cruise power when at normal airspeed. Hold altitude throughout.',
+        feedback: 'Recovery: full power + right rudder simultaneously → carb heat off → retract flaps incrementally as speed builds → cruise power when at normal airspeed. Hold altitude throughout.',
         tip: { title: 'Common mistake', text: 'Don\'t retract flaps before you have enough speed — especially going from 30° to 20° to 10°. Each retraction step removes lift. If you retract too fast you\'ll sink or stall. Speed first, then flaps.' }
       },
     ],
     recallItems: [
       { phase: 'Clearing Turns' },
+      { phase: 'Fuel BOTH / Mixture Rich' },
       { phase: 'Carb Heat ON / Power ↓' },
       { phase: 'Flaps 10° (Below Vfe)' },
       { phase: 'Back Pressure — Hold Altitude' },
-      { phase: 'Flaps 30° / ~50 KIAS' },
-      { phase: 'Right Rudder — Coordinated' },
+      { phase: 'Flaps 30° / Power Back ~2000' },
+      { phase: '50–55 KIAS / Right Rudder' },
       { phase: 'Max 30° Bank in Turns' },
-      { phase: 'Full Power — Recover' },
+      { phase: 'Full Power + Right Rudder' },
       { phase: 'Carb Heat OFF' },
       { phase: 'Flaps Up Incrementally' },
     ],
