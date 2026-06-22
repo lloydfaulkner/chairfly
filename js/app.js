@@ -1712,22 +1712,25 @@ function buildNormalTakeoff(ap) {
 
 // ── SLOW FLIGHT ──
 function buildSlowFlight(ap) {
+  const minAltMSL = Math.ceil((ap.elev + 1500) / 100) * 100;
+  const patternMSL = Math.ceil((ap.elev + 1000) / 100) * 100;
+  const agLiteralMSL = minAltMSL === 1500 ? 2000 : 1500;
   return {
     title: 'Slow Flight',
     steps: [
       {
         type: 'choice',
         phase: 'Setup',
-        prompt: 'Before entering slow flight, what should you do first?',
-        context: 'ACS requires slow flight to be performed at a safe altitude. What\'s the first step?',
+        prompt: `What is the minimum entry altitude for slow flight at ${ap.icao}?`,
+        context: 'ACS requires slow flight at a safe altitude — 1,500 ft AGL minimum. Your altimeter reads MSL.',
         options: [
-          { text: 'Clear the area with two 90° clearing turns, then establish entry altitude', correct: true, why: '' },
-          { text: 'Reduce power immediately and add flaps', correct: false, why: 'You must clear the area first — slow flight puts you close to stall speed where recovery takes altitude. Check for traffic below you.' },
-          { text: 'Announce on CTAF and begin entry', correct: false, why: 'Clearing turns are required to check for traffic, especially below — slow flight and stalls are often done without CTAF calls.' },
-          { text: 'Set up directly from cruise with no clearing turns', correct: false, why: 'Clearing turns are mandatory before any slow flight, stall, or steep turn maneuver. ACS requirement.' },
+          { text: `${minAltMSL} ft MSL`, correct: true, why: '' },
+          { text: `${agLiteralMSL} ft MSL`, correct: false, why: `${agLiteralMSL} ft MSL confuses the AGL rule with an MSL number. At ${ap.icao} (${ap.elev} ft MSL), 1,500 ft AGL puts you at ${minAltMSL} ft MSL on the altimeter.` },
+          { text: `${patternMSL} ft MSL`, correct: false, why: `${patternMSL} ft MSL is the traffic pattern altitude (1,000 ft AGL). Slow flight requires 1,500 ft AGL minimum — ${minAltMSL} ft MSL at ${ap.icao}.` },
+          { text: `${minAltMSL + 500} ft MSL`, correct: false, why: `Higher is safer, but the ACS standard is 1,500 ft AGL minimum. Your examiner expects that number — ${minAltMSL} ft MSL at ${ap.icao}.` },
         ],
-        feedback: 'Always do two 90° clearing turns before slow flight, stalls, or steep turns. Check above, below, and all around. Minimum 1,500 ft AGL recommended.',
-        tip: { title: 'Why clearing turns matter', text: 'You\'re about to fly slowly and close to the ground effect zone. Another aircraft below you at a normal cruise speed closes fast. The clearing turns also help you mentally transition from cruise to the slower scan pace of slow flight.' }
+        feedback: `Minimum 1,500 ft AGL for slow flight. At ${ap.icao} (field elevation ${ap.elev} ft MSL), that's ${minAltMSL} ft MSL on your altimeter.`,
+        tip: { title: 'AGL vs MSL', text: `ACS states the rule in AGL (1,500 ft) but your altimeter reads MSL. At ${ap.icao}, field elevation is ${ap.elev} ft — add 1,500 to get ${minAltMSL} ft MSL. Same math applies to stalls and steep turns.` }
       },
       {
         type: 'config',
@@ -1798,7 +1801,7 @@ function buildSlowFlight(ap) {
       },
     ],
     recallItems: [
-      { phase: 'Ensure Altitude — 1,500 ft AGL' },
+      { phase: 'Ensure Altitude' },
       { phase: 'Clearing Turns' },
       { phase: 'Fuel BOTH / Mixture Rich' },
       { phase: 'Carb Heat ON / Power ↓' },
