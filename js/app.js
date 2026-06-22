@@ -1714,20 +1714,18 @@ function buildNormalTakeoff(ap) {
 function buildSlowFlight(ap) {
   const minAltMSL = Math.ceil((ap.elev + 1500) / 100) * 100;
   const patternMSL = Math.ceil((ap.elev + 1000) / 100) * 100;
-  const agLiteralMSL = minAltMSL === 1500 ? 2000 : 1500;
+  const sliderMin = Math.round((ap.elev + 500) / 100) * 100;
+  const sliderMax = Math.round((ap.elev + 3500) / 100) * 100;
   return {
     title: 'Slow Flight',
     steps: [
       {
-        type: 'choice',
+        type: 'config',
         phase: 'Setup',
-        prompt: `What is the minimum entry altitude for slow flight at ${ap.icao}?`,
+        prompt: `Set your minimum entry altitude for slow flight at ${ap.icao}.`,
         context: 'ACS requires slow flight at a safe altitude — 1,500 ft AGL minimum. Your altimeter reads MSL.',
-        options: [
-          { text: `${minAltMSL} ft MSL`, correct: true, why: '' },
-          { text: `${agLiteralMSL} ft MSL`, correct: false, why: `${agLiteralMSL} ft MSL confuses the AGL rule with an MSL number. At ${ap.icao} (${ap.elev} ft MSL), 1,500 ft AGL puts you at ${minAltMSL} ft MSL on the altimeter.` },
-          { text: `${patternMSL} ft MSL`, correct: false, why: `${patternMSL} ft MSL is the traffic pattern altitude (1,000 ft AGL). Slow flight requires 1,500 ft AGL minimum — ${minAltMSL} ft MSL at ${ap.icao}.` },
-          { text: `${minAltMSL + 500} ft MSL`, correct: false, why: `Higher is safer, but the ACS standard is 1,500 ft AGL minimum. Your examiner expects that number — ${minAltMSL} ft MSL at ${ap.icao}.` },
+        controls: [
+          { id: 'altitude', label: 'Entry Altitude', type: 'slider', min: sliderMin, max: sliderMax, step: 100, default: patternMSL, unit: 'ft MSL', correct: minAltMSL, tolerance: 0, correctLabel: `${minAltMSL} ft MSL — 1,500 ft AGL above ${ap.icao} field elevation (${ap.elev} ft MSL)`, wrongLabel: `At ${ap.icao} (${ap.elev} ft MSL), 1,500 ft AGL = ${minAltMSL} ft MSL. Don't use the AGL number as your altimeter setting.` },
         ],
         feedback: `Minimum 1,500 ft AGL for slow flight. At ${ap.icao} (field elevation ${ap.elev} ft MSL), that's ${minAltMSL} ft MSL on your altimeter.`,
         tip: { title: 'AGL vs MSL', text: `ACS states the rule in AGL (1,500 ft) but your altimeter reads MSL. At ${ap.icao}, field elevation is ${ap.elev} ft — add 1,500 to get ${minAltMSL} ft MSL. Same math applies to stalls and steep turns.` }
