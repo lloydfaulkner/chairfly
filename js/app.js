@@ -1798,6 +1798,7 @@ function buildSlowFlight(ap) {
       },
     ],
     recallItems: [
+      { phase: 'Ensure Altitude — 1,500 ft AGL' },
       { phase: 'Clearing Turns' },
       { phase: 'Fuel BOTH / Mixture Rich' },
       { phase: 'Carb Heat ON / Power ↓' },
@@ -1805,9 +1806,7 @@ function buildSlowFlight(ap) {
       { phase: 'Back Pressure — Hold Altitude' },
       { phase: 'Flaps 30° / Power Back ~2000' },
       { phase: '50–55 KIAS / Right Rudder' },
-      { phase: 'Max 30° Bank in Turns' },
-      { phase: 'Full Power + Right Rudder' },
-      { phase: 'Carb Heat OFF' },
+      { phase: 'Full Power + Right Rudder / Carb Heat OFF' },
       { phase: 'Flaps Up Incrementally' },
     ],
     distractors: [
