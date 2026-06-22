@@ -1806,7 +1806,7 @@ function buildSlowFlight(ap) {
       { phase: 'Back Pressure — Hold Altitude' },
       { phase: 'Flaps 30° / Power Back ~2000' },
       { phase: '50–55 KIAS / Right Rudder' },
-      { phase: 'Full Power + Right Rudder / Carb Heat OFF' },
+      { phase: 'Full Power / Carb Heat OFF' },
       { phase: 'Flaps Up Incrementally' },
     ],
     distractors: [
