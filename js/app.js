@@ -1524,7 +1524,7 @@ function buildPatternLanding(ap) {
 let procRadioState = { built: [], words: [] };
 
 const procSeqState = {
-  pool: [], slotCount: 0,
+  pool: [], totalReal: 0,
   nextSlot: 0, ok: 0, miss: 0,
   elapsed: 0, done: false, _timer: null,
   shakingIdx: -1, lastDistractorMsg: ''
@@ -1577,9 +1577,11 @@ function startProcedure(procId) {
 }
 
 function _initProcRecall(proc, group) {
-  const rawItems = group
-    ? (group.items || proc.steps.slice(group.stepStart, group.stepEnd + 1).map(s => ({ phase: s.phase })))
-    : proc.steps.map(s => ({ phase: s.phase }));
+  const rawItems = proc.recallItems
+    ? proc.recallItems
+    : group
+      ? (group.items || proc.steps.slice(group.stepStart, group.stepEnd + 1).map(s => ({ phase: s.phase })))
+      : proc.steps.map(s => ({ phase: s.phase }));
   const allDistractors = group ? (group.distractors || []) : (proc.distractors || []);
   const shuffledD = [...allDistractors].sort(() => Math.random() - 0.5);
   const picked = shuffledD.slice(0, Math.random() < 0.5 ? 2 : 3);
@@ -1589,7 +1591,7 @@ function _initProcRecall(proc, group) {
   ].sort(() => Math.random() - 0.5);
   if (procSeqState._timer) clearInterval(procSeqState._timer);
   procSeqState.pool = pool;
-  procSeqState.slotCount = rawItems.length;
+  procSeqState.totalReal = rawItems.length;
   procSeqState.nextSlot = 0;
   procSeqState.ok = 0;
   procSeqState.miss = 0;
@@ -1603,6 +1605,7 @@ function _initProcRecall(proc, group) {
 }
 
 function retryProcRecall() {
+  _hideProcRecallDone();
   const proc = procState.currentProc;
   const group = proc.recallGroups ? proc.recallGroups[procState.recallGroupIdx] : null;
   _initProcRecall(proc, group);
@@ -1610,6 +1613,7 @@ function retryProcRecall() {
 }
 
 function procAdvanceFromRecall() {
+  _hideProcRecallDone();
   if (procSeqState._timer) { clearInterval(procSeqState._timer); procSeqState._timer = null; }
   procState.inRecall = false;
   const group = procState.currentProc.recallGroups?.[procState.recallGroupIdx] || null;
@@ -1708,22 +1712,35 @@ function buildNormalTakeoff(ap) {
 
 // ── SLOW FLIGHT ──
 function buildSlowFlight(ap) {
+  const minAltMSL = Math.ceil((ap.elev + 1500) / 100) * 100;
+  const patternMSL = Math.ceil((ap.elev + 1000) / 100) * 100;
+  const sliderMin = Math.round((ap.elev + 500) / 100) * 100;
+  const sliderMax = Math.round((ap.elev + 3500) / 100) * 100;
   return {
     title: 'Slow Flight',
     steps: [
       {
-        type: 'choice',
+        type: 'config',
         phase: 'Setup',
-        prompt: 'Before entering slow flight, what should you do first?',
-        context: 'ACS requires slow flight to be performed at a safe altitude. What\'s the first step?',
-        options: [
-          { text: 'Clear the area with two 90° clearing turns, then establish entry altitude', correct: true, why: '' },
-          { text: 'Reduce power immediately and add flaps', correct: false, why: 'You must clear the area first — slow flight puts you close to stall speed where recovery takes altitude. Check for traffic below you.' },
-          { text: 'Announce on CTAF and begin entry', correct: false, why: 'Clearing turns are required to check for traffic, especially below — slow flight and stalls are often done without CTAF calls.' },
-          { text: 'Set up directly from cruise with no clearing turns', correct: false, why: 'Clearing turns are mandatory before any slow flight, stall, or steep turn maneuver. ACS requirement.' },
+        prompt: `Set your minimum entry altitude for slow flight at ${ap.icao}.`,
+        context: 'ACS requires slow flight at a safe altitude — 1,500 ft AGL minimum. Your altimeter reads MSL.',
+        controls: [
+          { id: 'altitude', label: 'Entry Altitude', type: 'slider', min: sliderMin, max: sliderMax, step: 100, default: patternMSL, unit: 'ft MSL', correct: minAltMSL, tolerance: 0, correctLabel: `${minAltMSL} ft MSL — 1,500 ft AGL above ${ap.icao} field elevation (${ap.elev} ft MSL)`, wrongLabel: `At ${ap.icao} (${ap.elev} ft MSL), 1,500 ft AGL = ${minAltMSL} ft MSL. Don't use the AGL number as your altimeter setting.` },
         ],
-        feedback: 'Always do two 90° clearing turns before slow flight, stalls, or steep turns. Check above, below, and all around. Minimum 1,500 ft AGL recommended.',
-        tip: { title: 'Why clearing turns matter', text: 'You\'re about to fly slowly and close to the ground effect zone. Another aircraft below you at a normal cruise speed closes fast. The clearing turns also help you mentally transition from cruise to the slower scan pace of slow flight.' }
+        feedback: `Minimum 1,500 ft AGL for slow flight. At ${ap.icao} (field elevation ${ap.elev} ft MSL), that's ${minAltMSL} ft MSL on your altimeter.`,
+        tip: { title: 'AGL vs MSL', text: `ACS states the rule in AGL (1,500 ft) but your altimeter reads MSL. At ${ap.icao}, field elevation is ${ap.elev} ft — add 1,500 to get ${minAltMSL} ft MSL. Same math applies to stalls and steep turns.` }
+      },
+      {
+        type: 'config',
+        phase: 'Pre-Maneuver Checklist',
+        prompt: 'Before reducing power, complete the pre-maneuver flow.',
+        context: 'Recovery from slow flight requires full power — ensure the engine is ready for both slow flight and immediate recovery.',
+        controls: [
+          { id: 'fuel', label: 'Fuel Selector', type: 'chips', options: ['BOTH', 'LEFT', 'RIGHT', 'OFF'], default: 'LEFT', correct: 'BOTH', correctLabel: 'BOTH — ensures uninterrupted fuel supply during the maneuver', wrongLabel: 'Fuel selector to BOTH before any maneuver involving unusual attitudes or power changes.' },
+          { id: 'mixture', label: 'Mixture', type: 'chips', options: ['Rich', 'Lean', 'Best Power', 'Cutoff'], default: 'Lean', correct: 'Rich', correctLabel: 'Rich — you may need full power immediately during recovery', wrongLabel: 'Mixture to rich. Slow flight recovery uses full power — a lean mixture at full power risks detonation.' },
+        ],
+        feedback: 'Fuel BOTH, Mixture RICH. Engine gauges in the green. Now you\'re ready to reduce power and enter slow flight.',
+        tip: { title: 'Same flow as pre-stall', text: 'Any maneuver involving slow flight, reduced power, and full-power recovery gets this flow first. Building the habit now means you do it automatically before stalls and steep turns too.' }
       },
       {
         type: 'config',
@@ -1741,15 +1758,16 @@ function buildSlowFlight(ap) {
       {
         type: 'config',
         phase: 'Maneuvering Speed',
-        prompt: 'Established in slow flight. What is your target configuration?',
+        prompt: 'Flaps fully extended, airspeed stabilizing. Complete the slow flight configuration.',
         context: 'ACS requires maintaining controlled flight at minimum controllable airspeed — just above stall with full configuration.',
         controls: [
           { id: 'flaps', label: 'Flaps', type: 'chips', options: ['0°', '10°', '20°', '30°'], default: '10°', correct: '30°', correctLabel: '30° (full flaps) — maximum lift, minimum speed', wrongLabel: 'Full flaps for slow flight — gives you lowest possible airspeed while maintaining controlled flight.' },
-          { id: 'speed', label: 'Target Airspeed', type: 'slider', min: 40, max: 80, step: 5, default: 65, unit: 'KIAS', correct: 50, tolerance: 5, correctLabel: '~50 KIAS — just above stall, stall horn may intermittently sound', wrongLabel: 'Target ~50 KIAS — just above stall speed with full flaps. Stall horn sounding intermittently is acceptable per ACS.' },
+          { id: 'power', label: 'Power', type: 'slider', min: 600, max: 2400, step: 100, default: 1500, unit: 'RPM', correct: 2050, tolerance: 100, correctLabel: '~2000–2100 RPM — add power back to hold altitude once established at full flaps', wrongLabel: 'Add power back to ~2000 RPM once at full flaps. At 1500 RPM with full flaps and the extra drag you\'ll descend right through the ACS altitude tolerance.' },
+          { id: 'speed', label: 'Target Airspeed', type: 'slider', min: 40, max: 80, step: 5, default: 65, unit: 'KIAS', correct: 52, tolerance: 3, correctLabel: '50–55 KIAS — just above stall, stall horn may intermittently sound', wrongLabel: 'Target 50–55 KIAS. ACS standard is +10/-0 kts — you can be 10 fast, you cannot actually stall.' },
           { id: 'rudder', label: 'Rudder', type: 'chips', options: ['Neutral', 'Right rudder', 'Left rudder'], default: 'Neutral', correct: 'Right rudder', correctLabel: 'Right rudder — counters left-turning tendency from torque and P-factor at high angle of attack', wrongLabel: 'Right rudder is needed to counteract torque and P-factor at low speeds/high power. Without it the ball skids left.' },
         ],
-        feedback: 'Slow flight established: full flaps, ~50 KIAS, right rudder to stay coordinated, power as needed to maintain altitude. Stall horn acceptable.',
-        tip: { title: 'What your examiner watches', text: 'ACS standard: maintain ±10 kts of target airspeed, ±100 ft altitude, ±10° heading. The most common failure is ballooning altitude on flap extension or letting speed decay below stall without recovery.' }
+        feedback: 'Slow flight established: full flaps, power back to ~2000 RPM to hold altitude, 50–55 KIAS, right rudder to stay coordinated. Stall horn acceptable — that\'s the point.',
+        tip: { title: 'Finding MCA by feel', text: 'Some instructors have you slow until the stall horn sounds before adding power back — that\'s the exact MCA floor, not a memorized number. The horn fires 5–10 kts above the actual stall, so touching it doesn\'t stall you. Once you hear it, power back up to hold altitude. More precise than targeting "52 KIAS" because density altitude and weight shift that number every flight.' }
       },
       {
         type: 'choice',
@@ -1772,12 +1790,25 @@ function buildSlowFlight(ap) {
         context: 'You\'re at full flaps, ~50 KIAS, holding altitude. Return to normal cruise.',
         controls: [
           { id: 'power', label: 'Power', type: 'chips', options: ['Full then reduce', 'Idle then climb', '2300 RPM', 'Gradually increase'], default: 'Gradually increase', correct: 'Full then reduce', correctLabel: 'Full power first — builds speed before reducing to cruise power', wrongLabel: 'Add full power first to accelerate, then reduce to cruise power once at normal airspeed. Don\'t gradually increase — you need to accelerate positively.' },
+          { id: 'rudder', label: 'Rudder', type: 'chips', options: ['Right rudder', 'Left rudder', 'Neutral', 'Feet off pedals'], default: 'Neutral', correct: 'Right rudder', correctLabel: 'Right rudder — counters the sudden torque surge when full power is applied', wrongLabel: 'Apply firm right rudder the instant you advance to full power. The torque surge is immediate — if you wait for the yaw you\'ve already drifted off heading.' },
           { id: 'flaps', label: 'Flaps', type: 'chips', options: ['All at once', 'Incrementally as speed builds', 'Leave until cruise', '10° only'], default: 'All at once', correct: 'Incrementally as speed builds', correctLabel: 'Incrementally — retract as airspeed increases to avoid sudden lift loss', wrongLabel: 'Retract flaps incrementally as speed builds. Retracting all at once causes a sudden lift loss and sink.' },
           { id: 'carbheat', label: 'Carb Heat', type: 'chips', options: ['Leave ON', 'OFF'], default: 'Leave ON', correct: 'OFF', correctLabel: 'OFF — returning to cruise power, carb heat no longer needed', wrongLabel: 'Carb heat OFF as you return to cruise power. Leaving it on reduces cruise performance.' },
         ],
-        feedback: 'Recovery: full power → carb heat off → retract flaps incrementally as speed builds → cruise power when at normal airspeed. Hold altitude throughout.',
+        feedback: 'Recovery: full power + right rudder simultaneously → carb heat off → retract flaps incrementally as speed builds → cruise power when at normal airspeed. Hold altitude throughout.',
         tip: { title: 'Common mistake', text: 'Don\'t retract flaps before you have enough speed — especially going from 30° to 20° to 10°. Each retraction step removes lift. If you retract too fast you\'ll sink or stall. Speed first, then flaps.' }
       },
+    ],
+    recallItems: [
+      { phase: 'Ensure Altitude' },
+      { phase: 'Clearing Turns' },
+      { phase: 'Fuel BOTH / Mixture Rich' },
+      { phase: 'Carb Heat ON / Power ↓' },
+      { phase: 'Back Pressure — Hold Altitude' },
+      { phase: 'Flaps 10° (Below Vfe)' },
+      { phase: 'Flaps 30° / Power Back ~2000' },
+      { phase: '50–55 KIAS / Right Rudder' },
+      { phase: 'Full Power / Carb Heat OFF' },
+      { phase: 'Flaps Up Incrementally' },
     ],
     distractors: [
       { phase: 'Takeoff Roll',        why: 'Takeoff roll is a departure step — not part of the slow flight maneuver sequence.' },
@@ -1850,6 +1881,18 @@ function buildPowerOffStall(ap) {
         tip: { title: 'ACS standard', text: 'ACS requires recovery at first indication (don\'t wait for full break if possible), with minimum altitude loss. Typical power-off stall recovery uses 50–150 ft if done promptly. Delay costs 300+ ft.' }
       },
     ],
+    recallItems: [
+      { phase: '1,500 ft AGL / Clearing Turns' },
+      { phase: 'Carb Heat ON' },
+      { phase: 'Power → Approach (~1500 RPM)' },
+      { phase: 'Slow to ~65 KIAS / Flaps 30°' },
+      { phase: 'Power → Idle' },
+      { phase: 'Back Pressure — Hold Altitude' },
+      { phase: 'Stall Warning — Announce' },
+      { phase: 'Full Power + Nose Down' },
+      { phase: 'Flaps Up Above 60 KIAS' },
+      { phase: 'Vy Climb' },
+    ],
     distractors: [
       { phase: 'Takeoff Roll',        why: 'Takeoff roll is a takeoff step — not part of the power-off stall sequence.' },
       { phase: 'Turn in Slow Flight', why: 'Slow flight turns are a separate maneuver. The power-off stall goes straight to stall entry.' },
@@ -1868,63 +1911,114 @@ function buildPowerOnStall(ap) {
     steps: [
       {
         type: 'choice',
-        phase: 'Setup',
-        prompt: 'What does a power on stall simulate, and why is it more aggressive?',
-        context: 'Power on stalls have different characteristics than power off stalls.',
+        phase: 'Entry Altitude',
+        prompt: 'What is the ACS minimum altitude for stall maneuvers, and what altitude is preferred for training?',
+        context: 'The examiner will note your altitude before you initiate — this is a checkride item.',
         options: [
-          { text: 'Takeoff/departure stall — torque and P-factor make left yaw/roll more likely', correct: true, why: '' },
-          { text: 'Approach stall with engine — same as power off but with power added', correct: false, why: 'Power on stall simulates takeoff and departure, not approach. Full power changes the aerodynamics and control forces significantly.' },
-          { text: 'Cruise stall — simulates speed loss in level flight', correct: false, why: 'Power on stall is specifically a takeoff/departure configuration — high power, flaps up or minimal, climbing attitude.' },
-          { text: 'Go-around stall — same procedure as power off but faster', correct: false, why: 'While a go-around stall is related, power on stall specifically simulates the takeoff departure scenario with full power applied.' },
+          { text: '1,500 ft AGL minimum — 2,500–3,000 ft AGL preferred for training', correct: true, why: '' },
+          { text: '1,000 ft AGL minimum — 1,500 ft AGL preferred', correct: false, why: '1,000 ft AGL is not enough. ACS requires at least 1,500 ft AGL above the recovery altitude. 1,000 ft leaves almost no margin if recovery is delayed.' },
+          { text: '2,500 ft AGL required by ACS — no preference above that', correct: false, why: 'The ACS minimum is 1,500 ft AGL, not 2,500. 2,500–3,000 ft is the recommended training altitude for extra margin, but not the regulatory minimum.' },
+          { text: 'No minimum — just clear of clouds and terrain', correct: false, why: 'ACS specifies 1,500 ft AGL above the recovery altitude. Cloud clearance is a VFR requirement but is separate from the stall altitude standard.' },
         ],
-        feedback: 'Power on stall = takeoff/departure stall. High power creates torque, P-factor, and slipstream effects that want to roll/yaw the aircraft left. Recovery requires right rudder coordination.',
-        tip: { title: 'Why it\'s different', text: 'At full power and high angle of attack, P-factor and torque are at maximum. The left-turning tendency is very strong — expect the left wing to drop at the stall break if you\'re not holding right rudder.' }
-      },
-      {
-        type: 'config',
-        phase: 'Entry Configuration',
-        prompt: 'Configure for power on stall entry.',
-        context: 'Simulating departure from runway. Area cleared, altitude established.',
-        controls: [
-          { id: 'flaps', label: 'Flaps', type: 'chips', options: ['0°', '10°', '20°', '30°'], default: '10°', correct: '0°', correctLabel: '0° — takeoff configuration, flaps up', wrongLabel: 'Power on stall uses 0° flaps — takeoff configuration. Some instructors allow 10° for short-field, but 0° is standard.' },
-          { id: 'power', label: 'Power', type: 'chips', options: ['Full', '1800 RPM', '2100 RPM', '1500 RPM'], default: '2100 RPM', correct: 'Full', correctLabel: 'Full power — simulates takeoff power setting', wrongLabel: 'Full power for power on stall — that\'s the defining characteristic. Simulates full takeoff power.' },
-          { id: 'pitch', label: 'Pitch Attitude', type: 'chips', options: ['Level', '10° nose up', '15–20° nose up', '5° nose up'], default: '10° nose up', correct: '15–20° nose up', correctLabel: '15–20° nose up — aggressive climb attitude induces stall rapidly', wrongLabel: 'Pitch to 15–20° nose up at full power to bring on the stall. This simulates over-rotating on takeoff.' },
-        ],
-        feedback: 'Power on stall entry: full power, 0° flaps, pitch aggressively to 15–20° nose up. Hold heading with right rudder — the torque will want to yaw left hard.',
-        tip: { title: 'Right rudder is critical', text: 'At full power and high AOA, you\'ll need significant right rudder to stay coordinated. If you let the ball go left, the left wing drops more aggressively at the stall. Hold right rudder throughout the entry.' }
+        feedback: 'ACS minimum: 1,500 ft AGL above recovery altitude. Preferred for training: 2,500–3,000 ft AGL — extra buffer if recovery is slow.',
+        tip: { title: 'At KUZA', text: 'KUZA is 666 ft MSL. 1,500 ft AGL puts you at ~2,166 ft MSL minimum. Preferred training altitude is ~3,166–3,666 ft MSL. Your instructor will likely say "at or above 3,000 ft MSL" as a clean number.' }
       },
       {
         type: 'choice',
-        phase: 'Stall Recognition',
-        prompt: 'At the power on stall break, what is the most likely motion and why?',
-        context: 'Full power, high pitch, approaching stall — what happens at the break?',
+        phase: 'Clearing Turns',
+        prompt: 'What clearing procedure is required before any stall maneuver?',
+        context: 'ACS specifies a clearing procedure — not just a glance around.',
         options: [
-          { text: 'Left yaw and left wing drop — from torque and P-factor', correct: true, why: '' },
-          { text: 'Right wing drop — propeller slipstream pushes right side down', correct: false, why: 'Torque and P-factor both create left-turning tendencies. Slipstream spirals around the fuselage but the net effect at high power/AOA is left yaw.' },
-          { text: 'Straight nose drop — same as power off stall', correct: false, why: 'Power on stalls rarely break straight ahead — the torque and P-factor at full power usually produce a left roll/yaw at the break.' },
-          { text: 'Right yaw first, then nose drop', correct: false, why: 'Right yaw would require a force pushing the nose right. Torque, P-factor, and spiraling slipstream all create left yaw.' },
+          { text: 'Two 90° turns — scan for traffic above, below, and all around', correct: true, why: '' },
+          { text: 'One 180° turn to check behind you', correct: false, why: 'One 180° covers the same arc as two 90° turns, but the ACS standard is two 90° turns. Two turns also give more dwell time to scan each quadrant.' },
+          { text: 'Scan left and right from wings-level, then proceed', correct: false, why: 'A wings-level scan misses traffic below and in blind spots behind the wing. Two full clearing turns are required.' },
+          { text: 'One 360° turn to cover the full area', correct: false, why: 'A 360° works but is more than required and wastes altitude. Two 90° turns cover the same scan area more efficiently.' },
         ],
-        feedback: 'Power on stalls typically break to the left — left wing drops, left yaw — due to torque and P-factor. Right rudder throughout the entry reduces the severity of this break.',
-        tip: { title: 'What to say', text: 'Announce "stall" at the break. Your examiner wants to hear you recognize it. Recovery priority: wings level → nose down slightly → maintain full power → climb away.' }
+        feedback: 'Two 90° clearing turns — look above, below, and all quadrants. The turns also let you confirm your heading and see what\'s below before the altitude loss in recovery.',
+        tip: { title: 'Why two turns', text: 'Each 90° exposes a different quadrant. The first clears the front-left, the second clears the right. Together they cover the area you\'ll descend through during recovery.' }
       },
       {
         type: 'config',
-        phase: 'Recovery',
-        prompt: 'Left wing drops at the stall break. Recover.',
-        context: 'Full power stall break with left roll tendency. Sequence matters — wrong order can aggravate the stall.',
+        phase: 'Mixture/Fuel/Flaps',
+        prompt: 'Set up the cockpit before transitioning to entry speed.',
+        context: 'Clearing turns complete. Area is clear. Configure before reducing power.',
         controls: [
-          { id: 'rudder', label: 'First control input', type: 'chips', options: ['Right aileron to level', 'Right rudder to stop yaw', 'Left aileron', 'Elevator forward'], default: 'Right aileron to level', correct: 'Right rudder to stop yaw', correctLabel: 'Right rudder first — stops the yaw before it becomes a spin entry', wrongLabel: 'Right RUDDER first to stop the yaw. Using aileron first in a stall can aggravate the roll (aileron drag stalls the dropping wing further).' },
-          { id: 'pitch', label: 'Pitch input', type: 'chips', options: ['Aggressive nose down', 'Slight nose down — break AOA', 'Hold pitch', 'Nose up to stop sink'], default: 'Hold pitch', correct: 'Slight nose down — break AOA', correctLabel: 'Slight nose down — breaks angle of attack without excessive altitude loss', wrongLabel: 'Lower nose just enough to break the stall AOA. Aggressive push wastes altitude unnecessarily.' },
-          { id: 'power', label: 'Power', type: 'chips', options: ['Keep full power', 'Reduce to 1800 RPM', 'Idle', 'Reduce then add'], default: 'Keep full power', correct: 'Keep full power', correctLabel: 'Keep full power — you already have it in, use it to accelerate recovery', wrongLabel: 'Power on stall recovery keeps full power — it\'s already helping you. Reducing power wastes the energy you have.' },
+          { id: 'mixture', label: 'Mixture', type: 'chips', options: ['Rich', 'Lean', 'Best Power', 'Cutoff'], default: 'Lean', correct: 'Rich', correctLabel: 'Rich — full power operation requires full mixture', wrongLabel: 'Set mixture to rich before applying full power. A lean mixture at full power can cause detonation.' },
+          { id: 'fuel', label: 'Fuel Selector', type: 'chips', options: ['BOTH', 'LEFT', 'RIGHT', 'OFF'], default: 'LEFT', correct: 'BOTH', correctLabel: 'BOTH — ensures uninterrupted fuel supply during unusual attitudes', wrongLabel: 'Fuel selector to BOTH for the maneuver. Single-tank selection during unusual attitudes risks uncovering a fuel port.' },
+          { id: 'flaps', label: 'Flaps', type: 'chips', options: ['0°', '10°', '20°', '30°'], default: '10°', correct: '0°', correctLabel: '0° — clean takeoff configuration', wrongLabel: 'Power on stall uses 0° flaps — clean takeoff configuration. Flaps simulate an approach/landing, not a departure.' },
         ],
-        feedback: 'Recovery sequence: right rudder to stop yaw → slight nose down to break stall → wings level with coordinated aileron → climb at Vy. Full power maintained throughout.',
-        tip: { title: 'Spin awareness', text: 'An uncoordinated stall break — ball to the left, left wing dropping — is a spin entry. Right rudder prevents this. If a wing drops at the break and you apply opposite aileron before rudder, you can worsen the roll. Rudder first, always.' }
+        feedback: 'Mixture rich, fuel selector BOTH, flaps 0°. Now you\'re ready to reduce power and transition to entry speed.',
+        tip: { title: 'C172 specifics', text: 'On the C172, the fuel selector is usually on BOTH already. Mixture is often leaned at cruise altitude — remember to enrichen before applying full power.' }
       },
+      {
+        type: 'config',
+        phase: 'Throttle/Back Pressure',
+        prompt: 'Slow the aircraft to simulate the speed at which liftoff transitions to climbout.',
+        context: 'The stall must be entered from near rotation speed — not from cruise.',
+        controls: [
+          { id: 'power', label: 'Power', type: 'slider', min: 600, max: 2400, step: 100, default: 2100, unit: 'RPM', correct: 1500, tolerance: 200, correctLabel: '~1,500 RPM — reduces speed while allowing altitude to be held', wrongLabel: 'Reduce to ~1,500 RPM to initiate the deceleration. Hold altitude with back pressure as airspeed bleeds off.' },
+          { id: 'airspeed', label: 'Target Airspeed', type: 'chips', options: ['55–60 KIAS', '70–75 KIAS', '45–50 KIAS', '80+ KIAS'], default: '70–75 KIAS', correct: '55–60 KIAS', correctLabel: '55–60 KIAS — just above Vr (52 KIAS), simulating the liftoff-to-climb transition', wrongLabel: 'Target 55–60 KIAS — near Vr. This is the speed you\'d be at just after rotation, when a departure stall is most likely.' },
+        ],
+        feedback: 'Reduce to ~1,500 RPM and hold altitude with back pressure as speed bleeds to 55–60 KIAS. Once you reach that speed you\'re ready to enter.',
+        tip: { title: 'Carb heat', text: 'Turn carb heat ON when you reduce to ~1,500 RPM — low power increases carb ice risk. Turn it back OFF just before applying full power for the entry.' }
+      },
+      {
+        type: 'config',
+        phase: 'Carb Off/Full Power/Pitch',
+        prompt: 'At 55–60 KIAS, establish the stall entry.',
+        context: 'Simulating an aggressive over-rotation after takeoff.',
+        controls: [
+          { id: 'carbheat', label: 'Carb Heat', type: 'chips', options: ['OFF', 'ON'], default: 'ON', correct: 'OFF', correctLabel: 'OFF — carb heat reduces engine output; must be off before applying takeoff power', wrongLabel: 'Turn carb heat OFF before advancing the throttle. Carb heat reduces power output — you want full power for the entry.' },
+          { id: 'power', label: 'Power', type: 'chips', options: ['Full', '2100 RPM', '1800 RPM', '1500 RPM'], default: '1800 RPM', correct: 'Full', correctLabel: 'Full power — simulates takeoff/departure power setting', wrongLabel: 'Full power is the defining characteristic of this stall. Advance the throttle smoothly but promptly to the firewall.' },
+          { id: 'pitch', label: 'Pitch Attitude', type: 'chips', options: ['15–20° nose up', '10° nose up', '5° nose up', 'Level'], default: '10° nose up', correct: '15–20° nose up', correctLabel: '15–20° nose up — aggressive climb attitude that exceeds critical AOA', wrongLabel: 'Pitch to 15–20° nose up to bring on the stall. This simulates over-rotating at takeoff.' },
+        ],
+        feedback: 'Carb heat off → full power → pitch aggressively to 15–20° nose up. Apply and hold significant right rudder from the moment you advance the throttle — torque yaws hard left immediately.',
+        tip: { title: 'Anticipate the rudder', text: 'Don\'t wait for the yaw to develop — anticipate it. The instant you advance the throttle, torque and P-factor kick in. Right rudder from the start keeps the ball centered and prevents the left wing from being pre-loaded to drop harder at the break.' }
+      },
+      {
+        type: 'choice',
+        phase: 'Stall Warning',
+        prompt: 'Holding 15–20° pitch with speed decaying — what is the correct sequence of warning cues before the break?',
+        context: 'ACS requires recognition at first indication, not just at the full break.',
+        options: [
+          { text: 'Mushy controls → stall horn → buffet → stall break', correct: true, why: '' },
+          { text: 'Stall horn → mushy controls → buffet → stall break', correct: false, why: 'Controls get mushy before the stall horn. You\'re losing control effectiveness as AOA increases, before the horn threshold is reached.' },
+          { text: 'Buffet → stall horn → mushy controls → stall break', correct: false, why: 'Airframe buffet (disturbed airflow reaching the tail) typically comes after the stall horn, not before. Control mushiness begins earliest.' },
+          { text: 'Stall break → stall horn → buffet', correct: false, why: 'The horn and buffet are warnings that come BEFORE the break. If you\'re waiting for the break to identify the stall, you\'re already too late.' },
+        ],
+        feedback: 'Cue sequence: mushy controls → stall horn → buffet → stall break. Announce "stall warning" at the horn. Announce "stall" at the break. ACS tests recognition — don\'t wait for the full break to react.',
+        tip: { title: 'What to listen and feel for', text: 'At full power the engine is loud, but you\'ll hear the stall horn over it. You\'ll also feel the controls get heavy and unresponsive as the elevator loses effectiveness. The buffet is a physical shudder through the airframe — it comes from disturbed airflow hitting the tail just before the wing fully stalls.' }
+      },
+      {
+        type: 'config',
+        phase: 'Rudder/Break/Vy',
+        prompt: 'The stall breaks — left yaw and left wing drop. Recover with minimum altitude loss.',
+        context: 'Sequence matters: wrong order can turn a stall break into a spin entry.',
+        controls: [
+          { id: 'rudder', label: 'First input', type: 'chips', options: ['Right rudder — stop the yaw', 'Left aileron — stop the roll', 'Right aileron — level the wings', 'Elevator forward'], default: 'Right aileron — level the wings', correct: 'Right rudder — stop the yaw', correctLabel: 'Right rudder first — arrests the yaw before it becomes a spin entry', wrongLabel: 'Right RUDDER first — not aileron. Applying aileron on a stalled dropping wing adds drag to that wing, worsening the roll and potentially inducing a spin.' },
+          { id: 'pitch', label: 'Pitch', type: 'chips', options: ['Slight nose down — break AOA', 'Aggressive nose down — dive away', 'Hold pitch', 'Nose up — stop the sink'], default: 'Hold pitch', correct: 'Slight nose down — break AOA', correctLabel: 'Slight nose down — breaks the stall angle of attack with minimum altitude loss', wrongLabel: 'Lower the nose just enough to break the stall. Aggressive push-forward dives and loses altitude you don\'t need to give up.' },
+          { id: 'power', label: 'Power', type: 'chips', options: ['Keep full power', 'Reduce to 1800 RPM', 'Idle', 'Reduce then re-add'], default: 'Keep full power', correct: 'Keep full power', correctLabel: 'Keep full power — it\'s already in; use it to accelerate through the recovery', wrongLabel: 'Keep full power throughout. It\'s already helping you — pulling it back wastes the energy you have.' },
+        ],
+        feedback: 'Recovery: right rudder to stop yaw → slight nose down to break stall → wings level with coordinated aileron and rudder → establish Vy climb (71 KIAS). Full power throughout.',
+        tip: { title: 'Spin awareness', text: 'An uncoordinated stall break — ball left, left wing dropping, no right rudder — is how spins begin. Rudder stops the yaw. Once the wings are flying again (AOA broken), then use aileron to level. The order is: rudder → pitch → wings level.' }
+      },
+    ],
+    recallItems: [
+      { phase: 'Entry Altitude' },
+      { phase: 'Clearing Turns' },
+      { phase: 'Mixture/Fuel/Flaps' },
+      { phase: 'Throttle ↓ / Carb ON' },
+      { phase: 'Back Pressure' },
+      { phase: 'Reduce to Vr' },
+      { phase: 'Carb OFF / Full Power' },
+      { phase: 'Pitch 15–20° Up' },
+      { phase: 'Stall Warning' },
+      { phase: 'Rudder/Break/Vy' },
     ],
     distractors: [
       { phase: 'Lineup',              why: 'Lineup is the first step of a normal takeoff, not a step in the stall drill.' },
       { phase: 'Flare & Touchdown',   why: 'Flare and touchdown are landing steps. The stall sequence ends at Recovery.' },
-      { phase: 'Turn in Slow Flight', why: 'Slow flight turns are a separate maneuver. The power-on stall goes straight to stall entry.' },
+      { phase: 'Turn in Slow Flight', why: 'Slow flight turns are a separate maneuver. The power-on stall doesn\'t include them.' },
       { phase: 'Rollout',             why: 'Rollout is a landing step. The stall sequence ends at Recovery.' },
       { phase: 'Downwind — GUMPS',    why: 'GUMPS is a traffic pattern item. The stall drill doesn\'t include it.' },
       { phase: 'Base Turn',           why: 'Base turn is a pattern leg, not part of the stall drill sequence.' },
@@ -1967,6 +2061,30 @@ function tapProcSeqChip(idx) {
   }
 }
 
+function _showProcRecallDone(ok, miss, total, elapsed, advanceBtnLabel) {
+  const accuracy = ok + miss > 0 ? Math.round(ok / (ok + miss) * 100) : 100;
+  const el = document.getElementById('proc-recall-done');
+  el.innerHTML = `
+    <div class="prd-row">
+      <div class="prd-check">✓</div>
+      <div>
+        <div class="prd-title">Nailed it.</div>
+        <div class="prd-sub">${total} / ${total} in ${fmtSeqTime(elapsed)} · ${accuracy}% accuracy</div>
+      </div>
+    </div>
+    <div class="prd-cta">Now let's drill each step.</div>
+    <button class="cf-btn cf-btn--primary" style="width:100%" onclick="procAdvanceFromRecall()">${advanceBtnLabel}</button>
+    <div style="margin-top:10px;text-align:center">
+      <a href="#" onclick="retryProcRecall();return false" style="font-size:13px;color:var(--ink-3);text-decoration:underline">Try again</a>
+    </div>`;
+  requestAnimationFrame(() => el.classList.add('show'));
+}
+
+function _hideProcRecallDone() {
+  const el = document.getElementById('proc-recall-done');
+  if (el) { el.classList.remove('show'); el.innerHTML = ''; }
+}
+
 function renderProcSeqRecall() {
   const s = procSeqState;
   const ok = s.ok, miss = s.miss;
@@ -1976,7 +2094,7 @@ function renderProcSeqRecall() {
   const eyebrow = group ? `↳ ${group.label.toUpperCase()} · SEQUENCE RECALL` : '↳ SEQUENCE RECALL · TAP IN ORDER';
   const recallTitle = group ? `Build the ${group.label.toLowerCase()} flow from memory` : 'Build the procedure from memory';
   const contextHtml = group?.context ? `<div class="seq-group-context">${group.context}</div>` : '';
-  const advanceBtnLabel = group ? `Practice ${group.label} ›` : 'Begin Procedure →';
+  const advanceBtnLabel = group ? `Practice ${group.label} ›` : 'Let\'s go →';
   const pct = s.totalReal > 0 ? Math.round((s.nextSlot / s.totalReal) * 100) : 0;
 
   const slotsHtml = Array.from({ length: s.totalReal }, (_, i) => {
@@ -2005,18 +2123,8 @@ function renderProcSeqRecall() {
     ? `<div class="proc-seq-distractor-msg">⚠ That step doesn't belong here — ${s.lastDistractorMsg}</div>`
     : '';
 
-  const doneHtml = s.done ? `
-    <div class="seq-done-banner">
-      <div class="seq-done-disc">✓</div>
-      <div>
-        <div class="seq-done-title">Nailed it.</div>
-        <div class="seq-done-sub">${s.totalReal} / ${s.totalReal} in ${fmtSeqTime(s.elapsed)} · ${accuracy}% accuracy</div>
-      </div>
-      <div>
-        <button class="cf-btn cf-btn--primary cf-btn--sm" onclick="procAdvanceFromRecall()">${advanceBtnLabel}</button>
-        <div style="margin-top:8px"><a href="#" onclick="retryProcRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Try again</a></div>
-      </div>
-    </div>` : '';
+  if (s.done) _showProcRecallDone(ok, miss, s.totalReal, s.elapsed, advanceBtnLabel);
+  const doneHtml = '';
 
   document.getElementById('proc-step-content').innerHTML = `
     <div class="seq-page-header">
@@ -2038,10 +2146,6 @@ function renderProcSeqRecall() {
     </div>
     ${doneHtml}
     <div class="seq-grid">
-      <div class="seq-slot-col">
-        <div class="seq-col-eyebrow">${isItemBased ? `↓ ${group.label.toUpperCase()} CHECKLIST · IN ORDER` : '↓ THE PROCEDURE · IN ORDER'}</div>
-        <div class="seq-slot-list">${slotsHtml}</div>
-      </div>
       <div class="seq-pool-col">
         <div class="seq-pool-card">
           <div class="seq-pool-card-header">
@@ -2055,6 +2159,10 @@ function renderProcSeqRecall() {
             ${!s.done ? `<div style="margin-top:10px;text-align:center"><a href="#" onclick="procAdvanceFromRecall();return false" style="font-size:12px;color:var(--ink-3);text-decoration:underline">Skip</a></div>` : ''}
           </div>
         </div>
+      </div>
+      <div class="seq-slot-col">
+        <div class="seq-col-eyebrow">${isItemBased ? `↓ ${group.label.toUpperCase()} CHECKLIST · IN ORDER` : '↓ THE PROCEDURE · IN ORDER'}</div>
+        <div class="seq-slot-list">${slotsHtml}</div>
       </div>
     </div>`;
 }
@@ -5068,7 +5176,7 @@ function updateSpeechNote() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+if (typeof document !== 'undefined') document.addEventListener('DOMContentLoaded', () => {
   // Sync mode toggle button state with boot-time mode
   _applyMode(document.documentElement.dataset.mode || 'day', false);
   // Initialize aircraft header button
@@ -5104,4 +5212,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Export for testing
-if (typeof module !== 'undefined') module.exports = { isAndroid, buildCallTemplateHtml };
+if (typeof module !== 'undefined') module.exports = { isAndroid, buildCallTemplateHtml, buildPowerOnStall, _initProcRecall, procSeqState };
