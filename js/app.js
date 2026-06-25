@@ -1767,7 +1767,7 @@ function buildSlowFlight(ap) {
           { id: 'rudder', label: 'Rudder', type: 'chips', options: ['Neutral', 'Right rudder', 'Left rudder'], default: 'Neutral', correct: 'Right rudder', correctLabel: 'Right rudder — counters left-turning tendency from torque and P-factor at high angle of attack', wrongLabel: 'Right rudder is needed to counteract torque and P-factor at low speeds/high power. Without it the ball skids left.' },
         ],
         feedback: 'Slow flight established: full flaps, power back to ~2000 RPM to hold altitude, 50–55 KIAS, right rudder to stay coordinated. Stall horn acceptable — that\'s the point.',
-        tip: { title: 'What your examiner watches', text: 'ACS standard: +10/-0 kts airspeed (you can be fast, you cannot stall), ±100 ft altitude, ±10° heading. The most common failure is ballooning altitude on flap extension or letting speed decay into an actual stall.' }
+        tip: { title: 'Finding MCA by feel', text: 'Some instructors have you slow until the stall horn sounds before adding power back — that\'s the exact MCA floor, not a memorized number. The horn fires 5–10 kts above the actual stall, so touching it doesn\'t stall you. Once you hear it, power back up to hold altitude. More precise than targeting "52 KIAS" because density altitude and weight shift that number every flight.' }
       },
       {
         type: 'choice',
